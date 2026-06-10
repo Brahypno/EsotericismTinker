@@ -1,0 +1,12 @@
+{
+  "parent": "minecraft:block/cube",
+  "textures": {
+    "down": "esotericism_tinker:block/transmute/ashen/ashen_bricks",
+    "east": "esotericism_tinker:block/transmute/ashen/ashen_bricks",
+    "north": "esotericism_tinker:block/transmute/ashen_melt_switch_1",
+    "particle": "esotericism_tinker:block/transmute/ashen/ashen_bricks",
+    "south": "esotericism_tinker:block/transmute/ashen/ashen_bricks",
+    "up": "esotericism_tinker:block/transmute/ashen/ashen_bricks",
+    "west": "esotericism_tinker:block/transmute/ashen/ashen_bricks"
+  }
+}

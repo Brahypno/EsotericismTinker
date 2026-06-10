@@ -1,0 +1,18 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "building",
+  "group": "esotericism_tinker:ashen_bricks_slab",
+  "key": {
+    "B": {
+      "item": "esotericism_tinker:ashen_bricks"
+    }
+  },
+  "pattern": [
+    "BBB"
+  ],
+  "result": {
+    "count": 6,
+    "item": "esotericism_tinker:ashen_bricks_slab"
+  },
+  "show_notification": true
+}

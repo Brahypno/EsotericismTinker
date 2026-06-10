@@ -1,0 +1,15 @@
+{
+  "parent": "tconstruct:block/template/pane/side_alt",
+  "connection": {
+    "predicate": "pane",
+    "textures": {
+      "pane": "cornerless_full"
+    }
+  },
+  "loader": "mantle:connected",
+  "render_type": "minecraft:translucent",
+  "textures": {
+    "edge": "esotericism_tinker:block/transmute/glass_top",
+    "pane": "esotericism_tinker:block/transmute/soul_glass"
+  }
+}

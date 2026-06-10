@@ -1,0 +1,21 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "redstone",
+  "key": {
+    "#": {
+      "item": "esotericism_tinker:ashen_brick"
+    },
+    "C": {
+      "tag": "forge:ingots/knightmetal"
+    }
+  },
+  "pattern": [
+    "#C#",
+    "   ",
+    "#C#"
+  ],
+  "result": {
+    "item": "esotericism_tinker:ashen_chute"
+  },
+  "show_notification": true
+}

@@ -1,0 +1,18 @@
+{
+  "required": true,
+  "minVersion": "0.8",
+  "package": "org.brahypno.esotericismtinker.mixin",
+  "compatibilityLevel": "JAVA_17",
+  "refmap": "esotericism_tinker.refmap.json",
+  "mixins": [
+  ],
+  "client": [
+    "HeatingStructureScreenMixin"
+  ],
+  "injectors": {
+    "defaultRequire": 1
+  },
+  "overwrites": {
+    "requireAnnotations": true
+  }
+}

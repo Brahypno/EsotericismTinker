@@ -1,0 +1,10 @@
+{
+  "title": "Ashen Ladder",
+  "item": "esotericism_tinker:ashen_ladder",
+  "text": [
+    {
+      "text": "By the Ashen Ladder, you may rise from—or descend into—your Transmute without marring its rite. A wise choice, should you intend to enlarge it in time.",
+      "paragraph": true
+    }
+  ]
+}

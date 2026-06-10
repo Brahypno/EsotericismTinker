@@ -1,0 +1,14 @@
+{
+  "parent": "tconstruct:block/template/pane/side",
+  "connection": {
+    "predicate": "pane",
+    "textures": {
+      "pane": "cornerless_full"
+    }
+  },
+  "loader": "mantle:connected",
+  "textures": {
+    "edge": "esotericism_tinker:block/transmute/glass_top",
+    "pane": "esotericism_tinker:block/transmute/glass"
+  }
+}

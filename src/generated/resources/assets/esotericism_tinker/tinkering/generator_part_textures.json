@@ -1,0 +1,17 @@
+{
+  "parts": [
+    {
+      "path": "esotericism_tinker:item/tool/ritual_blade/blade",
+      "stat_type": "tconstruct:head"
+    },
+    {
+      "path": "esotericism_tinker:item/tool/ritual_blade/blade_broken",
+      "stat_type": "tconstruct:head"
+    },
+    {
+      "path": "esotericism_tinker:item/tool/ritual_blade/handle",
+      "stat_type": "tconstruct:handle"
+    }
+  ],
+  "replace": false
+}

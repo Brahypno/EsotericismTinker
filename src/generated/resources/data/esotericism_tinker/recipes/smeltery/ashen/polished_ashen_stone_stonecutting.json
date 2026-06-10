@@ -1,0 +1,19 @@
+{
+  "type": "minecraft:stonecutting",
+  "count": 1,
+  "ingredient": [
+    {
+      "type": "forge:difference",
+      "base": {
+        "tag": "esotericism_tinker:ashen_blocks"
+      },
+      "subtracted": {
+        "item": "esotericism_tinker:polished_ashen_stone"
+      }
+    },
+    {
+      "item": "esotericism_tinker:ashen_stone"
+    }
+  ],
+  "result": "esotericism_tinker:polished_ashen_stone"
+}

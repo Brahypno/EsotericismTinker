@@ -1,0 +1,7 @@
+{  "parent": "tconstruct:block/template/controller_fluid",
+  "textures": {
+    "front": "esotericism_tinker:block/transmute/controller/transmute_active",
+    "bricks": "esotericism_tinker:block/transmute/ashen/ashen_bricks",
+    "back": "esotericism_tinker:block/transmute/io/back"
+  }
+}

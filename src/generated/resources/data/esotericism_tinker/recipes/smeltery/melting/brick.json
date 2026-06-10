@@ -1,0 +1,12 @@
+{
+  "type": "tconstruct:melting",
+  "ingredient": {
+    "item": "esotericism_tinker:ashen_brick"
+  },
+  "result": {
+    "amount": 250,
+    "fluid": "esotericism_tinker:molten_ender_ash"
+  },
+  "temperature": 1500,
+  "time": 80
+}

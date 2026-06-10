@@ -1,0 +1,6 @@
+{
+  "parent": "minecraft:block/cube_all",
+  "textures": {
+    "all": "esotericism_tinker:block/ender_mortar"
+  }
+}

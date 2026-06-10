@@ -1,0 +1,21 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "redstone",
+  "key": {
+    "#": {
+      "item": "esotericism_tinker:ashen_brick"
+    },
+    "C": {
+      "tag": "forge:ingots/gold"
+    }
+  },
+  "pattern": [
+    "# #",
+    "C C",
+    "# #"
+  ],
+  "result": {
+    "item": "esotericism_tinker:ashen_duct"
+  },
+  "show_notification": true
+}

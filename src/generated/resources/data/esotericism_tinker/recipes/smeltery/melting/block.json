@@ -1,0 +1,23 @@
+{
+  "type": "tconstruct:melting",
+  "ingredient": [
+    {
+      "tag": "esotericism_tinker:ashen_blocks"
+    },
+    {
+      "item": "esotericism_tinker:ashen_ladder"
+    },
+    {
+      "item": "esotericism_tinker:ashen_bricks_stairs"
+    },
+    {
+      "item": "esotericism_tinker:ashen_road_stairs"
+    }
+  ],
+  "result": {
+    "amount": 1000,
+    "fluid": "esotericism_tinker:molten_ender_ash"
+  },
+  "temperature": 1500,
+  "time": 160
+}

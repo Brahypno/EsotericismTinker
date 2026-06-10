@@ -1,0 +1,10 @@
+{
+  "type": "tconstruct:tool_building",
+  "extra_requirements": [
+    {
+      "tag": "forge:glass"
+    }
+  ],
+  "result": "esotericism_tinker:ritual_blade",
+  "result_count": 1
+}

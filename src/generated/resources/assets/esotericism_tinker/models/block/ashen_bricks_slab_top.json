@@ -1,0 +1,8 @@
+{
+  "parent": "minecraft:block/slab_top",
+  "textures": {
+    "bottom": "esotericism_tinker:block/transmute/ashen/ashen_bricks",
+    "side": "esotericism_tinker:block/transmute/ashen/ashen_bricks",
+    "top": "esotericism_tinker:block/transmute/ashen/ashen_bricks"
+  }
+}
