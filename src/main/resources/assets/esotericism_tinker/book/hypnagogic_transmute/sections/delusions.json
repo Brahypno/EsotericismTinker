@@ -1,0 +1,52 @@
+[
+  {
+    "name": "group_general",
+    "type": "mantle:text",
+    "data": "delusions/general.json",
+    "extraData": { "tconstruct:load_modifiers": { "tag": "esotericism_tinker:delusions/general", "path": "delusions/general", "prefix": "general" }}
+  },
+  {
+    "name": "group_weapon",
+    "type": "mantle:text",
+    "data": "delusions/melee.json",
+    "extraData": { "tconstruct:load_modifiers": { "tag": "esotericism_tinker:delusions/melee", "path": "delusions/melee", "prefix": "melee" }}
+  },
+  {
+    "name": "group_damage",
+    "extraData": { "tconstruct:load_modifiers": { "tag": "esotericism_tinker:delusions/damage", "path": "delusions/damage", "prefix": "damage" }}
+  },
+  {
+    "name": "group_harvest",
+    "type": "mantle:text",
+    "data": "delusions/harvest.json",
+    "extraData": { "tconstruct:load_modifiers": { "tag": "esotericism_tinker:delusions/harvest", "path": "delusions/harvest", "prefix": "harvest" }}
+  },
+  {
+    "name": "group_ranged",
+    "type": "mantle:text",
+    "data": "delusions/ranged.json",
+    "extraData": { "tconstruct:load_modifiers": { "tag": "esotericism_tinker:delusions/ranged", "path": "delusions/ranged", "prefix": "ranged" }}
+  },
+  {
+    "name": "group_armor",
+    "type": "mantle:text",
+    "data": "delusions/armor.json",
+    "extraData": { "tconstruct:load_modifiers": { "tag": "esotericism_tinker:delusions/armor/general", "path": "delusions/armor/general", "prefix": "armor" }}
+  },
+  {
+    "name": "group_armor.helmet",
+    "extraData": { "tconstruct:load_modifiers": { "tag": "esotericism_tinker:delusions/armor/helmet", "path": "delusions/armor/helmet", "prefix": "helmet" }}
+  },
+  {
+    "name": "group_armor.chestplate",
+    "extraData": { "tconstruct:load_modifiers": { "tag": "esotericism_tinker:delusions/armor/chestplate", "path": "delusions/armor/chestplate", "prefix": "chestplate" }}
+  },
+  {
+    "name": "group_armor.leggings",
+    "extraData": { "tconstruct:load_modifiers": { "tag": "esotericism_tinker:delusions/armor/leggings", "path": "delusions/armor/leggings", "prefix": "leggings" }}
+  },
+  {
+    "name": "group_armor.boots",
+    "extraData": { "tconstruct:load_modifiers": { "tag": "esotericism_tinker:delusions/armor/boots", "path": "delusions/armor/boots", "prefix": "boots" }}
+  }
+]

@@ -1,0 +1,26 @@
+[
+  {
+    "name": "group_ores",
+    "type": "mantle:text",
+    "data": "exploration/ores.json",
+    "extraData": {
+      "esotericism_tinker:load_exploration": {
+        "tag": "esotericism_tinker:exploration/ores",
+        "path": "exploration/ores",
+        "prefix": "ores"
+      }
+    }
+  },
+  {
+    "name": "group_ritual_products",
+    "type": "mantle:text",
+    "data": "exploration/ritual_products.json",
+    "extraData": {
+      "esotericism_tinker:load_exploration": {
+        "tag": "esotericism_tinker:exploration/ritual_products",
+        "path": "exploration/ritual_products",
+        "prefix": "ritual_products"
+      }
+    }
+  }
+]

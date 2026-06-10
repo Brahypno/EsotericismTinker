@@ -1,0 +1,23 @@
+{
+  "type": "mantle:crafting_shaped_retextured",
+  "category": "redstone",
+  "key": {
+    "#": {
+      "tag": "esotericism_tinker:transmute"
+    },
+    "C": {
+      "tag": "forge:ingots/knightmetal"
+    }
+  },
+  "match_all": false,
+  "pattern": [
+    "C#C"
+  ],
+  "result": {
+    "item": "esotericism_tinker:ashen_drain"
+  },
+  "show_notification": true,
+  "texture": {
+    "tag": "esotericism_tinker:transmute_blocks"
+  }
+}

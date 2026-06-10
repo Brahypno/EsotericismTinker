@@ -1,0 +1,13 @@
+{
+  "variants": {
+    "type=bottom": {
+      "model": "esotericism_tinker:block/ashen_road_slab"
+    },
+    "type=double": {
+      "model": "esotericism_tinker:block/ashen_road"
+    },
+    "type=top": {
+      "model": "esotericism_tinker:block/ashen_road_slab_top"
+    }
+  }
+}

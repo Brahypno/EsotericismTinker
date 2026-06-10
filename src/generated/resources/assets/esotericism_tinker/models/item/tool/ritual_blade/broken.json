@@ -1,0 +1,28 @@
+{
+  "loader": "tconstruct:tool",
+  "parent": "forge:item/default-tool",
+  "textures": {
+    "blade": "esotericism_tinker:item/tool/ritual_blade/blade_broken",
+    "handle": "esotericism_tinker:item/tool/ritual_blade/handle"
+  },
+  "modifier_roots": [
+    "esotericism_tinker:item/tool/ritual_blade/modifiers/broken/",
+    "esotericism_tinker:item/tool/ritual_blade/modifiers/"
+  ],
+  "parts": [
+    {
+      "name": "blade",
+      "index": 0
+    },
+    {
+      "name": "handle",
+      "index": 1
+    }
+  ],
+  "first_modifiers": [
+    {
+      "name": "tconstruct:tank",
+      "forced": true
+    }
+  ]
+}

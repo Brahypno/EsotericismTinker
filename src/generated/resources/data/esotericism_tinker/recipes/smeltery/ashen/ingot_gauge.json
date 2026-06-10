@@ -1,0 +1,21 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "redstone",
+  "key": {
+    "#": {
+      "item": "esotericism_tinker:ashen_brick"
+    },
+    "B": {
+      "tag": "forge:gems/quartz"
+    }
+  },
+  "pattern": [
+    "B#B",
+    "#B#",
+    "B#B"
+  ],
+  "result": {
+    "item": "esotericism_tinker:ashen_ingot_gauge"
+  },
+  "show_notification": true
+}

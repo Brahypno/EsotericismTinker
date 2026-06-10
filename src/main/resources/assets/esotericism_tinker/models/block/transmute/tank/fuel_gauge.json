@@ -1,0 +1,6 @@
+{  "parent": "tconstruct:block/template/tank",
+  "textures": {
+    "top":  "esotericism_tinker:block/transmute/tank/gauge_top",
+    "side": "esotericism_tinker:block/transmute/tank/fuel_gauge"
+  }
+}

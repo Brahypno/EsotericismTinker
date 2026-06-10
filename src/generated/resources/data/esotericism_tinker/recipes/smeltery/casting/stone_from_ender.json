@@ -1,0 +1,13 @@
+{
+  "type": "tconstruct:casting_basin",
+  "cast": {
+    "item": "minecraft:end_stone"
+  },
+  "cast_consumed": true,
+  "cooling_time": 75,
+  "fluid": {
+    "amount": 500,
+    "tag": "tconstruct:ender_slime"
+  },
+  "result": "esotericism_tinker:ashen_stone"
+}

@@ -1,0 +1,10 @@
+{
+  "variants": {
+    "in_structure=false": {
+      "model": "esotericism_tinker:block/ashen_heater"
+    },
+    "in_structure=true": {
+      "model": "esotericism_tinker:block/transmute/ashen/ashen_heater_active"
+    }
+  }
+}

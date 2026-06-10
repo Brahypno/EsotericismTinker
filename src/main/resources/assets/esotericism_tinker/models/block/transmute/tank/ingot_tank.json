@@ -1,0 +1,6 @@
+{  "parent": "tconstruct:block/template/tank_knob",
+  "textures": {
+    "top":  "esotericism_tinker:block/transmute/tank/tank_top",
+    "side": "esotericism_tinker:block/transmute/tank/ingot_tank"
+  }
+}

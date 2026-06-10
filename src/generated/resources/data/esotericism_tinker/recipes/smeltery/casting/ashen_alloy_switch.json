@@ -1,0 +1,13 @@
+{
+  "type": "tconstruct:casting_table",
+  "cast": {
+    "item": "tconstruct:smeltery_controller"
+  },
+  "cast_consumed": true,
+  "cooling_time": 802,
+  "fluid": {
+    "amount": 9000,
+    "tag": "esotericism_tinker:molten_ender_ash"
+  },
+  "result": "esotericism_tinker:ashen_alloy_switch"
+}

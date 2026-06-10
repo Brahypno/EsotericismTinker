@@ -1,0 +1,8 @@
+{  "parent": "tconstruct:block/template/chute",
+  "textures": {
+    "top": "esotericism_tinker:block/transmute/io/chute_top_inactive",
+    "back": "esotericism_tinker:block/transmute/io/back",
+    "bricks": "esotericism_tinker:block/transmute/ashen/ashen_bricks",
+    "side": "esotericism_tinker:block/transmute/io/chute_side_inactive"
+  }
+}

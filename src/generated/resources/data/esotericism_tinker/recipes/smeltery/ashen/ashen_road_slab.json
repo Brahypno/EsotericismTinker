@@ -1,0 +1,18 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "building",
+  "group": "esotericism_tinker:ashen_road_slab",
+  "key": {
+    "B": {
+      "item": "esotericism_tinker:ashen_road"
+    }
+  },
+  "pattern": [
+    "BBB"
+  ],
+  "result": {
+    "count": 6,
+    "item": "esotericism_tinker:ashen_road_slab"
+  },
+  "show_notification": true
+}

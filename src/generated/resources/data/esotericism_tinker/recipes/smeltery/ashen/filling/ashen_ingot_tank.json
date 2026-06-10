@@ -1,0 +1,5 @@
+{
+  "type": "tconstruct:basin_filling",
+  "container": "esotericism_tinker:ashen_ingot_tank",
+  "fluid_amount": 90
+}

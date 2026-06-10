@@ -1,0 +1,16 @@
+{
+  "variants": {
+    "axis=x": {
+      "model": "esotericism_tinker:block/polished_ashen_stone_horizontal",
+      "x": 90,
+      "y": 90
+    },
+    "axis=y": {
+      "model": "esotericism_tinker:block/polished_ashen_stone"
+    },
+    "axis=z": {
+      "model": "esotericism_tinker:block/polished_ashen_stone_horizontal",
+      "x": 90
+    }
+  }
+}

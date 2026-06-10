@@ -1,0 +1,13 @@
+{
+  "variants": {
+    "type=bottom": {
+      "model": "esotericism_tinker:block/ashen_bricks_slab"
+    },
+    "type=double": {
+      "model": "esotericism_tinker:block/ashen_bricks"
+    },
+    "type=top": {
+      "model": "esotericism_tinker:block/ashen_bricks_slab_top"
+    }
+  }
+}

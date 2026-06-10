@@ -1,0 +1,13 @@
+{
+  "type": "tconstruct:casting_table",
+  "cast": {
+    "item": "minecraft:book"
+  },
+  "cast_consumed": true,
+  "cooling_time": 9,
+  "fluid": {
+    "amount": 100,
+    "tag": "esotericism_tinker:blood_soul"
+  },
+  "result": "esotericism_tinker:hypnagogic_transmute"
+}

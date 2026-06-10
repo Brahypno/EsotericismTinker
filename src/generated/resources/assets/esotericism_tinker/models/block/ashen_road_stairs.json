@@ -1,0 +1,8 @@
+{
+  "parent": "minecraft:block/stairs",
+  "textures": {
+    "bottom": "esotericism_tinker:block/transmute/ashen/ashen_road",
+    "side": "esotericism_tinker:block/transmute/ashen/ashen_road",
+    "top": "esotericism_tinker:block/transmute/ashen/ashen_road"
+  }
+}
