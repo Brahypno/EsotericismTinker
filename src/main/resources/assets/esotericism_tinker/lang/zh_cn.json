@@ -86,5 +86,13 @@
 
     "item.tconstruct.creative_slot.delusions":  "创造妄见槽",
     "stat.tconstruct.slot.prefix.delusions":  "妄见槽：",
-    "stat.tconstruct.slot.display.delusions":  "妄见"
+    "stat.tconstruct.slot.display.delusions":  "妄见",
+
+    "_comment.esotericism_tinker.ars_nouveau": "Ars Nouveau Compact",
+  "jei.esotericism_tinker.modifiable_enchantment": "魔源工具强化",
+  "recipe.esotericism_tinker.modifiable_enchantment.not_valid_tool": "该工具不能接受此仪式",
+  "recipe.esotericism_tinker.modifiable_enchantment.not_modifiable": "中心物品不是可改造的匠魂工具",
+  "recipe.esotericism_tinker.modifiable_enchantment.min_level": "该仪式至少需要 %s 级",
+  "recipe.esotericism_tinker.modifiable_enchantment.max_level": "该仪式不能超过 %s 级"
+
 }

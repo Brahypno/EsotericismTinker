@@ -16,6 +16,7 @@ import net.minecraftforge.data.event.GatherDataEvent;
 import net.minecraftforge.event.server.ServerStartingEvent;
 import net.minecraftforge.eventbus.api.IEventBus;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
+import net.minecraftforge.fml.ModList;
 import net.minecraftforge.fml.ModLoadingContext;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.config.ModConfig;
@@ -34,6 +35,7 @@ import org.brahypno.esotericismtinker.common.data.tags.ItemTagProvider;
 import org.brahypno.esotericismtinker.fluids.EsotericismTinkerFluids;
 import org.brahypno.esotericismtinker.fluids.data.EsotericismTinkerFluidTextureProvider;
 import org.brahypno.esotericismtinker.fluids.data.FluidTooltipProvider;
+import org.brahypno.esotericismtinker.library.compact.ars_nouveau.NovaRegistry;
 import org.brahypno.esotericismtinker.smeltery.EsotericismTinkerSmeltery;
 import org.brahypno.esotericismtinker.tools.EsotericismTinkerModifiers;
 import org.brahypno.esotericismtinker.tools.EsotericismTinkerTools;
@@ -65,6 +67,9 @@ public class EsotericismTinker {
 
         MinecraftForge.EVENT_BUS.register(this);
         ModLoadingContext.get().registerConfig(ModConfig.Type.COMMON, Config.SPEC);
+        if (ModList.get().isLoaded("ars_nouveau")){
+            NovaRegistry.init(modEventBus);
+        }
     }
 
     private void commonSetup(final FMLCommonSetupEvent event) {

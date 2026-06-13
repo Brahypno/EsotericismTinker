@@ -86,6 +86,13 @@
 
     "item.tconstruct.creative_slot.delusions":  "Creative Delusion Slot",
     "stat.tconstruct.slot.prefix.delusions":  "Delusion Slots: ",
-    "stat.tconstruct.slot.display.delusions":  "delusion"
+    "stat.tconstruct.slot.display.delusions":  "delusion",
+
+    "_comment.esotericism_tinker.ars_nouveau": "Ars Nouveau Compact",
+    "jei.esotericism_tinker.modifiable_enchantment": "Mana Modifier",
+  "recipe.esotericism_tinker.modifiable_enchantment.not_valid_tool": "This tool cannot receive this infusion",
+  "recipe.esotericism_tinker.modifiable_enchantment.not_modifiable": "The central item is not a modifiable Tinkers' tool",
+  "recipe.esotericism_tinker.modifiable_enchantment.min_level": "This infusion requires at least level %s",
+  "recipe.esotericism_tinker.modifiable_enchantment.max_level": "This infusion cannot exceed level %s"
 
 }

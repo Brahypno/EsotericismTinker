@@ -156,6 +156,14 @@ repositories {
         name 'BlameJared Maven'
         url 'https://maven.blamejared.com'
     }
+    maven {
+        name = 'GeckoLib'
+        url 'https://dl.cloudsmith.io/public/geckolib3/geckolib/maven/'
+        content {
+            includeGroupByRegex("software\\.bernie.*")
+            includeGroup("com.eliotlash.mclib")
+        }
+    }
 }
 
 dependencies {
@@ -190,9 +198,16 @@ dependencies {
     // at runtime, use the full JEI jar
     runtimeOnly fg.deobf("mezz.jei:jei-${minecraft_version}-forge:${jei_version}")
     //runtimeOnly fg.deobf("curse.maven:tconjei-974154:7372437") buggy one, dont use!
+
     runtimeOnly fg.deobf("curse.maven:MoonlightLib-499980:6000197")
     runtimeOnly fg.deobf("curse.maven:MmmMmmMmmMmm-225738:5737040")
     runtimeOnly fg.deobf("curse.maven:jade-324717:6855440")
+
+    implementation fg.deobf("curse.maven:curios-309927:6418456")
+    implementation fg.deobf("curse.maven:patchouli-306770:6164575")
+    implementation fg.deobf("software.bernie.geckolib:geckolib-forge-${minecraft_version}:${geckolib_version}")
+    implementation fg.deobf("com.hollingsworth.ars_nouveau:ars_nouveau-${minecraft_version}:${ars_version}")
+
 
 }
 
