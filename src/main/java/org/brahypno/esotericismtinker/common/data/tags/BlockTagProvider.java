@@ -8,6 +8,7 @@ import net.minecraft.world.level.block.Block;
 import net.minecraftforge.common.data.BlockTagsProvider;
 import net.minecraftforge.common.data.ExistingFileHelper;
 import org.brahypno.esotericismtinker.common.EsotericismTinkerTagKeys;
+import org.brahypno.esotericismtinker.selenic.EsotericismTinkerSelenic;
 import org.brahypno.esotericismtinker.smeltery.EsotericismTinkerSmeltery;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -28,6 +29,16 @@ public class BlockTagProvider extends BlockTagsProvider {
 
     @Override
     protected void addTags(HolderLookup.@NotNull Provider provider) {
+        addTransmute();
+        addHarvest();
+    }
+
+    private void addHarvest() {
+        tagBlocks(MINEABLE_WITH_PICKAXE, NEEDS_DIAMOND_TOOL, EsotericismTinkerSelenic.armillaryCrown, EsotericismTinkerSelenic.lunarFont,
+                  EsotericismTinkerSelenic.astrolabeSpine, EsotericismTinkerSelenic.testimonyStand);
+    }
+
+    private void addTransmute() {
         tag(BlockTags.ENDERMAN_HOLDABLE).add(EsotericismTinkerSmeltery.enderMortar.get());
         tagBlocks(MINEABLE_WITH_SHOVEL, EsotericismTinkerSmeltery.enderMortar);
         tagBlocks(MINEABLE_WITH_PICKAXE, NEEDS_DIAMOND_TOOL, EsotericismTinkerSmeltery.ashenBricks, EsotericismTinkerSmeltery.ashenRoad,

@@ -67,6 +67,7 @@ public class EsotericismTinkerRecipeProvider extends RecipeProvider implements I
                                 .save(consumer, prefix(EsotericismTinkerCommon.hypnagogic_transmute, "common/"));
     }
 
+
     private void addTransmuteRecipes(Consumer<FinishedRecipe> consumer) {
         String folder = "smeltery/ashen/";
         ShapelessRecipeBuilder.shapeless(RecipeCategory.BUILDING_BLOCKS, EsotericismTinkerSmeltery.enderMortar, 2)

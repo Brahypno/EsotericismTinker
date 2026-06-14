@@ -13,6 +13,7 @@ import net.minecraft.world.level.storage.loot.functions.LootItemFunction;
 import net.minecraft.world.level.storage.loot.providers.nbt.ContextNbtProvider;
 import net.minecraft.world.level.storage.loot.providers.number.ConstantValue;
 import org.brahypno.esotericismtinker.EsotericismTinker;
+import org.brahypno.esotericismtinker.selenic.EsotericismTinkerSelenic;
 import org.brahypno.esotericismtinker.smeltery.EsotericismTinkerSmeltery;
 import org.jetbrains.annotations.NotNull;
 import slimeknights.mantle.loot.function.RetexturedLootFunction;
@@ -38,6 +39,19 @@ public class BlockLootTableProvider extends BlockLootSubProvider {
 
     @Override
     protected void generate() {
+        transmute();
+        selenic();
+
+    }
+
+    private void selenic() {
+        dropSelf(EsotericismTinkerSelenic.lunarFont.get());
+        dropSelf(EsotericismTinkerSelenic.astrolabeSpine.get());
+        dropSelf(EsotericismTinkerSelenic.armillaryCrown.get());
+        dropSelf(EsotericismTinkerSelenic.testimonyStand.get());
+    }
+
+    private void transmute() {
         dropSelf(EsotericismTinkerSmeltery.ashenStone.get());
         dropSelf(EsotericismTinkerSmeltery.polishedAshenStone.get());
         registerFenceBuildingLootTables(EsotericismTinkerSmeltery.ashenBricks);

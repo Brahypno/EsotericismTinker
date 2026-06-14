@@ -38,6 +38,8 @@ import org.brahypno.esotericismtinker.fluids.EsotericismTinkerFluids;
 import org.brahypno.esotericismtinker.fluids.data.EsotericismTinkerFluidTextureProvider;
 import org.brahypno.esotericismtinker.fluids.data.FluidTooltipProvider;
 import org.brahypno.esotericismtinker.library.compact.ars_nouveau.NovaRegistry;
+import org.brahypno.esotericismtinker.library.recipe.EsotericismTinkerRecipeTypes;
+import org.brahypno.esotericismtinker.selenic.EsotericismTinkerSelenic;
 import org.brahypno.esotericismtinker.smeltery.EsotericismTinkerSmeltery;
 import org.brahypno.esotericismtinker.tools.EsotericismTinkerModifiers;
 import org.brahypno.esotericismtinker.tools.EsotericismTinkerTools;
@@ -64,6 +66,7 @@ public class EsotericismTinker {
         modEventBus.register(new EsotericismTinkerCommon());
         modEventBus.register(new EsotericismTinkerFluids());
         modEventBus.register(new EsotericismTinkerSmeltery());
+        modEventBus.register(new EsotericismTinkerSelenic());
         modEventBus.register(new EsotericismTinkerTools());
         modEventBus.register(new EsotericismTinkerModifiers());
         EsotericismTinkerModule.initRegisters(modEventBus);
@@ -73,6 +76,7 @@ public class EsotericismTinker {
 
         MinecraftForge.EVENT_BUS.register(this);
         ModLoadingContext.get().registerConfig(ModConfig.Type.COMMON, Config.SPEC, "EsotericismTinkerConfig.toml");
+        EsotericismTinkerRecipeTypes.register(modEventBus);
         if (ModList.get().isLoaded("ars_nouveau")){
             NovaRegistry.init(modEventBus);
         }
