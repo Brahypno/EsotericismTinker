@@ -130,3 +130,4 @@ runs/
 /run-data/
 src/generated/resources/.cache
 /AGENTS.md
+/agent.md

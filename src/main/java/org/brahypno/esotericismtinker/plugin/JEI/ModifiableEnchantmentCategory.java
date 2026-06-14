@@ -3,6 +3,7 @@ package org.brahypno.esotericismtinker.plugin.JEI;
 import com.hollingsworth.arsnouveau.setup.registry.BlockRegistry;
 import mezz.jei.api.constants.VanillaTypes;
 import mezz.jei.api.gui.builder.IRecipeLayoutBuilder;
+import mezz.jei.api.gui.builder.ITooltipBuilder;
 import mezz.jei.api.gui.drawable.IDrawable;
 import mezz.jei.api.gui.ingredient.IRecipeSlotsView;
 import mezz.jei.api.helpers.IGuiHelper;
@@ -18,7 +19,6 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.item.TooltipFlag;
 import net.minecraft.world.phys.Vec2;
 import org.brahypno.esotericismtinker.EsotericismTinker;
 import org.brahypno.esotericismtinker.library.compact.ars_nouveau.recipe.ModifiableEnchantmentRecipe;
@@ -40,7 +40,6 @@ import slimeknights.tconstruct.plugin.jei.modifiers.SlotIngredientRenderer;
 import javax.annotation.Nullable;
 import java.awt.*;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
@@ -134,10 +133,14 @@ public class ModifiableEnchantmentCategory implements IRecipeCategory<Modifiable
         return title;
     }
 
-    @SuppressWarnings("removal")
     @Override
-    public @NotNull IDrawable getBackground() {
-        return background;
+    public int getWidth() {
+        return WIDTH;
+    }
+
+    @Override
+    public int getHeight() {
+        return HEIGHT;
     }
 
     @Override
@@ -242,9 +245,9 @@ public class ModifiableEnchantmentCategory implements IRecipeCategory<Modifiable
         }
     }
 
-    @SuppressWarnings({"removal"})
     @Override
-    public List<Component> getTooltipStrings(
+    public void getTooltip(
+            @NotNull ITooltipBuilder tooltip,
             @NotNull ModifiableEnchantmentRecipe recipe,
             @NotNull IRecipeSlotsView recipeSlotsView,
             double mouseX,
@@ -255,14 +258,8 @@ public class ModifiableEnchantmentCategory implements IRecipeCategory<Modifiable
 
         Component requirementError = getRequirementError(recipe);
         if (requirementError != null && GuiUtil.isHovered(checkX, checkY, REQUIREMENTS_X, REQUIREMENTS_Y, 16, 16)){
-            return Collections.singletonList(requirementError);
+            tooltip.add(requirementError);
         }
-
-        if (recipe.getSlots() == null && GuiUtil.isHovered(checkX, checkY, SLOT_X, SLOT_Y, 24, 16)){
-            return SlotIngredientRenderer.INPUT.getTooltip(null, TooltipFlag.NORMAL);
-        }
-
-        return Collections.emptyList();
     }
 
     private static ModifierEntry getDisplayResult(ModifiableEnchantmentRecipe recipe) {

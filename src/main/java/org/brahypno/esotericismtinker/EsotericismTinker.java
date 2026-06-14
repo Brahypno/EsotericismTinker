@@ -11,6 +11,7 @@ import net.minecraft.tags.TagKey;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.level.block.Block;
 import net.minecraftforge.common.MinecraftForge;
+import net.minecraftforge.common.crafting.CraftingHelper;
 import net.minecraftforge.common.data.ExistingFileHelper;
 import net.minecraftforge.data.event.GatherDataEvent;
 import net.minecraftforge.event.server.ServerStartingEvent;
@@ -32,6 +33,7 @@ import org.brahypno.esotericismtinker.common.data.render.RenderFluidProvider;
 import org.brahypno.esotericismtinker.common.data.tags.BlockTagProvider;
 import org.brahypno.esotericismtinker.common.data.tags.FluidTagProvider;
 import org.brahypno.esotericismtinker.common.data.tags.ItemTagProvider;
+import org.brahypno.esotericismtinker.common.json.ETConfigEnabledCondition;
 import org.brahypno.esotericismtinker.fluids.EsotericismTinkerFluids;
 import org.brahypno.esotericismtinker.fluids.data.EsotericismTinkerFluidTextureProvider;
 import org.brahypno.esotericismtinker.fluids.data.FluidTooltipProvider;
@@ -45,12 +47,16 @@ import slimeknights.tconstruct.fluids.data.FluidBlockstateModelProvider;
 import slimeknights.tconstruct.fluids.data.FluidBucketModelProvider;
 import slimeknights.tconstruct.library.utils.Util;
 
+import java.util.List;
 import java.util.concurrent.CompletableFuture;
 
 @Mod(EsotericismTinker.MODID)
 public class EsotericismTinker {
     public static final String MODID = "esotericism_tinker";
     public static final Logger LOGGER = LogUtils.getLogger();
+
+    private static List<? extends String> compact_config;
+    private static Boolean compactRestriction;
 
     @SuppressWarnings({"removal"})
     public EsotericismTinker() {
@@ -66,10 +72,11 @@ public class EsotericismTinker {
         modEventBus.addListener(this::commonSetup);
 
         MinecraftForge.EVENT_BUS.register(this);
-        ModLoadingContext.get().registerConfig(ModConfig.Type.COMMON, Config.SPEC);
+        ModLoadingContext.get().registerConfig(ModConfig.Type.COMMON, Config.SPEC, "EsotericismTinkerConfig.toml");
         if (ModList.get().isLoaded("ars_nouveau")){
             NovaRegistry.init(modEventBus);
         }
+        CraftingHelper.register(ETConfigEnabledCondition.SERIALIZER);
     }
 
     private void commonSetup(final FMLCommonSetupEvent event) {
@@ -95,6 +102,13 @@ public class EsotericismTinker {
 
     public static TagKey<Item> forgeItemTag(String name) {
         return TagKey.create(ForgeRegistries.ITEMS.getRegistryKey(), new ResourceLocation("forge", name));
+    }
+
+    public static boolean configCompactDisabled(String modId) {
+        if (null == compact_config)
+            compact_config = Config.ModCompactBlackList.get();
+        compactRestriction = Config.MOD_COMPACT_MATERIALS_CONFIG.get();
+        return compactRestriction && compact_config.contains(modId);
     }
 
     @SubscribeEvent
