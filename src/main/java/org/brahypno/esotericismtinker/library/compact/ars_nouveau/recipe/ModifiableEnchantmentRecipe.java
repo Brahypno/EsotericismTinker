@@ -212,7 +212,7 @@ public class ModifiableEnchantmentRecipe extends EnchantingApparatusRecipe {
     }
 
     @Nullable
-    private Component validateReagent(ItemStack stack) {
+    protected Component validateReagent(ItemStack stack) {
         if (stack.isEmpty()){
             return NOT_VALID_TOOL;
         }
@@ -277,7 +277,7 @@ public class ModifiableEnchantmentRecipe extends EnchantingApparatusRecipe {
         return null;
     }
 
-    private void consumeSlots(ToolStack tool) {
+    protected void consumeSlots(ToolStack tool) {
         if (slots != null){
             ToolDataNBT persistentData = tool.getPersistentData();
             persistentData.addSlots(slots.type(), -slots.count());

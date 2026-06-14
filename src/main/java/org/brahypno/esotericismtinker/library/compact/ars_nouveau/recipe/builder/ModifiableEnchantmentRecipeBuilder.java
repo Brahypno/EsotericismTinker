@@ -80,6 +80,26 @@ public class ModifiableEnchantmentRecipeBuilder implements RecipeBuilder {
         return setTools(Ingredient.of(item));
     }
 
+    public ModifiableEnchantmentRecipeBuilder addPedestalItem(int count, Ingredient ingredient) {
+        if (count < 1){
+            throw new IllegalArgumentException("Pedestal item count must be at least 1");
+        }
+
+        for (int i = 0; i < count; i++) {
+            addPedestalItem(ingredient);
+        }
+
+        return this;
+    }
+
+    public ModifiableEnchantmentRecipeBuilder addPedestalItem(int count, ItemLike item) {
+        return addPedestalItem(count, Ingredient.of(item));
+    }
+
+    public ModifiableEnchantmentRecipeBuilder addPedestalItem(int count, TagKey<Item> tag) {
+        return addPedestalItem(count, Ingredient.of(tag));
+    }
+
     public ModifiableEnchantmentRecipeBuilder addPedestalItem(Ingredient ingredient) {
         this.pedestalItems.add(ingredient);
         return this;
@@ -91,18 +111,6 @@ public class ModifiableEnchantmentRecipeBuilder implements RecipeBuilder {
 
     public ModifiableEnchantmentRecipeBuilder addPedestalItem(TagKey<Item> tag) {
         return addPedestalItem(Ingredient.of(tag));
-    }
-
-    public ModifiableEnchantmentRecipeBuilder require(Ingredient ingredient) {
-        return addPedestalItem(ingredient);
-    }
-
-    public ModifiableEnchantmentRecipeBuilder require(ItemLike item) {
-        return addPedestalItem(item);
-    }
-
-    public ModifiableEnchantmentRecipeBuilder require(TagKey<Item> tag) {
-        return addPedestalItem(tag);
     }
 
     public ModifiableEnchantmentRecipeBuilder source(int source) {

@@ -133,7 +133,7 @@ public class ModifiableEnchantmentRecipeSerializer implements RecipeSerializer<M
         buffer.writeBoolean(recipe.checkTraitLevel());
     }
 
-    private static ModifiableEnchantmentRecipe.LevelRange parseLevel(JsonElement element) {
+    protected static ModifiableEnchantmentRecipe.LevelRange parseLevel(JsonElement element) {
         if (element == null || element.isJsonNull()){
             return ModifiableEnchantmentRecipe.LevelRange.exact(1);
         }
