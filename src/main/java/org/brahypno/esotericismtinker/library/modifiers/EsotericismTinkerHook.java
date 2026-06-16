@@ -2,6 +2,7 @@ package org.brahypno.esotericismtinker.library.modifiers;
 
 import net.minecraft.resources.ResourceLocation;
 import org.brahypno.esotericismtinker.library.modifiers.hook.LeftClickHook;
+import org.brahypno.esotericismtinker.library.modifiers.hook.LivingHealHealHook;
 import org.brahypno.esotericismtinker.library.modifiers.hook.ProjectileHurtHook;
 import org.brahypno.esotericismtinker.library.modifiers.hook.RightClickHook;
 import slimeknights.tconstruct.library.modifiers.ModifierHooks;
@@ -17,4 +18,7 @@ public class EsotericismTinkerHook {
     public static final ModuleHook<ProjectileHurtHook> PROJECTILE_HURT =
             ModifierHooks.register(new ResourceLocation(MODID, "projectile_hurt"), ProjectileHurtHook.class, ProjectileHurtHook.AllMerger::new,
                                    new ProjectileHurtHook() {});
+    public static final ModuleHook<LivingHealHealHook> HEAL =
+            ModifierHooks.register(new ResourceLocation(MODID, "heal"), LivingHealHealHook.class, LivingHealHealHook.AllMerger::new,
+                                   new LivingHealHealHook() {});
 }
