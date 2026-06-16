@@ -15,6 +15,7 @@ import net.minecraftforge.common.crafting.CraftingHelper;
 import net.minecraftforge.common.data.ExistingFileHelper;
 import net.minecraftforge.data.event.GatherDataEvent;
 import net.minecraftforge.event.server.ServerStartingEvent;
+import net.minecraftforge.eventbus.api.EventPriority;
 import net.minecraftforge.eventbus.api.IEventBus;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.ModList;
@@ -38,7 +39,9 @@ import org.brahypno.esotericismtinker.fluids.EsotericismTinkerFluids;
 import org.brahypno.esotericismtinker.fluids.data.EsotericismTinkerFluidTextureProvider;
 import org.brahypno.esotericismtinker.fluids.data.FluidTooltipProvider;
 import org.brahypno.esotericismtinker.library.compact.ars_nouveau.NovaRegistry;
+import org.brahypno.esotericismtinker.library.event.PlayerLeftClickEvent;
 import org.brahypno.esotericismtinker.library.recipe.EsotericismTinkerRecipeTypes;
+import org.brahypno.esotericismtinker.network.EsotericismTinkerNetwork;
 import org.brahypno.esotericismtinker.selenic.EsotericismTinkerSelenic;
 import org.brahypno.esotericismtinker.smeltery.EsotericismTinkerSmeltery;
 import org.brahypno.esotericismtinker.tools.EsotericismTinkerModifiers;
@@ -75,8 +78,12 @@ public class EsotericismTinker {
         modEventBus.addListener(this::commonSetup);
 
         MinecraftForge.EVENT_BUS.register(this);
+        MinecraftForge.EVENT_BUS.addListener(EventPriority.HIGHEST, PlayerLeftClickEvent::onLeftClickBlock);
+        MinecraftForge.EVENT_BUS.addListener(EventPriority.HIGHEST, PlayerLeftClickEvent::onLeftClick);
+        MinecraftForge.EVENT_BUS.addListener(EventPriority.HIGHEST, PlayerLeftClickEvent::onLeftClickEntity);
         ModLoadingContext.get().registerConfig(ModConfig.Type.COMMON, Config.SPEC, "EsotericismTinkerConfig.toml");
         EsotericismTinkerRecipeTypes.register(modEventBus);
+        EsotericismTinkerNetwork.registerPackets();
         if (ModList.get().isLoaded("ars_nouveau")){
             NovaRegistry.init(modEventBus);
         }

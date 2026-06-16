@@ -78,5 +78,7 @@ public class EsotericismTinkerTagKeys {
         public static final TagKey<Modifier> CHESTPLATE_DELUSIONS = local("delusions/armor/chestplate");
         public static final TagKey<Modifier> LEGGING_DELUSIONS = local("delusions/armor/leggings");
         public static final TagKey<Modifier> BOOT_DELUSIONS = local("delusions/armor/boots");
+
+        public static final TagKey<Modifier> ArmorWorkingWhenUnequipped = local("armor_working_when_unequipped");
     }
 }
