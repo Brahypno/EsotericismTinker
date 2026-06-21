@@ -1,0 +1,38 @@
+{
+  "multipart": [
+    {
+      "when": {
+        "half": "lower"
+      },
+      "apply": {
+        "model": "esotericism_tinker:block/selenic/lunar_font_lower"
+      }
+    },
+    {
+      "when": {
+        "half": "upper"
+      },
+      "apply": {
+        "model": "esotericism_tinker:block/selenic/lunar_font_upper"
+      }
+    },
+    {
+      "when": {
+        "half": "lower",
+        "active": "true"
+      },
+      "apply": {
+        "model": "esotericism_tinker:block/selenic/lunar_font_lower_active"
+      }
+    },
+    {
+      "when": {
+        "half": "upper",
+        "active": "true"
+      },
+      "apply": {
+        "model": "esotericism_tinker:block/selenic/lunar_font_upper_active"
+      }
+    }
+  ]
+}

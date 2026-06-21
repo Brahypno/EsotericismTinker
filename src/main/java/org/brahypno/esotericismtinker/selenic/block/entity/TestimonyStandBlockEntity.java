@@ -110,4 +110,30 @@ public class TestimonyStandBlockEntity extends BlockEntity {
         super.invalidateCaps();
         itemCap.invalidate();
     }
+
+    @Override
+    public CompoundTag getUpdateTag() {
+        CompoundTag tag = super.getUpdateTag();
+        saveAdditional(tag);
+        return tag;
+    }
+
+    @Nullable
+    @Override
+    public net.minecraft.network.protocol.game.ClientboundBlockEntityDataPacket getUpdatePacket() {
+        return net.minecraft.network.protocol.game.ClientboundBlockEntityDataPacket.create(this);
+    }
+
+    @Override
+    public void onDataPacket(
+            net.minecraft.network.Connection net,
+            net.minecraft.network.protocol.game.ClientboundBlockEntityDataPacket packet
+    ) {
+        CompoundTag tag = packet.getTag();
+
+        if (tag != null){
+            load(tag);
+        }
+    }
+
 }

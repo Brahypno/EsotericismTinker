@@ -1,0 +1,290 @@
+{
+  "parent": "block/block",
+  "textures": {
+    "particle": "minecraft:block/tuff",
+    "stone": "minecraft:block/tuff",
+    "moonstone": "esotericism_tinker:block/aqua_marine",
+    "metal": "minecraft:block/iron_block",
+    "axis": "esotericism_tinker:block/shining_lapis",
+    "halo": "minecraft:block/amethyst_block",
+    "active": "minecraft:block/sea_lantern"
+  },
+  "elements": [
+    {
+      "name": "active_shaft_north",
+      "from": [
+        7.25,
+        1,
+        6.95
+      ],
+      "to": [
+        8.75,
+        5,
+        7.05
+      ],
+      "faces": {
+        "north": {
+          "uv": [
+            0.5,
+            0,
+            2,
+            4
+          ],
+          "texture": "#active"
+        },
+        "east": {
+          "uv": [
+            1.9,
+            0,
+            2,
+            4
+          ],
+          "texture": "#active"
+        },
+        "south": {
+          "uv": [
+            0,
+            0,
+            1.5,
+            4
+          ],
+          "texture": "#active"
+        },
+        "west": {
+          "uv": [
+            0,
+            0,
+            0.1,
+            4
+          ],
+          "texture": "#active"
+        },
+        "up": {
+          "uv": [
+            0,
+            0,
+            1.5,
+            0.1
+          ],
+          "texture": "#active"
+        },
+        "down": {
+          "uv": [
+            0,
+            1.9,
+            1.5,
+            2
+          ],
+          "texture": "#active"
+        }
+      }
+    },
+    {
+      "name": "active_shaft_south",
+      "from": [
+        7.25,
+        1,
+        8.95
+      ],
+      "to": [
+        8.75,
+        5,
+        9.05
+      ],
+      "faces": {
+        "north": {
+          "uv": [
+            0.5,
+            0,
+            2,
+            4
+          ],
+          "texture": "#active"
+        },
+        "east": {
+          "uv": [
+            1.9,
+            0,
+            2,
+            4
+          ],
+          "texture": "#active"
+        },
+        "south": {
+          "uv": [
+            0,
+            0,
+            1.5,
+            4
+          ],
+          "texture": "#active"
+        },
+        "west": {
+          "uv": [
+            0,
+            0,
+            0.1,
+            4
+          ],
+          "texture": "#active"
+        },
+        "up": {
+          "uv": [
+            0,
+            0,
+            1.5,
+            0.1
+          ],
+          "texture": "#active"
+        },
+        "down": {
+          "uv": [
+            0,
+            1.9,
+            1.5,
+            2
+          ],
+          "texture": "#active"
+        }
+      }
+    },
+    {
+      "name": "active_shaft_west",
+      "from": [
+        6.95,
+        1,
+        7.25
+      ],
+      "to": [
+        7.05,
+        5,
+        8.75
+      ],
+      "faces": {
+        "north": {
+          "uv": [
+            1.9,
+            0,
+            2,
+            4
+          ],
+          "texture": "#active"
+        },
+        "east": {
+          "uv": [
+            0.5,
+            0,
+            2,
+            4
+          ],
+          "texture": "#active"
+        },
+        "south": {
+          "uv": [
+            0,
+            0,
+            0.1,
+            4
+          ],
+          "texture": "#active"
+        },
+        "west": {
+          "uv": [
+            0,
+            0,
+            1.5,
+            4
+          ],
+          "texture": "#active"
+        },
+        "up": {
+          "uv": [
+            0,
+            0,
+            0.1,
+            1.5
+          ],
+          "texture": "#active"
+        },
+        "down": {
+          "uv": [
+            0,
+            0.5,
+            0.1,
+            2
+          ],
+          "texture": "#active"
+        }
+      }
+    },
+    {
+      "name": "active_shaft_east",
+      "from": [
+        8.95,
+        1,
+        7.25
+      ],
+      "to": [
+        9.05,
+        5,
+        8.75
+      ],
+      "faces": {
+        "north": {
+          "uv": [
+            1.9,
+            0,
+            2,
+            4
+          ],
+          "texture": "#active"
+        },
+        "east": {
+          "uv": [
+            0.5,
+            0,
+            2,
+            4
+          ],
+          "texture": "#active"
+        },
+        "south": {
+          "uv": [
+            0,
+            0,
+            0.1,
+            4
+          ],
+          "texture": "#active"
+        },
+        "west": {
+          "uv": [
+            0,
+            0,
+            1.5,
+            4
+          ],
+          "texture": "#active"
+        },
+        "up": {
+          "uv": [
+            0,
+            0,
+            0.1,
+            1.5
+          ],
+          "texture": "#active"
+        },
+        "down": {
+          "uv": [
+            0,
+            0.5,
+            0.1,
+            2
+          ],
+          "texture": "#active"
+        }
+      }
+    }
+  ]
+}

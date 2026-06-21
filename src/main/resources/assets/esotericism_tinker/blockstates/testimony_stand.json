@@ -1,0 +1,10 @@
+{
+  "variants": {
+    "floating=false": {
+      "model": "esotericism_tinker:block/selenic/testimony_stand"
+    },
+    "floating=true": {
+      "model": "esotericism_tinker:block/selenic/testimony_stand_floating"
+    }
+  }
+}

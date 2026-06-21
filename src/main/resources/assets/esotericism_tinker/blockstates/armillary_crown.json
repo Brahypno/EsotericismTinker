@@ -1,0 +1,20 @@
+{
+  "multipart": [
+    {
+      "when": {
+        "half": "lower"
+      },
+      "apply": {
+        "model": "esotericism_tinker:block/selenic/armillary_crown"
+      }
+    },
+    {
+      "when": {
+        "half": "upper"
+      },
+      "apply": {
+        "model": "esotericism_tinker:block/selenic/armillary_crown_empty"
+      }
+    }
+  ]
+}

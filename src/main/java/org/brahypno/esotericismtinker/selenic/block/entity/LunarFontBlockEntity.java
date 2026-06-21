@@ -3,7 +3,9 @@ package org.brahypno.esotericismtinker.selenic.block.entity;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.nbt.CompoundTag;
+import net.minecraft.network.Connection;
 import net.minecraft.network.chat.Component;
+import net.minecraft.network.protocol.game.ClientboundBlockEntityDataPacket;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.Mth;
 import net.minecraft.world.Containers;
@@ -24,7 +26,9 @@ import org.brahypno.esotericismtinker.library.recipe.IngredientStackUtil;
 import org.brahypno.esotericismtinker.library.recipe.MoonPhase;
 import org.brahypno.esotericismtinker.library.recipe.selenic.*;
 import org.brahypno.esotericismtinker.selenic.EsotericismTinkerSelenic;
+import org.brahypno.esotericismtinker.selenic.block.component.AstrolabeSpineBlock;
 import org.brahypno.esotericismtinker.selenic.block.component.LunarFontBlock;
+import org.brahypno.esotericismtinker.selenic.block.component.SelenicBlockStates;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -117,7 +121,8 @@ public class LunarFontBlockEntity extends BlockEntity {
             return;
         }
 
-        boolean powered = level.hasNeighborSignal(worldPosition);
+        boolean powered = level.hasNeighborSignal(worldPosition)
+                          || level.hasNeighborSignal(worldPosition.above());
 
         if (!isSuccessSignaling() && powered && !wasPowered){
             tryActivate(null);
@@ -195,6 +200,7 @@ public class LunarFontBlockEntity extends BlockEntity {
         progress = 0.0F;
 
         setActive(true);
+        setSpinesActiveFromCache(true);
         setChangedAndUpdate();
 
         if (recipe.getDuration() <= 0){
@@ -240,6 +246,7 @@ public class LunarFontBlockEntity extends BlockEntity {
         SelenicAstrolabeRecipe active = recipe.get();
 
         updateCachedFigure(level, figure);
+        setSpinesActiveFromCache(true);
         trimOutputToCurrentCapacity();
 
         if (!active.matches(createContext(level, figure, crown)) || !canPrepareRecipe(level, active, figure, crown)){
@@ -268,6 +275,7 @@ public class LunarFontBlockEntity extends BlockEntity {
     }
 
     private void stopInterrupted() {
+        setSpinesActiveFromCache(false);
         activeRecipeId = null;
         progress = 0.0F;
         lastFailure = SelenicFailure.INTERRUPTED;
@@ -292,6 +300,7 @@ public class LunarFontBlockEntity extends BlockEntity {
 
         prepared.apply(recipe, access);
 
+        setSpinesActiveFromCache(false);
         activeRecipeId = null;
         progress = 0.0F;
         lastFailure = SelenicFailure.NONE;
@@ -501,16 +510,92 @@ public class LunarFontBlockEntity extends BlockEntity {
         setChanged();
     }
 
-    private void setActive(boolean active) {
+    private void setSpinesActiveFromCache(boolean active) {
+        if (level == null || level.isClientSide){
+            return;
+        }
+
+        setUpperSpinesActive(active);
+        setLowerSpinesActive(active);
+
+        if (active){
+            clearStaleUpperSpines();
+            clearStaleLowerSpines();
+        }
+    }
+
+    private void setUpperSpinesActive(boolean active) {
+        setSpineColumnActive(worldPosition.getY() + 2, 1, cachedUpperSpines, active);
+    }
+
+    private void setLowerSpinesActive(boolean active) {
+        setSpineColumnActive(worldPosition.getY() - 1, -1, cachedLowerSpines, active);
+    }
+
+    private void setSpineColumnActive(int startY, int step, int count, boolean active) {
+        if (level == null || count <= 0){
+            return;
+        }
+
+        BlockPos.MutableBlockPos cursor = new BlockPos.MutableBlockPos(worldPosition.getX(), startY, worldPosition.getZ());
+
+        for (int i = 0; i < count; i++) {
+            cursor.setY(startY + i * step);
+            setSpineActiveAt(cursor, active);
+        }
+    }
+
+    private void clearStaleUpperSpines() {
+        clearSpinesUntilNonSpine(worldPosition.getY() + 2 + cachedUpperSpines, 1);
+    }
+
+    private void clearStaleLowerSpines() {
+        clearSpinesUntilNonSpine(worldPosition.getY() - 1 - cachedLowerSpines, -1);
+    }
+
+    private void clearSpinesUntilNonSpine(int startY, int step) {
         if (level == null){
             return;
         }
 
-        BlockState state = getBlockState();
+        BlockPos.MutableBlockPos cursor = new BlockPos.MutableBlockPos(worldPosition.getX(), startY, worldPosition.getZ());
 
-        if (state.hasProperty(LunarFontBlock.ACTIVE) && state.getValue(LunarFontBlock.ACTIVE) != active){
-            level.setBlock(worldPosition, state.setValue(LunarFontBlock.ACTIVE, active), 3);
+        while (startY >= level.getMinBuildHeight() && startY < level.getMaxBuildHeight()) {
+            cursor.setY(startY);
+            BlockState state = level.getBlockState(cursor);
+            if (!(state.getBlock() instanceof AstrolabeSpineBlock)){
+                return;
+            }
+
+            if (state.hasProperty(AstrolabeSpineBlock.ACTIVE) && state.getValue(AstrolabeSpineBlock.ACTIVE)){
+                level.setBlock(cursor, state.setValue(AstrolabeSpineBlock.ACTIVE, false), 3);
+            }
+
+            startY += step;
         }
+    }
+
+    private void setSpineActiveAt(BlockPos pos, boolean active) {
+        if (level == null){
+            return;
+        }
+
+        BlockState state = level.getBlockState(pos);
+        if (!(state.getBlock() instanceof AstrolabeSpineBlock) || !state.hasProperty(AstrolabeSpineBlock.ACTIVE)){
+            return;
+        }
+        if (state.getValue(AstrolabeSpineBlock.ACTIVE) == active){
+            return;
+        }
+
+        level.setBlock(pos, state.setValue(AstrolabeSpineBlock.ACTIVE, active), 3);
+    }
+
+    private void setActive(boolean active) {
+        if (level == null){
+            return;
+        }
+        LunarFontBlock.setBothHalves(level, worldPosition, SelenicBlockStates.ACTIVE, active);
     }
 
     private void pulseSuccessSignal() {
@@ -518,15 +603,11 @@ public class LunarFontBlockEntity extends BlockEntity {
             return;
         }
 
-        BlockState state = getBlockState();
-
-        if (!state.hasProperty(LunarFontBlock.SIGNALING)){
-            return;
-        }
-
-        level.setBlock(worldPosition, state.setValue(LunarFontBlock.SIGNALING, true), 3);
-        level.scheduleTick(worldPosition, state.getBlock(), SUCCESS_SIGNAL_TICKS);
-        level.updateNeighborsAt(worldPosition, state.getBlock());
+        LunarFontBlock.setBothHalves(level, worldPosition, LunarFontBlock.SIGNALING, true);
+        level.scheduleTick(worldPosition, getBlockState().getBlock(), SUCCESS_SIGNAL_TICKS);
+        level.scheduleTick(worldPosition.above(), getBlockState().getBlock(), SUCCESS_SIGNAL_TICKS);
+        level.updateNeighborsAt(worldPosition, getBlockState().getBlock());
+        level.updateNeighborsAt(worldPosition.above(), getBlockState().getBlock());
     }
 
     public ItemStack extractOutputItem() {
@@ -598,6 +679,27 @@ public class LunarFontBlockEntity extends BlockEntity {
         }
         catch (Exception ignored) {
             lastFailure = SelenicFailure.NONE;
+        }
+    }
+
+    @Override
+    public CompoundTag getUpdateTag() {
+        CompoundTag tag = super.getUpdateTag();
+        saveAdditional(tag);
+        return tag;
+    }
+
+    @Nullable
+    @Override
+    public ClientboundBlockEntityDataPacket getUpdatePacket() {
+        return ClientboundBlockEntityDataPacket.create(this);
+    }
+
+    @Override
+    public void onDataPacket(Connection net, ClientboundBlockEntityDataPacket packet) {
+        CompoundTag tag = packet.getTag();
+        if (tag != null){
+            load(tag);
         }
     }
 
@@ -797,6 +899,14 @@ public class LunarFontBlockEntity extends BlockEntity {
         private boolean isOk() {
             return failure == SelenicFailure.NONE;
         }
+    }
+
+    public ItemStack getOutputItemView() {
+        return outputItems.getStackInSlot(0);
+    }
+
+    public boolean isRitualActive() {
+        return activeRecipeId != null;
     }
 
     private static class OutputItemHandler extends ItemStackHandler {

@@ -2,6 +2,8 @@ package org.brahypno.esotericismtinker.selenic.block.entity;
 
 import net.minecraft.core.BlockPos;
 import net.minecraft.nbt.CompoundTag;
+import net.minecraft.network.Connection;
+import net.minecraft.network.protocol.game.ClientboundBlockEntityDataPacket;
 import net.minecraft.util.Mth;
 import net.minecraft.world.Containers;
 import net.minecraft.world.item.ItemStack;
@@ -18,6 +20,7 @@ import net.minecraftforge.items.IItemHandler;
 import net.minecraftforge.items.ItemHandlerHelper;
 import net.minecraftforge.items.ItemStackHandler;
 import org.brahypno.esotericismtinker.selenic.EsotericismTinkerSelenic;
+import org.brahypno.esotericismtinker.selenic.block.component.SelenicBlockStates;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -255,6 +258,36 @@ public class ArmillaryCrownBlockEntity extends BlockEntity {
         super.invalidateCaps();
         itemCap.invalidate();
         fluidCap.invalidate();
+    }
+
+    @Override
+    public CompoundTag getUpdateTag() {
+        CompoundTag tag = super.getUpdateTag();
+        saveAdditional(tag);
+        return tag;
+    }
+
+    @Nullable
+    @Override
+    public ClientboundBlockEntityDataPacket getUpdatePacket() {
+        return ClientboundBlockEntityDataPacket.create(this);
+    }
+
+    @Override
+    public void onDataPacket(Connection net, ClientboundBlockEntityDataPacket packet) {
+        CompoundTag tag = packet.getTag();
+        if (tag != null){
+            load(tag);
+        }
+    }
+
+    public ItemStack getDisplayedInputItem() {
+        return items.getStackInSlot(0);
+    }
+
+    public boolean isDisplayActive() {
+        BlockState state = getBlockState();
+        return state.hasProperty(SelenicBlockStates.ACTIVE) && state.getValue(SelenicBlockStates.ACTIVE);
     }
 
 }

@@ -1,0 +1,148 @@
+{
+  "parent": "minecraft:block/block",
+  "textures": {
+    "collar": "minecraft:block/calcite",
+    "plate": "minecraft:block/calcite",
+    "particle": "minecraft:block/calcite"
+  },
+  "elements": [
+    {
+      "name": "top_collar",
+      "from": [
+        5,
+        14,
+        5
+      ],
+      "to": [
+        11,
+        15,
+        11
+      ],
+      "faces": {
+        "north": {
+          "uv": [
+            0,
+            1,
+            6,
+            2
+          ],
+          "texture": "#collar"
+        },
+        "east": {
+          "uv": [
+            0,
+            1,
+            6,
+            2
+          ],
+          "texture": "#collar"
+        },
+        "south": {
+          "uv": [
+            0,
+            1,
+            6,
+            2
+          ],
+          "texture": "#collar"
+        },
+        "west": {
+          "uv": [
+            0,
+            1,
+            6,
+            2
+          ],
+          "texture": "#collar"
+        },
+        "up": {
+          "uv": [
+            0,
+            0,
+            6,
+            6
+          ],
+          "texture": "#collar"
+        },
+        "down": {
+          "uv": [
+            0,
+            0,
+            6,
+            6
+          ],
+          "texture": "#collar"
+        }
+      }
+    },
+    {
+      "name": "top_plate",
+      "from": [
+        4,
+        15,
+        4
+      ],
+      "to": [
+        12,
+        16,
+        12
+      ],
+      "faces": {
+        "north": {
+          "uv": [
+            0,
+            1,
+            8,
+            2
+          ],
+          "texture": "#plate"
+        },
+        "east": {
+          "uv": [
+            0,
+            1,
+            8,
+            2
+          ],
+          "texture": "#plate"
+        },
+        "south": {
+          "uv": [
+            0,
+            1,
+            8,
+            2
+          ],
+          "texture": "#plate"
+        },
+        "west": {
+          "uv": [
+            0,
+            1,
+            8,
+            2
+          ],
+          "texture": "#plate"
+        },
+        "up": {
+          "uv": [
+            0,
+            0,
+            8,
+            8
+          ],
+          "texture": "#plate"
+        },
+        "down": {
+          "uv": [
+            0,
+            0,
+            8,
+            8
+          ],
+          "texture": "#plate"
+        }
+      }
+    }
+  ]
+}

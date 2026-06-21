@@ -12,8 +12,8 @@ import net.minecraft.world.level.material.MapColor;
 import net.minecraftforge.registries.RegistryObject;
 import org.brahypno.esotericismtinker.EsotericismTinker;
 import org.brahypno.esotericismtinker.EsotericismTinkerModule;
-import org.brahypno.esotericismtinker.selenic.block.ArmillaryCrownBlock;
-import org.brahypno.esotericismtinker.selenic.block.AstrolabeSpineBlock;
+import org.brahypno.esotericismtinker.selenic.block.component.ArmillaryCrownBlock;
+import org.brahypno.esotericismtinker.selenic.block.component.AstrolabeSpineBlock;
 import org.brahypno.esotericismtinker.selenic.block.component.LunarFontBlock;
 import org.brahypno.esotericismtinker.selenic.block.component.TestimonyStandBlock;
 import org.brahypno.esotericismtinker.selenic.block.entity.ArmillaryCrownBlockEntity;
@@ -40,10 +40,10 @@ public class EsotericismTinkerSelenic extends EsotericismTinkerModule {
             BLOCKS.register("astrolabe_spine", () -> new AstrolabeSpineBlock(selenicProps(1)), TOOLTIP_BLOCK_ITEM);
 
     public static final ItemObject<ArmillaryCrownBlock> armillaryCrown =
-            BLOCKS.register("armillary_crown", () -> new ArmillaryCrownBlock(selenicProps(1).noOcclusion()), TOOLTIP_BLOCK_ITEM);
+            BLOCKS.register("armillary_crown", () -> new ArmillaryCrownBlock(selenicProps(1).lightLevel(ArmillaryCrownBlock.LIGHT)), TOOLTIP_BLOCK_ITEM);
 
     public static final ItemObject<TestimonyStandBlock> testimonyStand =
-            BLOCKS.register("testimony_stand", () -> new TestimonyStandBlock(selenicProps(1).noOcclusion()), TOOLTIP_BLOCK_ITEM);
+            BLOCKS.register("testimony_stand", () -> new TestimonyStandBlock(selenicProps(1)), TOOLTIP_BLOCK_ITEM);
 
     public static final RegistryObject<BlockEntityType<LunarFontBlockEntity>> lunarFontBE =
             BLOCK_ENTITIES.register("lunar_font", LunarFontBlockEntity::new, lunarFont);

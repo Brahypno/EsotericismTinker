@@ -4,6 +4,7 @@ import net.minecraft.world.item.crafting.RecipeManager;
 import net.minecraft.world.item.crafting.RecipeSerializer;
 import net.minecraft.world.item.crafting.RecipeType;
 import net.minecraftforge.eventbus.api.IEventBus;
+import net.minecraftforge.fml.event.lifecycle.FMLCommonSetupEvent;
 import net.minecraftforge.registries.DeferredRegister;
 import net.minecraftforge.registries.ForgeRegistries;
 import net.minecraftforge.registries.RegistryObject;
@@ -47,7 +48,11 @@ public class EsotericismTinkerRecipeTypes {
     public static void register(IEventBus bus) {
         TYPES.register(bus);
         SERIALIZERS.register(bus);
-        registerSources();
+        bus.addListener(EsotericismTinkerRecipeTypes::commonSetup);
+    }
+
+    private static void commonSetup(FMLCommonSetupEvent event) {
+        event.enqueueWork(EsotericismTinkerRecipeTypes::registerSources);
     }
 
     public static void registerSources() {

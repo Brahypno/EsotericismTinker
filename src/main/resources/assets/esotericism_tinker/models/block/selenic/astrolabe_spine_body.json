@@ -1,0 +1,218 @@
+{
+  "parent": "minecraft:block/block",
+  "textures": {
+    "core": "esotericism_tinker:block/shining_lapis",
+    "band": "minecraft:block/iron_block",
+    "inlay": "minecraft:block/amethyst_block",
+    "particle": "minecraft:block/calcite"
+  },
+  "elements": [
+    {
+      "name": "core_middle",
+      "from": [
+        6,
+        2,
+        6
+      ],
+      "to": [
+        10,
+        14,
+        10
+      ],
+      "faces": {
+        "north": {
+          "uv": [
+            0,
+            2,
+            4,
+            14
+          ],
+          "texture": "#core"
+        },
+        "east": {
+          "uv": [
+            0,
+            2,
+            4,
+            14
+          ],
+          "texture": "#core"
+        },
+        "south": {
+          "uv": [
+            0,
+            2,
+            4,
+            14
+          ],
+          "texture": "#core"
+        },
+        "west": {
+          "uv": [
+            0,
+            2,
+            4,
+            14
+          ],
+          "texture": "#core"
+        },
+        "up": {
+          "uv": [
+            0,
+            0,
+            4,
+            4
+          ],
+          "texture": "#core"
+        },
+        "down": {
+          "uv": [
+            0,
+            0,
+            4,
+            4
+          ],
+          "texture": "#core"
+        }
+      }
+    },
+    {
+      "name": "mid_band",
+      "from": [
+        5,
+        7,
+        5
+      ],
+      "to": [
+        11,
+        9,
+        11
+      ],
+      "faces": {
+        "north": {
+          "uv": [
+            0,
+            0,
+            6,
+            2
+          ],
+          "texture": "#band"
+        },
+        "east": {
+          "uv": [
+            0,
+            0,
+            6,
+            2
+          ],
+          "texture": "#band"
+        },
+        "south": {
+          "uv": [
+            0,
+            0,
+            6,
+            2
+          ],
+          "texture": "#band"
+        },
+        "west": {
+          "uv": [
+            0,
+            0,
+            6,
+            2
+          ],
+          "texture": "#band"
+        },
+        "up": {
+          "uv": [
+            0,
+            0,
+            6,
+            6
+          ],
+          "texture": "#band"
+        },
+        "down": {
+          "uv": [
+            0,
+            0,
+            6,
+            6
+          ],
+          "texture": "#band"
+        }
+      }
+    },
+    {
+      "name": "front_inlay",
+      "from": [
+        7.1,
+        3,
+        5.75
+      ],
+      "to": [
+        8.9,
+        13,
+        6
+      ],
+      "faces": {
+        "north": {
+          "uv": [
+            0.2,
+            0,
+            2,
+            10
+          ],
+          "texture": "#inlay"
+        },
+        "east": {
+          "uv": [
+            1.75,
+            0,
+            2,
+            10
+          ],
+          "texture": "#inlay"
+        },
+        "south": {
+          "uv": [
+            0,
+            0,
+            1.8,
+            10
+          ],
+          "texture": "#inlay"
+        },
+        "west": {
+          "uv": [
+            0,
+            0,
+            0.25,
+            10
+          ],
+          "texture": "#inlay"
+        },
+        "up": {
+          "uv": [
+            0,
+            0,
+            1.8,
+            0.25
+          ],
+          "texture": "#inlay"
+        },
+        "down": {
+          "uv": [
+            0,
+            1.75,
+            1.8,
+            2
+          ],
+          "texture": "#inlay"
+        }
+      }
+    }
+  ]
+}

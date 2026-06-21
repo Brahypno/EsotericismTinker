@@ -49,7 +49,7 @@ public final class SelenicFigureScanner {
 
     private static UpperAxis scanUpperAxis(Level level, BlockPos fontPos) {
         int spines = 0;
-        BlockPos cursor = fontPos.above();
+        BlockPos cursor = fontPos.above(2);
 
         while (level.getBlockState(cursor).is(EsotericismTinkerSelenic.astrolabeSpine.get())) {
             spines++;

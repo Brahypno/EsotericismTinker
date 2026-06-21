@@ -1,0 +1,49 @@
+{
+  "multipart": [
+    {
+      "apply": {
+        "model": "esotericism_tinker:block/selenic/astrolabe_spine_body"
+      }
+    },
+    {
+      "when": {
+        "up": "true"
+      },
+      "apply": {
+        "model": "esotericism_tinker:block/selenic/astrolabe_spine_core_top"
+      }
+    },
+    {
+      "when": {
+        "down": "true"
+      },
+      "apply": {
+        "model": "esotericism_tinker:block/selenic/astrolabe_spine_core_bottom"
+      }
+    },
+    {
+      "when": {
+        "up": "false"
+      },
+      "apply": {
+        "model": "esotericism_tinker:block/selenic/astrolabe_spine_cap_top"
+      }
+    },
+    {
+      "when": {
+        "down": "false"
+      },
+      "apply": {
+        "model": "esotericism_tinker:block/selenic/astrolabe_spine_cap_bottom"
+      }
+    },
+    {
+      "when": {
+        "active": "true"
+      },
+      "apply": {
+        "model": "esotericism_tinker:block/selenic/astrolabe_spine_active"
+      }
+    }
+  ]
+}
