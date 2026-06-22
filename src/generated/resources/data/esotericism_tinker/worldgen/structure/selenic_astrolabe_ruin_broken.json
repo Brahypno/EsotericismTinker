@@ -1,0 +1,7 @@
+{
+  "type": "esotericism_tinker:selenic_astrolabe_ruin",
+  "biomes": "#forge:is_mountain",
+  "kind": "broken",
+  "spawn_overrides": {},
+  "step": "surface_structures"
+}

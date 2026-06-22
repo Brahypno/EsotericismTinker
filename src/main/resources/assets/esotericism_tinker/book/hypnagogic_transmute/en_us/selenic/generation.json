@@ -1,0 +1,17 @@
+{
+  "title": "Natural Generation",
+  "text": [
+    {
+      "text": "Selenic components now generate naturally in the world. If you find them in ruins, moonlit ground, or other unusual places, do not be surprised: the Astrolabe often precedes those who would write about it.",
+      "paragraph": true
+    },
+    {
+      "text": "Ruins of the Lunar Astrolabe can occasionally be found high in the mountains. After all, astrology calls for thin air and a height closer to the moon and stars.",
+      "paragraph": true
+    },
+    {
+      "text": "Naturally generated components may be used as a starting point, moved elsewhere, or completed into a working structure. Generation does not guarantee that every recipe condition is already satisfied; lunar phase, height, inputs, fluids, and testimonies are still checked by the recipe.",
+      "paragraph": true
+    }
+  ]
+}

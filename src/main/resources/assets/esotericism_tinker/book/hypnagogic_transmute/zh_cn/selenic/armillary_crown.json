@@ -1,0 +1,12 @@
+{
+  "title": "天球冠",
+  "item": {
+    "item": "esotericism_tinker:armillary_crown"
+  },
+  "text": [
+    {
+      "text": "上方输入端。天球冠承载主要输入物品，并与月泉共同决定一次仪式的核心材料。",
+      "paragraph": true
+    }
+  ]
+}

@@ -1,0 +1,12 @@
+{
+  "title": "Lunar Font",
+  "item": {
+    "item": "esotericism_tinker:lunar_font"
+  },
+  "text": [
+    {
+      "text": "The core of the structure. It stores output items and fluids, and handles activation and completion. Right-clicking attempts activation; if an output is present, it is taken first.",
+      "paragraph": true
+    }
+  ]
+}

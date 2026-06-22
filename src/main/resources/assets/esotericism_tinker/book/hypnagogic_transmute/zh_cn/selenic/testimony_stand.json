@@ -1,0 +1,12 @@
+{
+  "title": "征象座",
+  "item": {
+    "item": "esotericism_tinker:testimony_stand"
+  },
+  "text": [
+    {
+      "text": "周边征象输入。每个征象座持有一象物品，供配方进行匹配。",
+      "paragraph": true
+    }
+  ]
+}

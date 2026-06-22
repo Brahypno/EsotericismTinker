@@ -1,0 +1,17 @@
+{
+  "title": "Assembly",
+  "text": [
+    {
+      "text": "The basic form places the Armillary Crown above the Lunar Font, with Astrolabe Spines connecting the crown and font and optionally extending below the font. The total spine height must be greater than zero.",
+      "paragraph": true
+    },
+    {
+      "text": "Testimony Stands are not part of the central shaft. They are placed around the structure. Each stand holds a single type of item; that item is treated as testimony for recipes",
+      "paragraph": true
+    },
+    {
+      "text": "Right-click the Lunar Font to attempt activation. Redstone may also trigger the structure, though redstone activation without a player will not send player-facing failure messages.",
+      "paragraph": true
+    }
+  ]
+}

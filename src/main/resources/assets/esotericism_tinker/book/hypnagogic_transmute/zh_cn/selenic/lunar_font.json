@@ -1,0 +1,12 @@
+{
+  "title": "月泉",
+  "item": {
+    "item": "esotericism_tinker:lunar_font"
+  },
+  "text": [
+    {
+      "text": "结构核心。它保存输出物品与流体，并负责启动与完成仪式。右击可尝试激活；若已有产物，则会优先取出产物。",
+      "paragraph": true
+    }
+  ]
+}

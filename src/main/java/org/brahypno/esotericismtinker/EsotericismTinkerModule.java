@@ -7,6 +7,9 @@ import net.minecraft.world.item.Item;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.SoundType;
 import net.minecraft.world.level.block.state.BlockBehaviour;
+import net.minecraft.world.level.levelgen.feature.Feature;
+import net.minecraft.world.level.levelgen.structure.StructureType;
+import net.minecraft.world.level.levelgen.structure.pieces.StructurePieceType;
 import net.minecraft.world.level.material.MapColor;
 import net.minecraftforge.eventbus.api.IEventBus;
 import net.minecraftforge.registries.DeferredRegister;
@@ -32,7 +35,12 @@ public abstract class EsotericismTinkerModule {
     protected static final BlockEntityTypeDeferredRegister BLOCK_ENTITIES = new BlockEntityTypeDeferredRegister(MODID);
     public static final FluidDeferredRegister FLUIDS = new FluidDeferredRegister(MODID);
     public static final SynchronizedDeferredRegister<CreativeModeTab> TABS = SynchronizedDeferredRegister.create(Registries.CREATIVE_MODE_TAB, MODID);
+    public static final DeferredRegister<Feature<?>> FEATURES = DeferredRegister.create(ForgeRegistries.FEATURES, EsotericismTinker.MODID);
+    public static final DeferredRegister<StructureType<?>> STRUCTURE_TYPES =
+            DeferredRegister.create(Registries.STRUCTURE_TYPE, MODID);
 
+    public static final DeferredRegister<StructurePieceType> STRUCTURE_PIECE_TYPES =
+            DeferredRegister.create(Registries.STRUCTURE_PIECE, MODID);
     protected static final Function<Block, ? extends BlockItem> TOOLTIP_BLOCK_ITEM = b -> new BlockTooltipItem(b, new Item.Properties());
 
     public static void initRegisters(IEventBus bus) {
@@ -42,6 +50,10 @@ public abstract class EsotericismTinkerModule {
         BLOCK_ENTITIES.register(bus);
         FLUIDS.register(bus);
         TABS.register(bus);
+        FEATURES.register(bus);
+        STRUCTURE_TYPES.register(bus);
+        STRUCTURE_PIECE_TYPES.register(bus);
+
     }
 
     protected static BlockBehaviour.Properties builder(SoundType soundType) {

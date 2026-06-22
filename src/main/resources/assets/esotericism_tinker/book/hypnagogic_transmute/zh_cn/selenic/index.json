@@ -1,0 +1,20 @@
+{
+  "title": "月相星仪",
+  "subText": "月光并不只照亮事物，也会给事物重新指定位置。",
+  "operations": [
+    {
+      "before": "overview",
+      "action": "add_group",
+      "data": "概览"
+    },
+    {
+      "before": "lunar_font",
+      "action": "column_break"
+    },
+    {
+      "before": "lunar_font",
+      "action": "add_group",
+      "data": "构件"
+    }
+  ]
+}

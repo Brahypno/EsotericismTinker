@@ -118,6 +118,9 @@
   "message.esotericism_tinker.selenic.missing_crown_input": "天球冠缺少所需主输入。",
   "message.esotericism_tinker.selenic.missing_testimony": "征象座缺少所需见证物。",
   "message.esotericism_tinker.selenic.missing_medium": "天球冠缺少所需流体媒介。",
+  "structure.esotericism_tinker.selenic_astrolabe_ruin_broken": "残破月相星仪遗迹",
+  "structure.esotericism_tinker.selenic_astrolabe_ruin_complete": "完整月相星仪遗迹",
+  "structure.esotericism_tinker.selenic_astrolabe_ruin_tower": "高塔月相星仪遗迹",
 
   "_comment.esotericism_tinker.selenic_jei": "======Selenic JEI Related======",
   "jei.esotericism_tinker.selenic_astrolabe": "月相星仪",

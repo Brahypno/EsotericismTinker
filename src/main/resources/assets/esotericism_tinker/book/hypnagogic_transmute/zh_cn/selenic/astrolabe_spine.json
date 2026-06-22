@@ -1,0 +1,12 @@
+{
+  "title": "星盘轴",
+  "item": {
+    "item": "esotericism_tinker:astrolabe_spine"
+  },
+  "text": [
+    {
+      "text": "主轴构件。它连接天球冠与月泉，也可以向月泉下方延伸。轴的高度影响结构容量，并参与部分配方条件。",
+      "paragraph": true
+    }
+  ]
+}

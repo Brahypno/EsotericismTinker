@@ -23,13 +23,13 @@
     "name": "delusions",
     "data": "sections/delusions.json",
     "icon": {
-        "item": {
-          "type": "forge:nbt",
-          "item": "tconstruct:creative_slot",
-          "nbt": {
-            "slot": "delusions"
-          }
+      "item": {
+        "type": "forge:nbt",
+        "item": "tconstruct:creative_slot",
+        "nbt": {
+          "slot": "delusions"
         }
+      }
     }
   },
   {
@@ -45,5 +45,12 @@
     "icon": {
       "item": "esotericism_tinker:transmute_controller"
     }
+  },
+  {
+    "name": "selenic",
+    "data": "sections/selenic.json",
+    "icon": {
+      "item": "esotericism_tinker:lunar_font"
+    }
   }
- ]
+]

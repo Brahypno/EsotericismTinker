@@ -1,0 +1,12 @@
+{
+  "title": "Astrolabe Spine",
+  "item": {
+    "item": "esotericism_tinker:astrolabe_spine"
+  },
+  "text": [
+    {
+      "text": "The central shaft component. It connects the Armillary Crown to the Lunar Font and may extend below the font. Spine height affects capacity and may be required by recipes.",
+      "paragraph": true
+    }
+  ]
+}

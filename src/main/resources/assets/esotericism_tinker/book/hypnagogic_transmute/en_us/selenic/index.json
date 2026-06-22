@@ -1,0 +1,20 @@
+{
+  "title": "Selenic Astrolabe",
+  "subText": "Moonlight does not merely reveal things; it assigns them a new place.",
+  "operations": [
+    {
+      "before": "overview",
+      "action": "add_group",
+      "data": "Overview"
+    },
+    {
+      "before": "lunar_font",
+      "action": "column_break"
+    },
+    {
+      "before": "lunar_font",
+      "action": "add_group",
+      "data": "Components"
+    }
+  ]
+}

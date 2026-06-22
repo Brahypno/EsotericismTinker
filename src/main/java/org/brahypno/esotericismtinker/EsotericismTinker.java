@@ -12,6 +12,7 @@ import net.minecraft.world.item.Item;
 import net.minecraft.world.level.block.Block;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.common.crafting.CraftingHelper;
+import net.minecraftforge.common.data.DatapackBuiltinEntriesProvider;
 import net.minecraftforge.common.data.ExistingFileHelper;
 import net.minecraftforge.data.event.GatherDataEvent;
 import net.minecraftforge.event.server.ServerStartingEvent;
@@ -47,6 +48,8 @@ import org.brahypno.esotericismtinker.smeltery.EsotericismTinkerSmeltery;
 import org.brahypno.esotericismtinker.tools.EsotericismTinkerModifiers;
 import org.brahypno.esotericismtinker.tools.EsotericismTinkerTools;
 import org.brahypno.esotericismtinker.tools.data.EsotericismTinkerFluidEffectProvider;
+import org.brahypno.esotericismtinker.world.data.EsotericismTinkerDataPackProvider;
+import org.brahypno.esotericismtinker.world.worldgen.EsotericismTinkerWorldgenRegistry;
 import org.slf4j.Logger;
 import slimeknights.tconstruct.fluids.data.FluidBlockstateModelProvider;
 import slimeknights.tconstruct.fluids.data.FluidBucketModelProvider;
@@ -72,6 +75,7 @@ public class EsotericismTinker {
         modEventBus.register(new EsotericismTinkerSelenic());
         modEventBus.register(new EsotericismTinkerTools());
         modEventBus.register(new EsotericismTinkerModifiers());
+        modEventBus.register(new EsotericismTinkerWorldgenRegistry());
         EsotericismTinkerModule.initRegisters(modEventBus);
         modEventBus.addListener(this::gatherData);
 
@@ -146,5 +150,10 @@ public class EsotericismTinker {
         generator.addProvider(event.includeClient(), new FluidBucketModelProvider(output, MODID));
         generator.addProvider(event.includeClient(), new FluidBlockstateModelProvider(output, MODID));
         generator.addProvider(event.includeClient(), new RenderFluidProvider(output));
+
+        DatapackBuiltinEntriesProvider provider = new EsotericismTinkerDataPackProvider(output, lookupProvider);
+        generator.addProvider(event.includeServer(), provider);
+        //generator.addProvider(event.includeServer(), new DamageTypeTagProvider(output, provider.getRegistryProvider(), helper));
+        //generator.addProvider(event.includeServer(), new LootTableInjectionProvider(output));
     }
 }

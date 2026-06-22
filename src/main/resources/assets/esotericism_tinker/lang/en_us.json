@@ -118,7 +118,10 @@
   "message.esotericism_tinker.selenic.missing_crown_input": "The Armillary Crown lacks the required primary input.",
   "message.esotericism_tinker.selenic.missing_testimony": "The testimony stands lack the required witness items.",
   "message.esotericism_tinker.selenic.missing_medium": "The Armillary Crown lacks the required fluid medium.",
-
+  "structure.esotericism_tinker.selenic_astrolabe_ruin_broken": "Broken Selenic Astrolabe Ruin",
+  "structure.esotericism_tinker.selenic_astrolabe_ruin_complete": "Complete Selenic Astrolabe Ruin",
+  "structure.esotericism_tinker.selenic_astrolabe_ruin_tower": "Towering Selenic Astrolabe Ruin",
+  
   "_comment.esotericism_tinker.selenic_jei": "======Selenic Related======",
   "jei.esotericism_tinker.selenic_astrolabe": "Selenic Astrolabe",
   "jei.esotericism_tinker.selenic_astrolabe.priority": "Priority: %s",

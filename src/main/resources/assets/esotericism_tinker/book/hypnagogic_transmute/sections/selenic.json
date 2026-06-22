@@ -1,0 +1,42 @@
+[
+  {
+    "name": "index",
+    "type": "mantle:index",
+    "data": "selenic/index.json"
+  },
+  {
+    "name": "overview",
+    "type": "mantle:text",
+    "data": "selenic/overview.json"
+  },
+  {
+    "name": "generation",
+    "type": "mantle:text",
+    "data": "selenic/generation.json"
+  },
+  {
+    "name": "assembly",
+    "type": "mantle:text",
+    "data": "selenic/assembly.json"
+  },
+  {
+    "name": "lunar_font",
+    "type": "mantle:showcase",
+    "data": "selenic/lunar_font.json"
+  },
+  {
+    "name": "astrolabe_spine",
+    "type": "mantle:showcase",
+    "data": "selenic/astrolabe_spine.json"
+  },
+  {
+    "name": "armillary_crown",
+    "type": "mantle:showcase",
+    "data": "selenic/armillary_crown.json"
+  },
+  {
+    "name": "testimony_stand",
+    "type": "mantle:showcase",
+    "data": "selenic/testimony_stand.json"
+  }
+]

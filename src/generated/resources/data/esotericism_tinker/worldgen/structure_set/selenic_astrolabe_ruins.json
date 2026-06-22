@@ -1,0 +1,22 @@
+{
+  "placement": {
+    "type": "minecraft:random_spread",
+    "salt": 927154386,
+    "separation": 12,
+    "spacing": 36
+  },
+  "structures": [
+    {
+      "structure": "esotericism_tinker:selenic_astrolabe_ruin_broken",
+      "weight": 6
+    },
+    {
+      "structure": "esotericism_tinker:selenic_astrolabe_ruin_complete",
+      "weight": 2
+    },
+    {
+      "structure": "esotericism_tinker:selenic_astrolabe_ruin_tower",
+      "weight": 1
+    }
+  ]
+}

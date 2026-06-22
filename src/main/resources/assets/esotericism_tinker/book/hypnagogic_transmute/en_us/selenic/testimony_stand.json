@@ -1,0 +1,12 @@
+{
+  "title": "Testimony Stand",
+  "item": {
+    "item": "esotericism_tinker:testimony_stand"
+  },
+  "text": [
+    {
+      "text": "A surrounding testimony input. Each stand holds one type of item for recipe matching. ",
+      "paragraph": true
+    }
+  ]
+}
