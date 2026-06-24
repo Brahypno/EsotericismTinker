@@ -10,7 +10,6 @@ import slimeknights.tconstruct.library.materials.definition.MaterialVariantId;
 import slimeknights.tconstruct.library.materials.stats.MaterialStatsId;
 
 import javax.annotation.Nullable;
-import java.util.Arrays;
 import java.util.List;
 
 public class SelenicTinkerPartRecipeBuilder extends SelenicAstrolabeRecipeBuilder {
@@ -29,24 +28,12 @@ public class SelenicTinkerPartRecipeBuilder extends SelenicAstrolabeRecipeBuilde
         return new SelenicTinkerPartRecipeBuilder(materialId, List.of(statId));
     }
 
-    public static SelenicTinkerPartRecipeBuilder part(ResourceLocation materialId, ResourceLocation statId) {
-        return part(MaterialVariantId.parse(materialId.toString()), new MaterialStatsId(statId));
-    }
-
     public static SelenicTinkerPartRecipeBuilder parts(MaterialVariantId materialId, List<MaterialStatsId> statIds) {
         return new SelenicTinkerPartRecipeBuilder(materialId, statIds);
     }
 
     public static SelenicTinkerPartRecipeBuilder parts(MaterialVariantId materialId, MaterialStatsId... statIds) {
         return parts(materialId, List.of(statIds));
-    }
-
-    public static SelenicTinkerPartRecipeBuilder parts(ResourceLocation materialId, ResourceLocation... statIds) {
-        List<MaterialStatsId> stats = Arrays.stream(statIds)
-                                            .map(MaterialStatsId::new)
-                                            .toList();
-
-        return parts(MaterialVariantId.parse(materialId.toString()), stats);
     }
 
     public SelenicTinkerPartRecipeBuilder partItem(ResourceLocation partItemId) {
