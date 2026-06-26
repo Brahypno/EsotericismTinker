@@ -6,6 +6,7 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.tags.BlockTags;
 import net.minecraft.tags.FluidTags;
 import net.minecraft.util.RandomSource;
+import net.minecraft.world.level.NoiseColumn;
 import net.minecraft.world.level.WorldGenLevel;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
@@ -14,6 +15,7 @@ import net.minecraft.world.level.block.entity.RandomizableContainerBlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.properties.DoubleBlockHalf;
 import net.minecraft.world.level.levelgen.Heightmap;
+import net.minecraft.world.level.levelgen.structure.Structure;
 import net.minecraftforge.common.Tags;
 import org.brahypno.esotericismtinker.common.data.loot.ETSelenicChestLoot;
 import org.brahypno.esotericismtinker.selenic.EsotericismTinkerSelenic;
@@ -35,7 +37,7 @@ public final class SelenicAstrolabeRuinPlacer {
             return false;
         }
 
-        if (!hasGroundSupport(level, origin)){
+        if (!hasOrRepairGroundSupport(level, origin, random)){
             return false;
         }
 
@@ -96,11 +98,12 @@ public final class SelenicAstrolabeRuinPlacer {
             return false;
         }
 
-        if (!canReachOpenSky(level, crownPos.above(), config)){
+        int openSkyY = findCarvableOpenSkyY(level, crownPos.above());
+        if (openSkyY < 0){
             return false;
         }
 
-        carveOpenShaft(level, basePos, crownPos, config);
+        carveOpenShaft(level, basePos, crownPos, config, openSkyY);
         prepareFoundation(level, basePos, config, random);
 
         boolean placeFont = complete || random.nextFloat() < fontChance;
@@ -143,9 +146,167 @@ public final class SelenicAstrolabeRuinPlacer {
                && origin.getY() <= config.placement().maxY();
     }
 
-    private static boolean hasGroundSupport(WorldGenLevel level, BlockPos origin) {
-        BlockPos below = origin.below();
-        return level.getBlockState(below).isFaceSturdy(level, below, Direction.UP);
+    public static boolean canStartAt(
+            Structure.GenerationContext context,
+            BlockPos origin,
+            SelenicAstrolabeRuinConfiguration config
+    ) {
+        if (!isInHeightRange(origin, config)){
+            return false;
+        }
+
+        NoiseColumn column = context.chunkGenerator().getBaseColumn(
+                origin.getX(),
+                origin.getZ(),
+                context.heightAccessor(),
+                context.randomState()
+        );
+
+        int minY = context.heightAccessor().getMinBuildHeight();
+        int maxY = context.heightAccessor().getMaxBuildHeight() - 1;
+
+        if (origin.getY() <= minY || origin.getY() >= maxY){
+            return false;
+        }
+
+        BlockState floor = column.getBlock(origin.getY() - 1);
+        BlockState surface = column.getBlock(origin.getY());
+
+        if (!isValidNaturalAnchorFloor(floor)){
+            return false;
+        }
+
+        if (!isValidSurfaceGap(surface)){
+            return false;
+        }
+
+        int maxCoreY = getMaxPossibleCoreTop(origin, config);
+        if (!canReplaceCoreColumn(column, origin.getY(), maxCoreY, maxY)){
+            return false;
+        }
+
+        return canCarveToSky(column, maxCoreY + 1, maxY);
+    }
+
+    private static int getMaxPossibleCoreTop(
+            BlockPos origin,
+            SelenicAstrolabeRuinConfiguration config
+    ) {
+        int maxLowerSpines = config.structure().maxSpinesBelow() + 1;
+        int maxUpperSpines = config.structure().maxSpinesAbove() + 2;
+
+        // base + lower spines + font upper gap + upper spines + crown upper half
+        return origin.getY() + maxLowerSpines + maxUpperSpines + 3;
+    }
+
+    private static boolean canReplaceCoreColumn(
+            NoiseColumn column,
+            int minY,
+            int maxY,
+            int worldMaxY
+    ) {
+        for (int y = minY; y <= Math.min(maxY, worldMaxY); y++) {
+            BlockState state = column.getBlock(y);
+            if (state.isAir() || state.canBeReplaced() || isCarvableRoofBlock(state)){
+                continue;
+            }
+            return false;
+        }
+        return true;
+    }
+
+    private static boolean canCarveToSky(
+            NoiseColumn column,
+            int startY,
+            int worldMaxY
+    ) {
+        for (int y = startY; y <= worldMaxY; y++) {
+            BlockState state = column.getBlock(y);
+
+            if (state.isAir() || state.canBeReplaced()){
+                return true;
+            }
+
+            if (!isCarvableRoofBlock(state)){
+                return false;
+            }
+        }
+
+        return true;
+    }
+
+    private static boolean hasOrRepairGroundSupport(
+            WorldGenLevel level,
+            BlockPos origin,
+            RandomSource random
+    ) {
+        BlockPos floor = origin.below();
+        BlockState floorState = level.getBlockState(floor);
+        BlockState surfaceState = level.getBlockState(origin);
+
+        if (floorState.isFaceSturdy(level, floor, Direction.UP)){
+            return isValidNaturalAnchorFloor(floorState);
+        }
+
+        if (!isRepairableWeakSurfaceFloor(floorState)){
+            return false;
+        }
+
+        if (!isValidSurfaceGap(surfaceState)){
+            return false;
+        }
+
+        level.setBlock(floor, randomFoundationBlock(random), Block.UPDATE_CLIENTS);
+        return true;
+    }
+
+    private static boolean isValidNaturalAnchorFloor(BlockState state) {
+        if (state.isAir()){
+            return false;
+        }
+        if (state.getFluidState().is(FluidTags.WATER)){
+            return false;
+        }
+        if (state.is(BlockTags.LEAVES) || state.is(BlockTags.LOGS)){
+            return false;
+        }
+
+        return state.is(BlockTags.DIRT)
+               || state.is(BlockTags.BASE_STONE_OVERWORLD)
+               || state.is(BlockTags.SAND)
+               || state.is(Blocks.GRAVEL)
+               || state.is(Blocks.SNOW_BLOCK)
+               || state.is(Blocks.POWDER_SNOW)
+               || state.is(Blocks.ICE)
+               || state.is(Blocks.PACKED_ICE)
+               || state.is(Blocks.BLUE_ICE);
+    }
+
+    private static boolean isRepairableWeakSurfaceFloor(BlockState state) {
+        if (!isValidNaturalAnchorFloor(state)){
+            return false;
+        }
+
+        return state.is(Blocks.SNOW)
+               || state.is(Blocks.POWDER_SNOW)
+               || state.is(Blocks.ICE)
+               || state.is(Blocks.PACKED_ICE)
+               || state.is(Blocks.BLUE_ICE)
+               || state.is(BlockTags.SAND)
+               || state.is(Blocks.GRAVEL)
+               || state.is(BlockTags.DIRT)
+               || state.is(BlockTags.BASE_STONE_OVERWORLD);
+    }
+
+    private static boolean isValidSurfaceGap(BlockState state) {
+        if (state.getFluidState().is(FluidTags.WATER)){
+            return false;
+        }
+        if (state.is(BlockTags.LEAVES) || state.is(BlockTags.LOGS)){
+            return false;
+        }
+
+        return state.isAir() || state.canBeReplaced();
     }
 
     private static boolean canReplaceCoreColumn(
@@ -166,60 +327,46 @@ public final class SelenicAstrolabeRuinPlacer {
         return true;
     }
 
-    private static boolean canReachOpenSky(
-            WorldGenLevel level,
-            BlockPos pos,
-            SelenicAstrolabeRuinConfiguration config
-    ) {
-        int maxCarve = config.placement().reserveHeightExtra();
-        int maxY = Math.min(level.getMaxBuildHeight() - 1, pos.getY() + maxCarve);
+    private static int findCarvableOpenSkyY(WorldGenLevel level, BlockPos pos) {
+        int maxY = level.getMaxBuildHeight() - 1;
 
         for (int y = pos.getY(); y <= maxY; y++) {
             BlockPos checkPos = new BlockPos(pos.getX(), y, pos.getZ());
 
             if (level.canSeeSky(checkPos)){
-                return true;
+                return y;
             }
 
             BlockState state = level.getBlockState(checkPos);
-
-            if (state.isAir() || state.canBeReplaced()){
+            if (state.isAir() || state.canBeReplaced() || isCarvableRoofBlock(state)){
                 continue;
             }
 
-            if (!isCarvableRoofBlock(state)){
-                return false;
-            }
+            return -1;
         }
 
-        return false;
+        return maxY;
     }
 
-    private static void carveOpenShaft(
-            WorldGenLevel level,
-            BlockPos basePos,
-            BlockPos crownPos,
-            SelenicAstrolabeRuinConfiguration config
-    ) {
+    private static void carveOpenShaft(WorldGenLevel level, BlockPos basePos, BlockPos crownPos, SelenicAstrolabeRuinConfiguration config, int openSkyY) {
         int radius = Math.min(config.placement().reserveRadius(), 2);
-        int maxCarve = config.placement().reserveHeightExtra();
 
         BlockPos min = basePos.offset(-1, 0, -1);
-        BlockPos max = crownPos.above(maxCarve).offset(1, 0, 1);
+        BlockPos max = new BlockPos(crownPos.getX(), openSkyY, crownPos.getZ()).offset(1, 0, 1);
 
         for (BlockPos pos : BlockPos.betweenClosed(min, max)) {
             BlockState state = level.getBlockState(pos);
 
-            if (state.isAir() || state.canBeReplaced()){
+            if (state.isAir()){
                 continue;
             }
 
-            if (isCarvableRoofBlock(state)){
+            if (state.canBeReplaced() || isCarvableRoofBlock(state)){
                 level.setBlock(pos, Blocks.AIR.defaultBlockState(), Block.UPDATE_CLIENTS);
             }
         }
 
-        carveTopOpening(level, crownPos, radius, maxCarve);
+        carveTopOpening(level, crownPos, radius, Math.max(0, openSkyY - crownPos.getY()));
     }
 
     private static void carveTopOpening(
@@ -266,15 +413,7 @@ public final class SelenicAstrolabeRuinPlacer {
                || state.is(Blocks.POWDER_SNOW)
                || state.is(Blocks.ICE)
                || state.is(Blocks.PACKED_ICE)
-               || state.is(Blocks.BLUE_ICE)
-               || state.is(Blocks.OAK_LEAVES)
-               || state.is(Blocks.SPRUCE_LEAVES)
-               || state.is(Blocks.BIRCH_LEAVES)
-               || state.is(Blocks.JUNGLE_LEAVES)
-               || state.is(Blocks.ACACIA_LEAVES)
-               || state.is(Blocks.DARK_OAK_LEAVES)
-               || state.is(Blocks.MANGROVE_LEAVES)
-               || state.is(Blocks.CHERRY_LEAVES);
+               || state.is(Blocks.BLUE_ICE);
     }
 
     private static void prepareFoundation(
@@ -656,7 +795,7 @@ public final class SelenicAstrolabeRuinPlacer {
     ) {
         int minY = Math.max(level.getMinBuildHeight() + 1, origin.getY() - depth);
 
-        for (int y = origin.getY() - 1; y >= minY; y--) {
+        for (int y = origin.getY() - 5; y >= minY; y--) {
             BlockPos pos = new BlockPos(origin.getX(), y, origin.getZ());
 
             if (isBuriedBaseStone(level, pos)){

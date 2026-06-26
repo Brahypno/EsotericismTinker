@@ -87,19 +87,14 @@ public class SelenicAstrolabeRuinPiece extends StructurePiece {
         );
 
         int minY = origin.getY() - 4;
-        int maxY = origin.getY()
+        int maxY = config.placement().maxY()
                    + config.structure().maxSpinesBelow()
                    + config.structure().maxSpinesAbove()
-                   + config.placement().reserveHeightExtra()
-                   + 10;
+                   + 32;
 
         return new BoundingBox(
-                origin.getX() - radius,
-                minY,
-                origin.getZ() - radius,
-                origin.getX() + radius,
-                maxY,
-                origin.getZ() + radius
+                origin.getX() - radius, minY, origin.getZ() - radius,
+                origin.getX() + radius, maxY, origin.getZ() + radius
         );
     }
 }
