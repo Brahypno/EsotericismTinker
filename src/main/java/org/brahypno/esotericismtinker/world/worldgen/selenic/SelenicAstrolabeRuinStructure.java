@@ -36,13 +36,11 @@ public class SelenicAstrolabeRuinStructure extends Structure {
     @Override
     protected Optional<GenerationStub> findGenerationPoint(GenerationContext context) {
         ChunkPos chunkPos = context.chunkPos();
-
         int x = chunkPos.getMiddleBlockX();
         int z = chunkPos.getMiddleBlockZ();
 
         int y = context.chunkGenerator().getBaseHeight(
-                x,
-                z,
+                x, z,
                 Heightmap.Types.WORLD_SURFACE_WG,
                 context.heightAccessor(),
                 context.randomState()
@@ -51,11 +49,13 @@ public class SelenicAstrolabeRuinStructure extends Structure {
         BlockPos origin = new BlockPos(x, y, z);
         SelenicAstrolabeRuinConfiguration config = kind.config();
 
-        if (!SelenicAstrolabeRuinPlacer.isInHeightRange(origin, config)){
+        if (!SelenicAstrolabeRuinPlacer.canStartAt(context, origin, config)){
             return Optional.empty();
         }
 
-        return Optional.of(new GenerationStub(origin, builder -> builder.addPiece(new SelenicAstrolabeRuinPiece(origin, kind))));
+        return Optional.of(new GenerationStub(origin, builder ->
+                builder.addPiece(new SelenicAstrolabeRuinPiece(origin, kind))
+        ));
     }
 
     @Override
