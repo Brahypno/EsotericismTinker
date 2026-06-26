@@ -1,8 +1,6 @@
 package org.brahypno.esotericismtinker.tools.traits.combat;
 
-import org.brahypno.esotericismtinker.EsotericismTinker;
-import org.brahypno.esotericismtinker.utils.damage.DamageProbe;
-import org.brahypno.esotericismtinker.utils.damage.DamageProbeResult;
+import net.minecraft.world.entity.Entity;
 import org.jetbrains.annotations.NotNull;
 import slimeknights.tconstruct.library.modifiers.Modifier;
 import slimeknights.tconstruct.library.modifiers.ModifierEntry;
@@ -13,32 +11,24 @@ import slimeknights.tconstruct.library.module.ModuleHookMap;
 import slimeknights.tconstruct.library.tools.context.ToolAttackContext;
 import slimeknights.tconstruct.library.tools.nbt.IToolStackView;
 
-public class ForceHurt extends Modifier implements MeleeHitModifierHook, MonsterMeleeHitModifierHook {
+public class ForceRemove extends Modifier implements MeleeHitModifierHook, MonsterMeleeHitModifierHook {
     @Override
     protected void registerHooks(ModuleHookMap.@NotNull Builder hookBuilder) {
         hookBuilder.addHook(this, ModifierHooks.MELEE_HIT, ModifierHooks.MONSTER_MELEE_HIT);
     }
 
     @Override
-    public float beforeMeleeHit(IToolStackView tool, ModifierEntry modifier, ToolAttackContext context, float damage, float baseKnockback, float knockback) {
-        EsotericismTinker.LOGGER.debug("before hit");
-        DamageProbeResult result = DamageProbe.finalDamageMethod(context.getTarget(), context.makeDamageSource(), 4000);
-        EsotericismTinker.LOGGER.debug(result.debugText());
-        return knockback;
-    }
-
-    @Override
     public void failedMeleeHit(IToolStackView tool, ModifierEntry modifier, ToolAttackContext context, float damageAttempted) {
-        EsotericismTinker.LOGGER.debug("fail hit");
-        DamageProbeResult result = DamageProbe.finalDamageMethod(context.getTarget(), context.makeDamageSource(), 4000);
-        EsotericismTinker.LOGGER.debug(result.debugText());
+        try {
+            context.getTarget().remove(Entity.RemovalReason.KILLED);
+        }
+        catch (Throwable e) {
+        }
     }
 
     @Override
     public void afterMeleeHit(IToolStackView tool, ModifierEntry modifier, ToolAttackContext context, float damage) {
-        EsotericismTinker.LOGGER.debug("after hit");
-        DamageProbeResult result = DamageProbe.finalDamageMethod(context.getTarget(), context.makeDamageSource(), 4000);
-        EsotericismTinker.LOGGER.debug(result.debugText());
+        failedMeleeHit(tool, modifier, context, damage);
     }
 
     @Override

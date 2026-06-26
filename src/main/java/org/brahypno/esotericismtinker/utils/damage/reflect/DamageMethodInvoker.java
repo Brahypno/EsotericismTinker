@@ -1,4 +1,4 @@
-package org.brahypno.esotericismtinker.utils;
+package org.brahypno.esotericismtinker.utils.damage.reflect;
 
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.LivingEntity;
@@ -7,92 +7,18 @@ import java.lang.invoke.MethodHandle;
 import java.lang.invoke.MethodHandles;
 import java.lang.invoke.MethodType;
 import java.lang.reflect.Method;
-import java.lang.reflect.Modifier;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Comparator;
+import java.util.List;
+import java.util.Locale;
 
-public class MethodHandler {
-    public static Method findMethod(Class<?> owner, String primaryName, String alias, Class<?>[] paramTypes, Class<?> returnType, boolean mustBeInstance) throws NoSuchMethodException {
-
-        // 1) primary name
-        try {
-            return owner.getDeclaredMethod(primaryName, paramTypes);
-        }
-        catch (NoSuchMethodException ignored) {}
-
-        // 2) aliases (SRG/obf/旧名)
-        try {
-            return owner.getDeclaredMethod(alias, paramTypes);
-        }
-        catch (NoSuchMethodException ignored) {}
-
-        // 3) signature scan fallback (1.20+ 最实用)
-        for (Method m : owner.getDeclaredMethods()) {
-            if (m.getParameterCount() != paramTypes.length)
-                continue;
-            if (!Arrays.equals(m.getParameterTypes(), paramTypes))
-                continue;
-            if (returnType != null && m.getReturnType() != returnType)
-                continue;
-            if (mustBeInstance && Modifier.isStatic(m.getModifiers()))
-                continue;
-            return m;
-        }
-
-        throw new NoSuchMethodException(owner.getName() + " method not found: " + primaryName
-                                        + " / alias=" + alias
-                                        + " params=" + Arrays.toString(paramTypes));
-    }
-
-    private static MethodHandle LIVING_HURT_SPECIAL;
-
-    public static boolean invokeLivingHurt(LivingEntity entity, DamageSource source, float amount) {
-        try {
-            MethodHandle mh = LIVING_HURT_SPECIAL;
-            if (mh == null){
-                mh = findSpecial(
-                        LivingEntity.class,
-                        new String[]{"hurt", "m_6469_"},
-                        MethodType.methodType(boolean.class, DamageSource.class, float.class)
-                );
-                LIVING_HURT_SPECIAL = mh;
-            }
-            return (boolean) mh.invokeExact(entity, source, amount);
-        }
-        catch (Throwable e) {
-            throw new RuntimeException("Failed to invoke LivingEntity#hurt via invoke special", e);
-        }
-    }
-
-    public static MethodHandle findSpecial(Class<?> owner, String[] names, MethodType type) throws ReflectiveOperationException {
-        MethodHandles.Lookup lookup = MethodHandles.privateLookupIn(owner, MethodHandles.lookup());
-
-        for (String name : names) {
-            try {
-                return lookup.findSpecial(owner, name, type, owner);
-            }
-            catch (NoSuchMethodException ignored) {}
-        }
-
-        throw new NoSuchMethodException(owner.getName() + "#" + String.join("/", names) + type);
-    }
-
-    public record MethodInvokeResult(boolean invoked, boolean affected, List<String> lines) {
-        public static MethodInvokeResult empty(String reason) {
-            List<String> lines = new ArrayList<>();
-            lines.add(reason);
-            return new MethodInvokeResult(false, false, lines);
-        }
-    }
+public final class DamageMethodInvoker {
+    private DamageMethodInvoker() {}
 
     public static MethodInvokeResult invokeActuallyHurt(LivingEntity victim, DamageSource source, float amount) {
         if (victim == null || source == null || amount <= 0.0F)
             return MethodInvokeResult.empty("invokeActuallyHurt abort: invalid args");
         List<String> lines = new ArrayList<>();
-        float beforeHealth = victim.getHealth();
-        float beforeAbsorption = victim.getAbsorptionAmount();
-        int beforeDeathTime = victim.deathTime;
-        boolean beforeAlive = victim.isAlive();
-        boolean beforeRemoved = victim.isRemoved();
         boolean invoked = false;
         boolean affected = false;
         MethodInvokeResult special = invokeLivingEntityActuallyHurtSpecial(victim, source, amount);
@@ -101,6 +27,11 @@ public class MethodHandler {
         affected |= special.affected();
         if (affected)
             return new MethodInvokeResult(true, true, lines);
+        float beforeHealth = victim.getHealth();
+        float beforeAbsorption = victim.getAbsorptionAmount();
+        int beforeDeathTime = victim.deathTime;
+        boolean beforeAlive = victim.isAlive();
+        boolean beforeRemoved = victim.isRemoved();
         for (Method method : collectActuallyHurtMethods(victim)) {
             try {
                 method.setAccessible(true);
@@ -127,6 +58,38 @@ public class MethodHandler {
         return new MethodInvokeResult(invoked, affected, lines);
     }
 
+    public static MethodInvokeResult invokeLivingEntitySetHealthSpecial(LivingEntity victim, float targetHealth) {
+        if (victim == null)
+            return MethodInvokeResult.empty("invokeLivingEntitySetHealthSpecial abort: null victim");
+        List<String> lines = new ArrayList<>();
+        float beforeHealth = victim.getHealth();
+        float beforeAbsorption = victim.getAbsorptionAmount();
+        int beforeDeathTime = victim.deathTime;
+        boolean beforeAlive = victim.isAlive();
+        boolean beforeRemoved = victim.isRemoved();
+        try {
+            MethodHandles.Lookup lookup = MethodHandles.privateLookupIn(LivingEntity.class, MethodHandles.lookup());
+            MethodHandle handle = findSpecialSetHealthHandle(lookup);
+            if (handle == null)
+                return MethodInvokeResult.empty("invokeLivingEntitySetHealthSpecial skipped: no setHealth/m_21153_ handle");
+            lines.add("invokeLivingEntitySetHealthSpecial try: before=" + beforeHealth + ", target=" + targetHealth);
+            handle.invoke(victim, targetHealth);
+            float afterHealth = victim.getHealth();
+            float afterAbsorption = victim.getAbsorptionAmount();
+            boolean affected =
+                    afterHealth < beforeHealth || afterAbsorption < beforeAbsorption || victim.deathTime > beforeDeathTime || beforeAlive != victim.isAlive() ||
+                    beforeRemoved != victim.isRemoved();
+            lines.add("invokeLivingEntitySetHealthSpecial result: health " + beforeHealth + " -> " + afterHealth + ", absorption " + beforeAbsorption + " -> " +
+                      afterAbsorption + ", deathTime " + beforeDeathTime + " -> " + victim.deathTime + ", alive " + beforeAlive + " -> " + victim.isAlive() +
+                      ", removed " + beforeRemoved + " -> " + victim.isRemoved() + ", affected=" + affected);
+            return new MethodInvokeResult(true, affected, lines);
+        }
+        catch (Throwable e) {
+            lines.add("invokeLivingEntitySetHealthSpecial error: " + e.getClass().getSimpleName());
+            return new MethodInvokeResult(false, false, lines);
+        }
+    }
+
     private static MethodInvokeResult invokeLivingEntityActuallyHurtSpecial(LivingEntity victim, DamageSource source, float amount) {
         List<String> lines = new ArrayList<>();
         float beforeHealth = victim.getHealth();
@@ -137,10 +100,8 @@ public class MethodHandler {
         try {
             MethodHandles.Lookup lookup = MethodHandles.privateLookupIn(LivingEntity.class, MethodHandles.lookup());
             MethodHandle handle = findSpecialActuallyHurtHandle(lookup);
-            if (handle == null){
-                lines.add("invokeActuallyHurt special skipped: no actuallyHurt/m_6475_ handle");
-                return new MethodInvokeResult(false, false, lines);
-            }
+            if (handle == null)
+                return MethodInvokeResult.empty("invokeActuallyHurt special skipped: no actuallyHurt/m_6475_ handle");
             lines.add("invokeActuallyHurt special try: LivingEntity actuallyHurt");
             handle.invoke(victim, source, amount);
             float afterHealth = victim.getHealth();
@@ -167,6 +128,18 @@ public class MethodHandler {
         catch (Throwable ignored) {}
         try {
             return lookup.findSpecial(LivingEntity.class, "m_6475_", MethodType.methodType(void.class, DamageSource.class, float.class), LivingEntity.class);
+        }
+        catch (Throwable ignored) {}
+        return null;
+    }
+
+    private static MethodHandle findSpecialSetHealthHandle(MethodHandles.Lookup lookup) {
+        try {
+            return lookup.findSpecial(LivingEntity.class, "setHealth", MethodType.methodType(void.class, float.class), LivingEntity.class);
+        }
+        catch (Throwable ignored) {}
+        try {
+            return lookup.findSpecial(LivingEntity.class, "m_21153_", MethodType.methodType(void.class, float.class), LivingEntity.class);
         }
         catch (Throwable ignored) {}
         return null;
@@ -207,35 +180,5 @@ public class MethodHandler {
         if (method.getDeclaringClass() == victim.getClass())
             score += 40;
         return score;
-    }
-
-    public static MethodInvokeResult invokeLivingEntitySetHealthSpecial(LivingEntity victim, float targetHealth) {
-        if (victim == null)
-            return MethodInvokeResult.empty("invokeLivingEntitySetHealthSpecial abort: null victim");
-        List<String> lines = new ArrayList<>();
-        float beforeHealth = victim.getHealth();
-        float beforeAbsorption = victim.getAbsorptionAmount();
-        int beforeDeathTime = victim.deathTime;
-        boolean beforeAlive = victim.isAlive();
-        boolean beforeRemoved = victim.isRemoved();
-        try {
-            MethodHandles.Lookup lookup = MethodHandles.privateLookupIn(LivingEntity.class, MethodHandles.lookup());
-            MethodHandle handle = lookup.findSpecial(LivingEntity.class, "setHealth", MethodType.methodType(void.class, float.class), LivingEntity.class);
-            lines.add("invokeLivingEntitySetHealthSpecial try: before=" + beforeHealth + ", target=" + targetHealth);
-            handle.invoke(victim, targetHealth);
-            float afterHealth = victim.getHealth();
-            float afterAbsorption = victim.getAbsorptionAmount();
-            boolean affected =
-                    afterHealth < beforeHealth || afterAbsorption < beforeAbsorption || victim.deathTime > beforeDeathTime || beforeAlive != victim.isAlive() ||
-                    beforeRemoved != victim.isRemoved();
-            lines.add("invokeLivingEntitySetHealthSpecial result: health " + beforeHealth + " -> " + afterHealth + ", absorption " + beforeAbsorption + " -> " +
-                      afterAbsorption + ", deathTime " + beforeDeathTime + " -> " + victim.deathTime + ", alive " + beforeAlive + " -> " + victim.isAlive() +
-                      ", removed " + beforeRemoved + " -> " + victim.isRemoved() + ", affected=" + affected);
-            return new MethodInvokeResult(true, affected, lines);
-        }
-        catch (Throwable e) {
-            lines.add("invokeLivingEntitySetHealthSpecial error: " + e.getClass().getSimpleName());
-            return new MethodInvokeResult(false, false, lines);
-        }
     }
 }
