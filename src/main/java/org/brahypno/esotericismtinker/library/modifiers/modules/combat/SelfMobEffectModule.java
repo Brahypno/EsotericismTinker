@@ -90,11 +90,7 @@ public record SelfMobEffectModule(IJsonPredicate<LivingEntity> target, @Nullable
         return Builder.effect(effect.get());
     }
 
-    private static void addRandomEffectFromTagIfMissing(
-            LivingEntity target,
-            TagKey<MobEffect> tag,
-            int duration,
-            int amplifier) {
+    private static void addRandomEffectFromTagIfMissing(LivingEntity target, TagKey<MobEffect> tag, int duration, int amplifier) {
         Registry<MobEffect> registry = BuiltInRegistries.MOB_EFFECT;
 
         // 1) 玩家当前是否已经有任意一个属于该 tag 的效果
