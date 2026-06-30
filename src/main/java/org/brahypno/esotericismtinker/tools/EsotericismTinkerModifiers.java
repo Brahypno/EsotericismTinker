@@ -11,6 +11,7 @@ import org.brahypno.esotericismtinker.library.modifiers.modules.armor.ReprisePro
 import org.brahypno.esotericismtinker.library.modifiers.modules.armor.ResonanceArmorModule;
 import org.brahypno.esotericismtinker.library.modifiers.modules.build.AllSlotModule;
 import org.brahypno.esotericismtinker.library.modifiers.modules.combat.AbsorptionGainModule;
+import org.brahypno.esotericismtinker.library.modifiers.modules.combat.ExplosionLikeProjectileDamageModule;
 import org.brahypno.esotericismtinker.library.modifiers.modules.combat.MobEffectsRemoverModule;
 import org.brahypno.esotericismtinker.library.modifiers.modules.combat.SelfMobEffectModule;
 import org.brahypno.esotericismtinker.library.modifiers.modules.harvest.BlockLootMultiplierModule;
@@ -49,6 +50,8 @@ public final class EsotericismTinkerModifiers extends EsotericismTinkerModule {
             ModifierModule.LOADER.register(EsotericismTinker.getLocation("reprise_protection_module"), RepriseProtectionModule.LOADER);
             ModifierModule.LOADER.register(EsotericismTinker.getLocation("self_destory_module"), SelfDestroyModule.LOADER);
             ModifierModule.LOADER.register(EsotericismTinker.getLocation("absorption_gain_module"), AbsorptionGainModule.LOADER);
+            ModifierModule.LOADER.register(EsotericismTinker.getLocation("explosion_like_projectile_damage_module"),
+                                           ExplosionLikeProjectileDamageModule.LOADER);
 
             ModifierModule.LOADER.register(EsotericismTinker.getLocation("all_slot_module"), AllSlotModule.LOADER);
             ModifierModule.LOADER.register(EsotericismTinker.getLocation("my_creative_flight_module"), FlightModule.LOADER);
