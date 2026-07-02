@@ -1,6 +1,7 @@
 package org.brahypno.esotericismtinker.library.event;
 
 import net.minecraft.core.BlockPos;
+import net.minecraft.world.InteractionHand;
 import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
@@ -19,7 +20,7 @@ public class PlayerLeftClickEvent {
             if (stack.isEmpty())
                 stack = CuriosCompact.findPreferredModifiable(player);
             if (stack.getItem() instanceof IModifiable)
-                LeftClickHook.handleLeftClick(stack, player, EquipmentSlot.MAINHAND);
+                LeftClickHook.handleLeftClick(stack, player, getSlot(player.getUsedItemHand()));
         }
     }
 
@@ -32,7 +33,7 @@ public class PlayerLeftClickEvent {
             if (stack.isEmpty())
                 stack = CuriosCompact.findPreferredModifiable(player);
             if (stack.getItem() instanceof IModifiable)
-                LeftClickHook.handleLeftClickBlock(event, stack, player, EquipmentSlot.MAINHAND, state, pos);
+                LeftClickHook.handleLeftClickBlock(event, stack, player, getSlot(player.getUsedItemHand()), state, pos);
         }
     }
 
@@ -43,7 +44,11 @@ public class PlayerLeftClickEvent {
             if (stack.isEmpty())
                 stack = CuriosCompact.findPreferredModifiable(player);
             if (stack.getItem() instanceof IModifiable)
-                LeftClickHook.handleLeftClickEntity(event, stack, player, EquipmentSlot.MAINHAND, event.getTarget());
+                LeftClickHook.handleLeftClickEntity(event, stack, player, getSlot(player.getUsedItemHand()), event.getTarget());
         }
+    }
+
+    private static EquipmentSlot getSlot(InteractionHand hand) {
+        return InteractionHand.MAIN_HAND == hand ? EquipmentSlot.MAINHAND : EquipmentSlot.OFFHAND;
     }
 }
