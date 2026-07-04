@@ -204,16 +204,34 @@ public class ETModifierCheck {
         }
     }
 
-    public static float getMeleeDamage(LivingEntity attacker, Entity entity, IToolStackView toolStack, boolean withCritical) {
-        ToolAttackContext context = ToolAttackContext.attacker(attacker).target(entity).cooldown(1).toolAttributes(toolStack)
-                                                     .build();
-        float baseDamage = context.getBaseDamage();
-        float damage = baseDamage;
-        List<ModifierEntry> modifiers = toolStack.getModifierList();
+    private static final ThreadLocal<Integer> MELEE_DAMAGE_DEPTH = ThreadLocal.withInitial(() -> 0);
 
-        for (ModifierEntry entry : modifiers) {
-            damage = (entry.getHook(ModifierHooks.MELEE_DAMAGE)).getMeleeDamage(toolStack, entry, context, baseDamage, damage);
+    public static float getMeleeDamage(LivingEntity attacker, Entity entity, IToolStackView toolStack, boolean withCritical) {
+        ToolAttackContext context = ToolAttackContext.attacker(attacker).target(entity).cooldown(1).toolAttributes(toolStack).build();
+        float baseDamage = context.getBaseDamage();
+
+        int depth = MELEE_DAMAGE_DEPTH.get();
+        if (depth > 0){
+            return applyCritical(context, baseDamage, baseDamage, withCritical);
         }
+
+        MELEE_DAMAGE_DEPTH.set(depth + 1);
+        try {
+            float damage = baseDamage;
+            List<ModifierEntry> modifiers = toolStack.getModifierList();
+
+            for (ModifierEntry entry : modifiers) {
+                damage = entry.getHook(ModifierHooks.MELEE_DAMAGE).getMeleeDamage(toolStack, entry, context, baseDamage, damage);
+            }
+
+            return applyCritical(context, baseDamage, damage, withCritical);
+        }
+        finally {
+            MELEE_DAMAGE_DEPTH.remove();
+        }
+    }
+
+    private static float applyCritical(ToolAttackContext context, float baseDamage, float damage, boolean withCritical) {
         if (withCritical){
             float criticalModifier = context.getCriticalModifier();
             if (criticalModifier != 1){
