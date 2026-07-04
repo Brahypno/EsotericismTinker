@@ -84,6 +84,9 @@
   "block.esotericism_tinker.ashen_alloy_switch": "Ashen Alloy Switch",
   "block.esotericism_tinker.ashen_melt_switch": "Ashen Melt Switch",
   "block.esotericism_tinker.ashen_melt_switch.tooltip": "Right click to change melting method. Only one allowed per structure\nPart of the Transmute",
+  "structure.esotericism_tinker.transmute_ruin_complete": "Complete Transmutation Ruin",
+  "structure.esotericism_tinker.transmute_ruin_broken": "Broken Transmutation Ruin",
+  "structure.esotericism_tinker.transmute_ruin_ruined": "Ruined Transmutation Ruin",
 
   "item.tconstruct.creative_slot.delusions": "Creative Delusion Slot",
   "stat.tconstruct.slot.prefix.delusions": "Delusion Slots: ",

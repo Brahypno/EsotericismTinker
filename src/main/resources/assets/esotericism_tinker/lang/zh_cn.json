@@ -84,6 +84,9 @@
   "block.esotericism_tinker.ashen_alloy_switch": "烬灰合金开关",
   "block.esotericism_tinker.ashen_melt_switch": "烬灰熔炼开关",
   "block.esotericism_tinker.ashen_melt_switch.tooltip": "右键点击切换熔炼模式。 每结构只容许一个\n搭建嬗变炉的建材",
+  "structure.esotericism_tinker.transmute_ruin_complete": "完整嬗变遗迹",
+  "structure.esotericism_tinker.transmute_ruin_broken": "残破嬗变遗迹",
+  "structure.esotericism_tinker.transmute_ruin_ruined": "破败嬗变遗迹",
 
   "item.tconstruct.creative_slot.delusions": "创造妄见槽",
   "stat.tconstruct.slot.prefix.delusions": "妄见槽：",

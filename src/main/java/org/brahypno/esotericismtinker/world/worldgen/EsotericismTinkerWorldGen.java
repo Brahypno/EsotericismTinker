@@ -9,6 +9,7 @@ import net.minecraft.world.level.levelgen.structure.Structure;
 import net.minecraft.world.level.levelgen.structure.StructureSet;
 import net.minecraftforge.registries.ForgeRegistries;
 import org.brahypno.esotericismtinker.world.worldgen.selenic.SelenicAstrolabeRuinStructures;
+import org.brahypno.esotericismtinker.world.worldgen.transmute.TransmuteRuinStructures;
 
 public final class EsotericismTinkerWorldGen {
     private EsotericismTinkerWorldGen() {}
@@ -38,9 +39,11 @@ public final class EsotericismTinkerWorldGen {
 
     public static void bootstrapStructures(BootstapContext<Structure> ctx) {
         SelenicAstrolabeRuinStructures.bootstrapStructures(ctx);
+        TransmuteRuinStructures.bootstrapStructures(ctx);
     }
 
     public static void bootstrapStructureSets(BootstapContext<StructureSet> ctx) {
         SelenicAstrolabeRuinStructures.bootstrapStructureSets(ctx);
+        TransmuteRuinStructures.bootstrapStructureSets(ctx);
     }
 }

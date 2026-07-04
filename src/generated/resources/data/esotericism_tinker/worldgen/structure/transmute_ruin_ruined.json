@@ -1,0 +1,7 @@
+{
+  "type": "esotericism_tinker:transmute_ruin",
+  "biomes": "#minecraft:has_structure/end_city",
+  "kind": "ruined",
+  "spawn_overrides": {},
+  "step": "surface_structures"
+}

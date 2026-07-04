@@ -35,10 +35,20 @@ public class Config {
     public static final ForgeConfigSpec.IntValue TRANSMUTE_FUEL_ACCELERATOR =
             BUILDER.comment("The accelerator fuel rate provided by each block").defineInRange("TransmuteFuelAccelerator", 15, 0, 20000);
 
+    static {
+        BUILDER.pop();
+        BUILDER.push("World Generation");
+    }
+
+    public static final ForgeConfigSpec.BooleanValue GENERATE_TRANSMUTE_RUINS = BUILDER
+            .comment("Whether transmute ruins naturally generate in new chunks.")
+            .define("GenerateTransmuteRuins", true);
+
     static final ForgeConfigSpec SPEC = BUILDER.pop().build();
 
     public static int transmuteHeaterTemperature;
     public static int transmuteAcceleratorTemperature;
+    public static boolean generateTransmuteRuins;
 
     private static boolean validateItemName(final Object obj) {
         return obj instanceof final String itemName && ForgeRegistries.ITEMS.containsKey(new ResourceLocation(itemName));
@@ -48,5 +58,6 @@ public class Config {
     static void onLoad(final ModConfigEvent event) {
         transmuteHeaterTemperature = TRANSMUTE_HEATER_TEMPERATURE.get();
         transmuteAcceleratorTemperature = TRANSMUTE_FUEL_ACCELERATOR.get();
+        generateTransmuteRuins = GENERATE_TRANSMUTE_RUINS.get();
     }
 }
