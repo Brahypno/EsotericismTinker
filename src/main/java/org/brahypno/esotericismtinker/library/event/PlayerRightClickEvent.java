@@ -9,7 +9,7 @@ import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
 import org.brahypno.esotericismtinker.EsotericismTinker;
 import org.brahypno.esotericismtinker.library.modifiers.hook.RightClickHook;
-import org.brahypno.esotericismtinker.utils.CompactUtils.CuriosCompact;
+import org.brahypno.esotericismtinker.utils.CompatUtils.CuriosCompat;
 import slimeknights.tconstruct.library.tools.item.IModifiable;
 
 @Mod.EventBusSubscriber(modid = EsotericismTinker.MODID)
@@ -20,7 +20,7 @@ public class PlayerRightClickEvent {
         if (player != null && player.level().isClientSide){
             ItemStack stack = player.getItemInHand(player.getUsedItemHand());
             if (stack.isEmpty()){
-                stack = CuriosCompact.findPreferredModifiable(player);
+                stack = CuriosCompat.findPreferredModifiable(player);
                 if (stack.getItem() instanceof IModifiable)
                     RightClickHook.handleRightClick(stack, player, EquipmentSlot.MAINHAND);
             }

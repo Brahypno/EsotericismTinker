@@ -10,12 +10,12 @@ import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
 import net.minecraftforge.registries.ForgeRegistries;
-import org.brahypno.esotericismtinker.library.compact.ars_nouveau.NovaRegistry;
-import org.brahypno.esotericismtinker.library.compact.ars_nouveau.recipe.ModifiableEnchantmentRecipe;
+import org.brahypno.esotericismtinker.library.compat.ars_nouveau.NovaRegistry;
+import org.brahypno.esotericismtinker.library.compat.ars_nouveau.recipe.ModifiableEnchantmentRecipe;
 
 import java.util.List;
 
-public class ArsJeiCompact {
+public class ArsJeiCompat {
     public static void registerCategories(IRecipeCategoryRegistration registration) {
         IGuiHelper guiHelper = registration.getJeiHelpers().getGuiHelper();
         registration.addRecipeCategories(new ModifiableEnchantmentCategory(guiHelper));

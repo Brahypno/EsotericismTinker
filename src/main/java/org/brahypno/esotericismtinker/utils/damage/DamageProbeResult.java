@@ -203,7 +203,7 @@ public final class DamageProbeResult {
         + "}";
   }
 
-  public String compactDebugText() {
+  public String compatDebugText() {
     return "DamageProbe.Result{"
         + "forceLevel=" + context.forceLevel()
         + ", amount=" + context.amount()

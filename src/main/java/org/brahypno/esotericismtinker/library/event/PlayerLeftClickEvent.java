@@ -9,7 +9,7 @@ import net.minecraft.world.level.block.state.BlockState;
 import net.minecraftforge.event.entity.player.AttackEntityEvent;
 import net.minecraftforge.event.entity.player.PlayerInteractEvent;
 import org.brahypno.esotericismtinker.library.modifiers.hook.LeftClickHook;
-import org.brahypno.esotericismtinker.utils.CompactUtils.CuriosCompact;
+import org.brahypno.esotericismtinker.utils.CompatUtils.CuriosCompat;
 import slimeknights.tconstruct.library.tools.item.IModifiable;
 
 public class PlayerLeftClickEvent {
@@ -18,7 +18,7 @@ public class PlayerLeftClickEvent {
         if (player != null && player.level().isClientSide){
             ItemStack stack = player.getItemInHand(player.getUsedItemHand());
             if (stack.isEmpty())
-                stack = CuriosCompact.findPreferredModifiable(player);
+                stack = CuriosCompat.findPreferredModifiable(player);
             if (stack.getItem() instanceof IModifiable)
                 LeftClickHook.handleLeftClick(stack, player, getSlot(player.getUsedItemHand()));
         }
@@ -31,7 +31,7 @@ public class PlayerLeftClickEvent {
             BlockState state = player.level().getBlockState(pos);
             ItemStack stack = player.getItemInHand(player.getUsedItemHand());
             if (stack.isEmpty())
-                stack = CuriosCompact.findPreferredModifiable(player);
+                stack = CuriosCompat.findPreferredModifiable(player);
             if (stack.getItem() instanceof IModifiable)
                 LeftClickHook.handleLeftClickBlock(event, stack, player, getSlot(player.getUsedItemHand()), state, pos);
         }
@@ -42,7 +42,7 @@ public class PlayerLeftClickEvent {
         if (player != null){
             ItemStack stack = player.getItemInHand(player.getUsedItemHand());
             if (stack.isEmpty())
-                stack = CuriosCompact.findPreferredModifiable(player);
+                stack = CuriosCompat.findPreferredModifiable(player);
             if (stack.getItem() instanceof IModifiable)
                 LeftClickHook.handleLeftClickEntity(event, stack, player, getSlot(player.getUsedItemHand()), event.getTarget());
         }

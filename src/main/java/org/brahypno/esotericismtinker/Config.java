@@ -14,15 +14,15 @@ import java.util.List;
 @Mod.EventBusSubscriber(modid = EsotericismTinker.MODID, bus = Mod.EventBusSubscriber.Bus.MOD)
 public class Config {
     private static final ForgeConfigSpec.Builder BUILDER =
-            new ForgeConfigSpec.Builder().comment("Configuration to almost all data in this mod. Take your own risk modify it!!!").push("Mod Compact");
+            new ForgeConfigSpec.Builder().comment("Configuration to almost all data in this mod. Take your own risk modify it!!!").push("Mod Compat");
 
-    public static final ForgeConfigSpec.BooleanValue MOD_COMPACT_MATERIALS_CONFIG =
+    public static final ForgeConfigSpec.BooleanValue MOD_COMPAT_MATERIALS_CONFIG =
             BUILDER.comment("Enable this means enable conditional mod compact config").define("MOD_COMPACT_MATERIALS_CONFIG", false);
 
-    public static final ForgeConfigSpec.ConfigValue<List<? extends String>> ModCompactBlackList =
-            BUILDER.comment("Optional Blacklist for MOD Compact, not only for materials").defineList("ModCompactBlackList",
-                                                                                                     List.of(""),
-                                                                                                     o -> o instanceof String);
+    public static final ForgeConfigSpec.ConfigValue<List<? extends String>> ModCompatBlackList =
+            BUILDER.comment("Optional Blacklist for MOD Compat, not only for materials").defineList("ModCompatBlackList",
+                                                                                                    List.of(""),
+                                                                                                    o -> o instanceof String);
 
     static {
         BUILDER.pop();

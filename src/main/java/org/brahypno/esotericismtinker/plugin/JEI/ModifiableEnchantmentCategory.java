@@ -21,7 +21,7 @@ import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.phys.Vec2;
 import org.brahypno.esotericismtinker.EsotericismTinker;
-import org.brahypno.esotericismtinker.library.compact.ars_nouveau.recipe.ModifiableEnchantmentRecipe;
+import org.brahypno.esotericismtinker.library.compat.ars_nouveau.recipe.ModifiableEnchantmentRecipe;
 import org.jetbrains.annotations.NotNull;
 import slimeknights.tconstruct.TConstruct;
 import slimeknights.tconstruct.common.TinkerTags;

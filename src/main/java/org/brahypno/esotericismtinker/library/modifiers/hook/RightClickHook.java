@@ -7,7 +7,7 @@ import net.minecraft.world.level.Level;
 import org.brahypno.esotericismtinker.library.modifiers.EsotericismTinkerHook;
 import org.brahypno.esotericismtinker.network.EsotericismTinkerNetwork;
 import org.brahypno.esotericismtinker.network.RightClickEmptyPacket;
-import org.brahypno.esotericismtinker.utils.CompactUtils.CuriosCompact;
+import org.brahypno.esotericismtinker.utils.CompatUtils.CuriosCompat;
 import slimeknights.tconstruct.library.modifiers.ModifierEntry;
 import slimeknights.tconstruct.library.tools.nbt.IToolStackView;
 import slimeknights.tconstruct.library.tools.nbt.ToolStack;
@@ -20,7 +20,7 @@ public interface RightClickHook {
     static void handleRightClick(ItemStack stack, Player player, EquipmentSlot slot) {
         Level level = player.level();
         if (stack.isEmpty() && !level.isClientSide)
-            stack = CuriosCompact.findPreferredModifiable(player);
+            stack = CuriosCompat.findPreferredModifiable(player);
         IToolStackView tool = ToolStack.from(stack);
         for (ModifierEntry entry : tool.getModifierList()) {
             entry.getHook(EsotericismTinkerHook.RIGHT_CLICK).onRightClickEmpty(tool, entry, player, level, slot);

@@ -1,4 +1,4 @@
-package org.brahypno.esotericismtinker.library.compact.ars_nouveau.recipe;
+package org.brahypno.esotericismtinker.library.compat.ars_nouveau.recipe;
 
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
@@ -17,7 +17,7 @@ import net.minecraft.world.item.crafting.Ingredient;
 import net.minecraft.world.item.crafting.RecipeSerializer;
 import net.minecraft.world.item.crafting.RecipeType;
 import org.brahypno.esotericismtinker.EsotericismTinker;
-import org.brahypno.esotericismtinker.library.compact.ars_nouveau.NovaRegistry;
+import org.brahypno.esotericismtinker.library.compat.ars_nouveau.NovaRegistry;
 import org.jetbrains.annotations.NotNull;
 import slimeknights.mantle.util.typed.TypedMap;
 import slimeknights.tconstruct.TConstruct;

@@ -1,4 +1,4 @@
-package org.brahypno.esotericismtinker.library.compact.ars_nouveau;
+package org.brahypno.esotericismtinker.library.compat.ars_nouveau;
 
 import com.hollingsworth.arsnouveau.api.ArsNouveauAPI;
 import net.minecraft.world.item.crafting.RecipeSerializer;
@@ -9,7 +9,7 @@ import net.minecraftforge.registries.DeferredRegister;
 import net.minecraftforge.registries.ForgeRegistries;
 import net.minecraftforge.registries.RegistryObject;
 import org.brahypno.esotericismtinker.EsotericismTinker;
-import org.brahypno.esotericismtinker.library.compact.ars_nouveau.recipe.ModifiableEnchantmentRecipe;
+import org.brahypno.esotericismtinker.library.compat.ars_nouveau.recipe.ModifiableEnchantmentRecipe;
 
 public class NovaRegistry {
     public static void init(IEventBus modBus) {

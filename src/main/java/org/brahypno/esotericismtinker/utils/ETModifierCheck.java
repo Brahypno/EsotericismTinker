@@ -15,7 +15,7 @@ import net.minecraft.world.entity.projectile.AbstractArrow;
 import net.minecraft.world.entity.projectile.Projectile;
 import net.minecraft.world.item.ItemStack;
 import org.brahypno.esotericismtinker.common.EsotericismTinkerTagKeys;
-import org.brahypno.esotericismtinker.utils.CompactUtils.CuriosCompact;
+import org.brahypno.esotericismtinker.utils.CompatUtils.CuriosCompat;
 import org.jetbrains.annotations.NotNull;
 import slimeknights.tconstruct.common.TinkerTags;
 import slimeknights.tconstruct.library.materials.MaterialRegistry;
@@ -94,7 +94,7 @@ public class ETModifierCheck {
 
     public static boolean haveModifierIn(LivingEntity entity, ModifierId modifierId) {
         return ModifierInBody(entity, modifierId) || ModifierInHand(entity, modifierId) ||
-               entity instanceof Player player && 0 < CuriosCompact.getCurioModifierNumber(player, modifierId);
+               entity instanceof Player player && 0 < CuriosCompat.getCurioModifierNumber(player, modifierId);
     }
 
 
@@ -166,7 +166,7 @@ public class ETModifierCheck {
         matched += getMainhandModifierLevel(entity, id);
         matched += getOffhandModifierLevel(entity, id);
         if (entity instanceof Player player)
-            matched += CuriosCompact.getCurioModifierNumber(player, id);
+            matched += CuriosCompat.getCurioModifierNumber(player, id);
         return matched;
     }
 

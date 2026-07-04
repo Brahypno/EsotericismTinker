@@ -272,7 +272,7 @@ public class SelenicAstrolabeRecipeCategory<R> implements IRecipeCategory<R> {
         guiGraphics.renderItem(new ItemStack(astrolabeSpine.get()), ELEVATION_X, ELEVATION_Y);
         guiGraphics.drawString(
                 font,
-                describeElevationCompact(recipe.getElevation()),
+                describeElevationCompat(recipe.getElevation()),
                 ELEVATION_X + 18,
                 ELEVATION_Y + 4,
                 0xFFE8E0FF,
@@ -284,7 +284,7 @@ public class SelenicAstrolabeRecipeCategory<R> implements IRecipeCategory<R> {
         return !(range.min() == 0 && range.max() == Integer.MAX_VALUE);
     }
 
-    protected Component describeElevationCompact(IntRange range) {
+    protected Component describeElevationCompat(IntRange range) {
         if (range.max() == Integer.MAX_VALUE){
             return Component.literal(range.min() + "+");
         }

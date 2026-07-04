@@ -39,7 +39,7 @@ import org.brahypno.esotericismtinker.common.json.ETConfigEnabledCondition;
 import org.brahypno.esotericismtinker.fluids.EsotericismTinkerFluids;
 import org.brahypno.esotericismtinker.fluids.data.EsotericismTinkerFluidTextureProvider;
 import org.brahypno.esotericismtinker.fluids.data.FluidTooltipProvider;
-import org.brahypno.esotericismtinker.library.compact.ars_nouveau.NovaRegistry;
+import org.brahypno.esotericismtinker.library.compat.ars_nouveau.NovaRegistry;
 import org.brahypno.esotericismtinker.library.event.PlayerLeftClickEvent;
 import org.brahypno.esotericismtinker.library.recipe.EsotericismTinkerRecipeTypes;
 import org.brahypno.esotericismtinker.network.EsotericismTinkerNetwork;
@@ -63,8 +63,8 @@ public class EsotericismTinker {
     public static final String MODID = "esotericism_tinker";
     public static final Logger LOGGER = LogUtils.getLogger();
 
-    private static List<? extends String> compact_config;
-    private static Boolean compactRestriction;
+    private static List<? extends String> compat_config;
+    private static Boolean compatRestriction;
 
     @SuppressWarnings({"removal"})
     public EsotericismTinker() {
@@ -120,10 +120,10 @@ public class EsotericismTinker {
     }
 
     public static boolean configCompactDisabled(String modId) {
-        if (null == compact_config)
-            compact_config = Config.ModCompactBlackList.get();
-        compactRestriction = Config.MOD_COMPACT_MATERIALS_CONFIG.get();
-        return compactRestriction && compact_config.contains(modId);
+        if (null == compat_config)
+            compat_config = Config.ModCompatBlackList.get();
+        compatRestriction = Config.MOD_COMPAT_MATERIALS_CONFIG.get();
+        return compatRestriction && compat_config.contains(modId);
     }
 
     @SubscribeEvent

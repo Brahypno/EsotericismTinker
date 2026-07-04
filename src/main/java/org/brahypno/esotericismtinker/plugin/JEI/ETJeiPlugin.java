@@ -32,7 +32,7 @@ public class ETJeiPlugin implements IModPlugin {
     @Override
     public void registerCategories(IRecipeCategoryRegistration registration) {
         if (ModList.get().isLoaded("ars_nouveau")){
-            ArsJeiCompact.registerCategories(registration);
+            ArsJeiCompat.registerCategories(registration);
         }
         IGuiHelper guiHelper = registration.getJeiHelpers().getGuiHelper();
         registration.addRecipeCategories(new SelenicAstrolabeRecipeCategory<>());
@@ -46,7 +46,7 @@ public class ETJeiPlugin implements IModPlugin {
             return;
         }
         if (ModList.get().isLoaded("ars_nouveau")){
-            ArsJeiCompact.registerRecipes(registration);
+            ArsJeiCompat.registerRecipes(registration);
         }
         List<SelenicAstrolabeRecipe> astrolabe_recipes = Minecraft.getInstance().level
                 .getRecipeManager()
@@ -73,7 +73,7 @@ public class ETJeiPlugin implements IModPlugin {
     @Override
     public void registerRecipeCatalysts(IRecipeCatalystRegistration registration) {
         if (ModList.get().isLoaded("ars_nouveau")){
-            ArsJeiCompact.registerRecipeCatalysts(registration);
+            ArsJeiCompat.registerRecipeCatalysts(registration);
         }
         registration.addRecipeCatalyst(
                 new ItemStack(EsotericismTinkerSelenic.armillaryCrown),

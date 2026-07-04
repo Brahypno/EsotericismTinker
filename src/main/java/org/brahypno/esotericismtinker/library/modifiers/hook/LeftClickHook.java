@@ -12,7 +12,7 @@ import net.minecraftforge.event.entity.player.PlayerInteractEvent;
 import org.brahypno.esotericismtinker.library.modifiers.EsotericismTinkerHook;
 import org.brahypno.esotericismtinker.network.EsotericismTinkerNetwork;
 import org.brahypno.esotericismtinker.network.LeftClickEmptyPacket;
-import org.brahypno.esotericismtinker.utils.CompactUtils.CuriosCompact;
+import org.brahypno.esotericismtinker.utils.CompatUtils.CuriosCompat;
 import slimeknights.tconstruct.library.modifiers.ModifierEntry;
 import slimeknights.tconstruct.library.tools.nbt.IToolStackView;
 import slimeknights.tconstruct.library.tools.nbt.ToolStack;
@@ -22,16 +22,18 @@ import java.util.Collection;
 public interface LeftClickHook {
     default void onLeftClickEmpty(IToolStackView tool, ModifierEntry entry, Player player, Level level, EquipmentSlot equipmentSlot) {}
 
-    default void onLeftClickBlock(PlayerInteractEvent.LeftClickBlock event, IToolStackView tool, ModifierEntry entry, Player player, Level level,
-                                  EquipmentSlot equipmentSlot, BlockState state, BlockPos pos) {}
+    default void onLeftClickBlock(
+            PlayerInteractEvent.LeftClickBlock event, IToolStackView tool, ModifierEntry entry, Player player, Level level,
+            EquipmentSlot equipmentSlot, BlockState state, BlockPos pos) {}
 
-    default void onLeftClickEntity(AttackEntityEvent event, IToolStackView tool, ModifierEntry entry, Player player, Level level,
-                                   EquipmentSlot equipmentSlot, Entity target) {}
+    default void onLeftClickEntity(
+            AttackEntityEvent event, IToolStackView tool, ModifierEntry entry, Player player, Level level,
+            EquipmentSlot equipmentSlot, Entity target) {}
 
     static void handleLeftClick(ItemStack stack, Player player, EquipmentSlot slot) {
         Level level = player.level();
         if (stack.isEmpty() && !level.isClientSide)
-            stack = CuriosCompact.findPreferredModifiable(player);
+            stack = CuriosCompat.findPreferredModifiable(player);
         IToolStackView tool = ToolStack.from(stack);
         for (ModifierEntry entry : tool.getModifierList()) {
             entry.getHook(EsotericismTinkerHook.LEFT_CLICK).onLeftClickEmpty(tool, entry, player, level, slot);
@@ -66,16 +68,18 @@ public interface LeftClickHook {
         }
 
         @Override
-        public void onLeftClickBlock(PlayerInteractEvent.LeftClickBlock event, IToolStackView tool, ModifierEntry entry, Player player, Level level,
-                                     EquipmentSlot equipmentSlot, BlockState state, BlockPos pos) {
+        public void onLeftClickBlock(
+                PlayerInteractEvent.LeftClickBlock event, IToolStackView tool, ModifierEntry entry, Player player, Level level,
+                EquipmentSlot equipmentSlot, BlockState state, BlockPos pos) {
             for (LeftClickHook module : this.modules) {
                 module.onLeftClickBlock(event, tool, entry, player, level, equipmentSlot, state, pos);
             }
         }
 
         @Override
-        public void onLeftClickEntity(AttackEntityEvent event, IToolStackView tool, ModifierEntry entry, Player player, Level level,
-                                      EquipmentSlot equipmentSlot, Entity target) {
+        public void onLeftClickEntity(
+                AttackEntityEvent event, IToolStackView tool, ModifierEntry entry, Player player, Level level,
+                EquipmentSlot equipmentSlot, Entity target) {
             for (LeftClickHook module : this.modules) {
                 module.onLeftClickEntity(event, tool, entry, player, level, equipmentSlot, target);
             }

@@ -1,4 +1,4 @@
-package org.brahypno.esotericismtinker.utils.CompactUtils;
+package org.brahypno.esotericismtinker.utils.CompatUtils;
 
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Player;
@@ -22,10 +22,10 @@ import java.util.function.Predicate;
 
 import static org.brahypno.esotericismtinker.EsotericismTinker.configCompactDisabled;
 
-public class CuriosCompact {
+public class CuriosCompat {
     private static Predicate<ItemStack> preferredModifiable = stack -> stack.is(TinkerTags.Items.MODIFIABLE) && stack.is(EsotericismTinkerTagKeys.Items.CURIOS);
 
-    private CuriosCompact() {}
+    private CuriosCompat() {}
 
     public static void registerPreferredModifiable(Predicate<ItemStack> predicate) {
         Predicate<ItemStack> previous = preferredModifiable;
