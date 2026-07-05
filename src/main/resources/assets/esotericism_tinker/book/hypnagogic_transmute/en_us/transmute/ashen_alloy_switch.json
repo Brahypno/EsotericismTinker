@@ -3,10 +3,10 @@
   "item": "esotericism_tinker:ashen_alloy_switch",
   "text": [
     {
-      "text": "Adding Ashen Alloy Switch to Transmute can enable or disable the alloy function of the transmuter. Each transmuter can only have one switch.",
+      "text": "Adding Ashen Alloy Switch to Transmute can enable or disable the alloy function of the transmuter.",
       "paragraph": true
     },
-	{
+    {
       "text": "—Now you know my Transmute is full functional, right?—",
       "paragraph": true
     }

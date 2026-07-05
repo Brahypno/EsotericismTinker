@@ -77,7 +77,7 @@
   "block.esotericism_tinker.ashen_soul_glass_pane.tooltip": "Cannot be used in a Transmute, but can be walked through.",
   "block.esotericism_tinker.ashen_heater": "Ashen Heater",
   "block.esotericism_tinker.ashen_heater.tooltip": "Convert undead hate into heat for the Transmute.\nCan only be used for the floor of the transmute.",
-  "tooltip.esotericism_tinker.transmute_heater": "Increase %d temperature for the Transmute when put in structure",
+  "tooltip.esotericism_tinker.transmute_heater": "Increase extra %d temperature for the Transmute when in structure with tank",
   "block.esotericism_tinker.ashen_accelerator": "Ashen Accelerator",
   "block.esotericism_tinker.ashen_accelerator.tooltip": "Use preservation wish to increase fuel rate for the Transmute.\nCan only be used for the wall of the transmute.",
   "tooltip.esotericism_tinker.transmute_accel": "Increase %d fuel rate for the Transmute when put in structure",
@@ -124,7 +124,7 @@
   "structure.esotericism_tinker.selenic_astrolabe_ruin_broken": "Broken Selenic Astrolabe Ruin",
   "structure.esotericism_tinker.selenic_astrolabe_ruin_complete": "Complete Selenic Astrolabe Ruin",
   "structure.esotericism_tinker.selenic_astrolabe_ruin_tower": "Towering Selenic Astrolabe Ruin",
-  
+
   "_comment.esotericism_tinker.selenic_jei": "======Selenic Related======",
   "jei.esotericism_tinker.selenic_astrolabe": "Selenic Astrolabe",
   "jei.esotericism_tinker.selenic_astrolabe.priority": "Priority: %s",
