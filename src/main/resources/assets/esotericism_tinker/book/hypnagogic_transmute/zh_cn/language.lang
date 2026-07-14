@@ -3,3 +3,12 @@ transmute=嬗变炉
 delusions=妄见升级
 exploration=探索
 selenic=月相星仪
+
+materials_harvest=通用材料
+materials_harvest.subtext=这些材料可以锻造出近战武器或采掘工具。
+materials_ranged=远程材料
+materials_ranged.subtext=这些材料可以锻造出远程武器。
+materials_ammo=弹药材料
+materials_ammo.subtext=这些材料可以锻造出箭矢或手里剑。
+materials_armor=盔甲材料
+materials_armor.subtext=这些材料可以锻造成盔甲和盾牌的部件。

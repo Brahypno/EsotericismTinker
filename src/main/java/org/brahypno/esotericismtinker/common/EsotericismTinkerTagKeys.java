@@ -7,6 +7,8 @@ import net.minecraft.world.item.Item;
 import net.minecraft.world.level.block.Block;
 import net.minecraftforge.registries.ForgeRegistries;
 import org.brahypno.esotericismtinker.EsotericismTinker;
+import slimeknights.tconstruct.library.materials.definition.IMaterial;
+import slimeknights.tconstruct.library.materials.definition.MaterialManager;
 import slimeknights.tconstruct.library.modifiers.Modifier;
 import slimeknights.tconstruct.library.modifiers.ModifierManager;
 
@@ -80,5 +82,17 @@ public class EsotericismTinkerTagKeys {
         public static final TagKey<Modifier> BOOT_DELUSIONS = local("delusions/armor/boots");
 
         public static final TagKey<Modifier> ArmorWorkingWhenUnequipped = local("armor_working_when_unequipped");
+    }
+
+    public static class Materials {
+        /**
+         * Materials.
+         */
+        public static final TagKey<IMaterial> ESOTERICISM_MATERIALS = local("book_materials");
+
+        @SuppressWarnings("SameParameterValue")  // may want more tags later
+        private static TagKey<IMaterial> local(String name) {
+            return MaterialManager.getTag(EsotericismTinker.getLocation(name));
+        }
     }
 }

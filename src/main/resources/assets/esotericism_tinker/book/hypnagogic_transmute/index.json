@@ -52,5 +52,85 @@
     "icon": {
       "item": "esotericism_tinker:lunar_font"
     }
+  },
+  {
+    "name": "materials_harvest",
+    "data": "no-load",
+    "extraData": {
+      "tconstruct:material_tier": {
+        "type": "tconstruct:melee_harvest",
+        "tag": "esotericism_tinker:book_materials",
+        "detailed": true
+      }
+    },
+    "icon": {
+      "item": {
+        "type": "forge:nbt",
+        "item": "tconstruct:pick_head",
+        "nbt": {
+          "Material": "tconstruct:ui_render#extra_large"
+        }
+      }
+    }
+  },
+  {
+    "name": "materials_ranged",
+    "data": "no-load",
+    "extraData": {
+      "tconstruct:material_tier": {
+        "type": "tconstruct:ranged",
+        "tag": "esotericism_tinker:book_materials",
+        "detailed": true
+      }
+    },
+    "icon": {
+      "item": {
+        "type": "forge:nbt",
+        "item": "tconstruct:bow_limb",
+        "nbt": {
+          "Material": "tconstruct:ui_render#handle"
+        }
+      }
+    }
+  },
+  {
+    "name": "materials_ammo",
+    "data": "no-load",
+    "extraData": {
+      "tconstruct:material_tier": {
+        "type": "tconstruct:ammo",
+        "tag": "esotericism_tinker:book_materials",
+        "detailed": true
+      }
+    },
+    "icon": {
+      "item": {
+        "type": "forge:nbt",
+        "item": "tconstruct:arrow_head",
+        "nbt": {
+          "Material": "tconstruct:ui_render#head"
+        }
+      }
+    }
+  },
+  {
+    "name": "materials_armor",
+    "data": "no-load",
+    "extraData": {
+      "tconstruct:material_tier": {
+        "type": "tconstruct:armor",
+        "tag": "esotericism_tinker:book_materials",
+        "detailed": true
+      }
+    },
+    "icon": {
+      "item": {
+        "type": "forge:nbt",
+        "item": "tconstruct:leggings_plating",
+        "nbt": {
+          "Material": "tconstruct:ui_render#large"
+        }
+      }
+    }
   }
 ]
