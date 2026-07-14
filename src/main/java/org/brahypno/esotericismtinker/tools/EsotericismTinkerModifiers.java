@@ -1,6 +1,8 @@
 package org.brahypno.esotericismtinker.tools;
 
 import net.minecraft.core.registries.Registries;
+import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.phys.Vec3;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.javafmlmod.FMLJavaModLoadingContext;
 import net.minecraftforge.registries.RegisterEvent;
@@ -19,6 +21,7 @@ import org.brahypno.esotericismtinker.tools.modifiers.tools.ritual_blade.SelfSac
 import org.brahypno.esotericismtinker.tools.traits.combat.ForceHurt;
 import org.brahypno.esotericismtinker.tools.traits.combat.ForceRemove;
 import org.brahypno.esotericismtinker.tools.traits.harvest.ForceDrop;
+import slimeknights.tconstruct.library.json.variable.entity.EntityVariable;
 import slimeknights.tconstruct.library.modifiers.modules.ModifierModule;
 import slimeknights.tconstruct.library.modifiers.util.ModifierDeferredRegister;
 import slimeknights.tconstruct.library.modifiers.util.StaticModifier;
@@ -34,6 +37,24 @@ public final class EsotericismTinkerModifiers extends EsotericismTinkerModule {
     public EsotericismTinkerModifiers() {
         MODIFIERS.register(FMLJavaModLoadingContext.get().getModEventBus());
     }
+
+    private static float getHorizontalLookComponent(LivingEntity entity, boolean xAxis) {
+        Vec3 look = entity.getLookAngle();
+        double lengthSqr = look.x * look.x + look.z * look.z;
+
+        if (lengthSqr < 1.0E-6D){
+            return 0.0f;
+        }
+
+        double invLength = 1.0D / Math.sqrt(lengthSqr);
+        return (float) ((xAxis ? look.x : look.z) * invLength);
+    }
+
+    public static final EntityVariable HORIZONTAL_LOOK_X =
+            EntityVariable.simple(entity -> getHorizontalLookComponent(entity, true));
+
+    public static final EntityVariable HORIZONTAL_LOOK_Z =
+            EntityVariable.simple(entity -> getHorizontalLookComponent(entity, false));
 
     @SubscribeEvent
     void registerSerializers(RegisterEvent event) {
@@ -54,6 +75,9 @@ public final class EsotericismTinkerModifiers extends EsotericismTinkerModule {
             ModifierModule.LOADER.register(EsotericismTinker.getLocation("projectile_spawn_module"), ProjectileSpawnModule.LOADER);
             ModifierModule.LOADER.register(EsotericismTinker.getLocation("all_slot_module"), AllSlotModule.LOADER);
             ModifierModule.LOADER.register(EsotericismTinker.getLocation("my_creative_flight_module"), FlightModule.LOADER);
+
+            EntityVariable.LOADER.register(EsotericismTinker.getLocation("horizontal_look_x"), HORIZONTAL_LOOK_X.getLoader());
+            EntityVariable.LOADER.register(EsotericismTinker.getLocation("horizontal_look_z"), HORIZONTAL_LOOK_Z.getLoader());
 
         }
     }
