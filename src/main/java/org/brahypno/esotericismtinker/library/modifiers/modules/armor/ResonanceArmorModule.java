@@ -45,7 +45,7 @@ public record ResonanceArmorModule(
             TinkerDataCapability.TinkerDataKey.of(EsotericismTinker.getLocation("armor_resonance"));
 
     private static final List<ModuleHook<?>> DEFAULT_HOOKS =
-            HookProvider.<ResonanceArmorModule>defaultHooks(ModifierHooks.TOOLTIP);
+            HookProvider.<ResonanceArmorModule>defaultHooks(ModifierHooks.TOOLTIP, ModifierHooks.MODIFY_HURT);
 
     public static Builder builder() {
         return new Builder();
@@ -70,8 +70,9 @@ public record ResonanceArmorModule(
         if (condition.matches(tool, modifier) && tooltipKey.isShiftOrUnknown()){
             float scaledLevel = modifier.getEffectiveLevel();
             float percentage = this.percentage.compute(scaledLevel);
-            Component.literal(Util.PERCENT_BOOST_FORMAT.format(percentage))
-                     .append(" ").append(Component.translatable(modifier.getModifier().getTranslationKey() + ".armor_resonance"));
+            tooltip.add(modifier.getModifier().applyStyle(
+                    Component.literal(Util.PERCENT_BOOST_FORMAT.format(percentage)).append(" ").append(Component.translatable(
+                            modifier.getModifier().getTranslationKey() + ".armor_resonance"))));
         }
     }
 

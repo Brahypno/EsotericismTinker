@@ -46,7 +46,7 @@ public record RepriseProtectionModule(
             RepriseProtectionModule::new);
 
     private static final List<ModuleHook<?>> DEFAULT_HOOKS =
-            HookProvider.<RepriseProtectionModule>defaultHooks(ModifierHooks.TOOLTIP);
+            HookProvider.<RepriseProtectionModule>defaultHooks(ModifierHooks.TOOLTIP, ModifierHooks.MODIFY_HURT);
 
     private static final TinkerDataCapability.TinkerDataKey<SlotInChargeModule.SlotInCharge> SLOT_KEY =
             TinkerDataCapability.TinkerDataKey.of(EsotericismTinker.getLocation("reprise_protection"));
@@ -99,8 +99,9 @@ public record RepriseProtectionModule(
         if (condition.matches(tool, modifier) && tooltipKey.isShiftOrUnknown()){
             float scaledLevel = modifier.getEffectiveLevel();
             float percentage = this.percentage.compute(scaledLevel);
-            Component.literal(Util.PERCENT_BOOST_FORMAT.format(percentage))
-                     .append(" ").append(Component.translatable(modifier.getModifier().getTranslationKey() + ".reprise_protection"));
+            tooltip.add(modifier.getModifier().applyStyle(
+                    Component.literal(Util.PERCENT_BOOST_FORMAT.format(percentage)).append(" ").append(Component.translatable(
+                            modifier.getModifier().getTranslationKey() + ".reprise_protection"))));
         }
     }
 
