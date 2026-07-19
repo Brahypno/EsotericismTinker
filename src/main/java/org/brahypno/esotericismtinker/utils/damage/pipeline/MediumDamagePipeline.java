@@ -42,6 +42,8 @@ public final class MediumDamagePipeline {
         if (options.scanLevel() == ScanLevel.BASIC_HIT){
             return basic.progress() ? result.success("basic_handler") : result.fail("basic_handler failed");
         }
+        StepResult damageMethod = PipelineSteps.damageMethodProbe(context, result, "medium_damage_method");
+        if (result.reachedExpectedDamage()) return result.success("medium_damage_method");
         StepResult raw = PipelineSteps.rawSetHealth(context, result);
         if (result.reachedExpectedDamage())
             return result.success("raw_set_health");
@@ -50,7 +52,7 @@ public final class MediumDamagePipeline {
             if (result.reachedExpectedDamage())
                 return result.success("private_field_unsafe");
 
-            if (isAuthoritativePartial(basic) || isAuthoritativePartial(raw) || isAuthoritativePartial(field)){
+            if (isAuthoritativePartial(basic) || isAuthoritativePartial(damageMethod) || isAuthoritativePartial(raw) || isAuthoritativePartial(field)){
                 return result.success("set_health_equivalent_partial");
             }
             return result.fail("set_health_equivalent failed");
@@ -68,7 +70,7 @@ public final class MediumDamagePipeline {
         if (result.reachedExpectedDamage())
             return result.success("private_field_unsafe");
 
-        if (isAuthoritativePartial(basic) || isAuthoritativePartial(raw) || isAuthoritativePartial(nbt) || isAuthoritativePartial(data) ||
+        if (isAuthoritativePartial(basic) || isAuthoritativePartial(damageMethod) || isAuthoritativePartial(raw) || isAuthoritativePartial(nbt) || isAuthoritativePartial(data) ||
             isAuthoritativePartial(field))
             return result.success("medium_partial_effect");
 

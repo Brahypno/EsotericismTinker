@@ -345,14 +345,56 @@ public final class MethodHealthProbe {
 
   private static List<Pair> pair(List<Getter> getters, List<Setter> setters) {
     List<Pair> pairs = new ArrayList<>();
+    Set<Method> pairedSetters = new HashSet<>();
     for (Getter getter : getters) {
       for (Setter setter : setters) {
-        int score = getter.score() + setter.score() + tokenOverlapScore(getter.tokens(), setter.tokens());
+        if (!isReasonablePair(getter, setter)) continue;
+        int score = getter.score() + setter.score()
+            + tokenOverlapScore(getter.tokens(), setter.tokens());
         pairs.add(new Pair(getter, setter, score));
+        pairedSetters.add(setter.method());
+      }
+    }
+    // A setter without a semantically matching getter is not discarded. Probe it once using the
+    // highest-scoring getter as an observation channel, instead of pairing it with every getter.
+    Getter fallbackGetter = getters.isEmpty() ? null : getters.get(0);
+    if (fallbackGetter != null) {
+      for (Setter setter : setters) {
+        if (pairedSetters.contains(setter.method())) continue;
+        int score = fallbackGetter.score() + setter.score() - 24;
+        pairs.add(new Pair(fallbackGetter, setter, score));
       }
     }
     pairs.sort(Comparator.comparingInt(Pair::score).reversed());
     return pairs;
+  }
+
+  private static boolean isReasonablePair(Getter getter, Setter setter) {
+    String getterProperty = propertyKey(getter.method());
+    String setterProperty = propertyKey(setter.method());
+    if (!getterProperty.isBlank() && getterProperty.equals(setterProperty)) return true;
+    int meaningfulOverlap = 0;
+    int getterMeaningful = 0;
+    int setterMeaningful = 0;
+    for (String token : getter.tokens()) {
+      if (isWeakToken(token)) continue;
+      getterMeaningful++;
+      if (setter.tokens().contains(token)) meaningfulOverlap++;
+    }
+    for (String token : setter.tokens()) if (!isWeakToken(token)) setterMeaningful++;
+    int smaller = Math.min(getterMeaningful, setterMeaningful);
+    return meaningfulOverlap > 0 && smaller > 0 && meaningfulOverlap * 2 >= smaller;
+  }
+
+  private static String propertyKey(Method method) {
+    String name = method.getName();
+    int mixinSeparator = name.lastIndexOf('$');
+    if (mixinSeparator >= 0 && mixinSeparator + 1 < name.length()) {
+      name = name.substring(mixinSeparator + 1);
+    }
+    if (name.startsWith("get") || name.startsWith("set")) name = name.substring(3);
+    else if (name.startsWith("is")) name = name.substring(2);
+    return normalize(name);
   }
 
   private static int getterScore(Method method) {

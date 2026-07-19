@@ -9,6 +9,7 @@ import org.brahypno.esotericismtinker.utils.damage.DamageContext;
 import org.brahypno.esotericismtinker.utils.damage.DamageProbeResult;
 import org.brahypno.esotericismtinker.utils.damage.linked.LinkedTargetFinder;
 import org.brahypno.esotericismtinker.utils.damage.linked.LinkedTargetKillSupport;
+import org.brahypno.esotericismtinker.utils.damage.method.DamageMethodProbe;
 import org.brahypno.esotericismtinker.utils.damage.method.GuardStateSupport;
 import org.brahypno.esotericismtinker.utils.damage.method.MethodHealthProbe;
 import org.brahypno.esotericismtinker.utils.damage.method.MixinMethodInspector;
@@ -491,6 +492,10 @@ final class PipelineSteps {
     }
     if (result.killConfirmed()) result.markKillPath(KillPathKind.REMOVE, "force remove");
     return new StepResult(result.killConfirmed(), 0.0F, result.killConfirmed() ? KillPathKind.REMOVE : KillPathKind.NONE);
+  }
+
+  static StepResult damageMethodProbe(DamageContext context, DamageProbeResult result, String prefix) {
+    return DamageMethodProbe.tryDamageMethods(context, result, prefix);
   }
 
   static StepResult methodHealthBacking(DamageContext context, DamageProbeResult result) {

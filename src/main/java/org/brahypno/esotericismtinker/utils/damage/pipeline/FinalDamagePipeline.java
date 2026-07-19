@@ -60,6 +60,11 @@ public final class FinalDamagePipeline {
     PipelineSteps.booleanDefenseSurgery(context, result);
     PipelineSteps.linkedTargetProbe(context, result);
 
+    StepResult damageMethod = PipelineSteps.damageMethodProbe(context, result, "final_non_lethal_damage_method");
+    if (result.killConfirmed() || result.instantEffective()) {
+      finalizeIfSurfaceHealth(context, result, "post_health_zero_finalizer_non_lethal_damage_method");
+      return result.success("final_non_lethal_damage_method");
+    }
     StepResult methodHealth = PipelineSteps.methodHealthBacking(context, result);
     if (result.killConfirmed()) {
       finalizeIfSurfaceHealth(context, result, "post_health_zero_finalizer_non_lethal_method_health");
@@ -107,6 +112,11 @@ public final class FinalDamagePipeline {
     PipelineSteps.numericDefenseSurgery(context, result);
     PipelineSteps.booleanDefenseSurgery(context, result);
 
+    StepResult damageMethod = PipelineSteps.damageMethodProbe(context, result, "final_lethal_damage_method");
+    if (damageMethod.progress() && result.killConfirmed()) {
+      finalizeIfSurfaceHealth(context, result, "post_health_zero_finalizer_damage_method");
+      return result.success("final_lethal_damage_method");
+    }
     StepResult methodHealth = PipelineSteps.methodHealthBacking(context, result);
     if (methodHealth.progress() && result.killConfirmed()) {
       finalizeIfSurfaceHealth(context, result, "post_health_zero_finalizer_method_health");
