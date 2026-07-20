@@ -4,16 +4,21 @@ import net.minecraftforge.event.AddReloadListenerEvent;
 import net.minecraftforge.event.server.ServerStartedEvent;
 import net.minecraftforge.event.server.ServerStoppingEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
+import net.minecraftforge.fml.common.Mod;
+import org.brahypno.esotericismtinker.EsotericismTinker;
+import org.brahypno.esotericismtinker.transcendence.intrinsic.data.NoumenonCostJsonLoader;
 import org.brahypno.esotericismtinker.library.recipe.selenic.SelenicRecipeCache;
 import org.brahypno.esotericismtinker.utils.PartInfoLookup;
 
 import java.util.concurrent.CompletableFuture;
 
+@Mod.EventBusSubscriber(modid = EsotericismTinker.MODID)
 public final class ReloadEvents {
     private ReloadEvents() {}
 
     @SubscribeEvent
     public static void addReloadListener(AddReloadListenerEvent event) {
+        event.addListener(new NoumenonCostJsonLoader());
         event.addListener((
                                   barrier, manager, preparationsProfiler, reloadProfiler,
                                   backgroundExecutor, gameExecutor) ->

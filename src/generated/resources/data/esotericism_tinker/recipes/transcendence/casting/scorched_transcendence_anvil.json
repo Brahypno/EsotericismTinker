@@ -1,0 +1,13 @@
+{
+  "type": "esotericism_tinker:recursive_retextured_casting_basin",
+  "cast": {
+    "item": "tconstruct:scorched_anvil"
+  },
+  "cast_consumed": true,
+  "cooling_time": 78,
+  "fluid": {
+    "amount": 8000,
+    "tag": "esotericism_tinker:blood_soul"
+  },
+  "result": "esotericism_tinker:transcendence_anvil"
+}

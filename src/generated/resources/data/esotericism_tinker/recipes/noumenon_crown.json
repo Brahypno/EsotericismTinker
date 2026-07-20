@@ -1,0 +1,16 @@
+{
+  "type": "esotericism_tinker:noumenon_level",
+  "allow_crystal": false,
+  "inputs": [
+    {
+      "item": "esotericism_tinker:transcendence_anvil"
+    }
+  ],
+  "level": {
+    "max": 3
+  },
+  "result": "esotericism_tinker:noumenon_crown",
+  "tools": {
+    "tag": "tconstruct:modifiable"
+  }
+}

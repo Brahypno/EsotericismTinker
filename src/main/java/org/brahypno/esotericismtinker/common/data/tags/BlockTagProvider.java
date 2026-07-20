@@ -10,6 +10,7 @@ import net.minecraftforge.common.data.ExistingFileHelper;
 import org.brahypno.esotericismtinker.common.EsotericismTinkerTagKeys;
 import org.brahypno.esotericismtinker.selenic.EsotericismTinkerSelenic;
 import org.brahypno.esotericismtinker.smeltery.EsotericismTinkerSmeltery;
+import org.brahypno.esotericismtinker.transcendence.table.EsotericismTinkerTranscendenceTable;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import slimeknights.mantle.registration.object.BuildingBlockObject;
@@ -36,6 +37,7 @@ public class BlockTagProvider extends BlockTagsProvider {
     private void addHarvest() {
         tagBlocks(MINEABLE_WITH_PICKAXE, NEEDS_DIAMOND_TOOL, EsotericismTinkerSelenic.armillaryCrown, EsotericismTinkerSelenic.lunarFont,
                   EsotericismTinkerSelenic.astrolabeSpine, EsotericismTinkerSelenic.testimonyStand);
+        tagBlocks(MINEABLE_WITH_PICKAXE, NEEDS_IRON_TOOL, EsotericismTinkerTranscendenceTable.transcendenceAnvil);
     }
 
     private void addTransmute() {

@@ -1,0 +1,13 @@
+{
+  "level_display": {
+    "type": "tconstruct:unique",
+    "first_unique": false,
+    "unique_until": 3
+  },
+  "modules": [
+    {
+      "type": "esotericism_tinker:stigmata"
+    }
+  ],
+  "tooltip_display": "always"
+}

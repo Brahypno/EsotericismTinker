@@ -3,14 +3,21 @@ package org.brahypno.esotericismtinker.library.recipe;
 import net.minecraft.world.item.crafting.RecipeManager;
 import net.minecraft.world.item.crafting.RecipeSerializer;
 import net.minecraft.world.item.crafting.RecipeType;
+import slimeknights.mantle.recipe.helper.LoadableRecipeSerializer;
 import net.minecraftforge.eventbus.api.IEventBus;
 import net.minecraftforge.fml.event.lifecycle.FMLCommonSetupEvent;
 import net.minecraftforge.registries.DeferredRegister;
 import net.minecraftforge.registries.ForgeRegistries;
 import net.minecraftforge.registries.RegistryObject;
 import org.brahypno.esotericismtinker.EsotericismTinker;
+import org.brahypno.esotericismtinker.transcendence.appearance.recipe.StigmataRecipeAdapter;
+import org.brahypno.esotericismtinker.transcendence.appearance.recipe.StigmataRecipeSerializer;
+import org.brahypno.esotericismtinker.transcendence.intrinsic.recipe.NoumenonLevelRecipe;
 import org.brahypno.esotericismtinker.library.recipe.selenic.SelenicAstrolabeRecipe;
 import org.brahypno.esotericismtinker.library.recipe.selenic.SelenicTinkerPartRecipe;
+import org.brahypno.esotericismtinker.smeltery.recipe.casting.RecursiveRetexturedCastingRecipe;
+import slimeknights.mantle.recipe.helper.TypeAwareRecipeSerializer;
+import slimeknights.tconstruct.library.recipe.TinkerRecipeTypes;
 
 import java.util.ArrayList;
 import java.util.Comparator;
@@ -38,12 +45,35 @@ public class EsotericismTinkerRecipeTypes {
                     return EsotericismTinker.MODID + ":selenic_astrolabe_tinker";
                 }
             });
+    public static final RegistryObject<RecipeType<StigmataRecipeAdapter>> STIGMATA_TYPE =
+            TYPES.register("stigmata", () -> new RecipeType<>() {
+                @Override
+                public String toString() {
+                    return EsotericismTinker.MODID + ":stigmata";
+                }
+            });
 
     public static final RegistryObject<RecipeSerializer<SelenicAstrolabeRecipe>> SELENIC_ASTROLABE_SERIALIZER =
             SERIALIZERS.register("selenic_astrolabe", SelenicAstrolabeRecipe.Serializer::new);
 
     public static final RegistryObject<RecipeSerializer<SelenicTinkerPartRecipe>> SELENIC_TINKER_PART_SERIALIZER =
             SERIALIZERS.register("selenic_tinker_part", SelenicTinkerPartRecipe.Serializer::new);
+
+    public static final RegistryObject<RecipeSerializer<StigmataRecipeAdapter>> STIGMATA_SERIALIZER =
+            SERIALIZERS.register("stigmata", StigmataRecipeSerializer::new);
+
+    public static final RegistryObject<RecipeSerializer<NoumenonLevelRecipe>> NOUMENON_LEVEL_SERIALIZER =
+            SERIALIZERS.register("noumenon_level", () -> LoadableRecipeSerializer.of(NoumenonLevelRecipe.LOADER));
+
+    public static final RegistryObject<TypeAwareRecipeSerializer<RecursiveRetexturedCastingRecipe>>
+            RECURSIVE_RETEXTURED_CASTING_BASIN_SERIALIZER =
+            SERIALIZERS.register(
+                    "recursive_retextured_casting_basin",
+                    () -> LoadableRecipeSerializer.of(
+                            RecursiveRetexturedCastingRecipe.LOADER,
+                            TinkerRecipeTypes.CASTING_BASIN
+                    )
+            );
 
     public static void register(IEventBus bus) {
         TYPES.register(bus);

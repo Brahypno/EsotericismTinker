@@ -15,6 +15,7 @@ import net.minecraft.world.level.storage.loot.providers.number.ConstantValue;
 import org.brahypno.esotericismtinker.EsotericismTinker;
 import org.brahypno.esotericismtinker.selenic.EsotericismTinkerSelenic;
 import org.brahypno.esotericismtinker.smeltery.EsotericismTinkerSmeltery;
+import org.brahypno.esotericismtinker.transcendence.table.EsotericismTinkerTranscendenceTable;
 import org.jetbrains.annotations.NotNull;
 import slimeknights.mantle.loot.function.RetexturedLootFunction;
 import slimeknights.mantle.registration.object.BuildingBlockObject;
@@ -41,6 +42,7 @@ public class BlockLootTableProvider extends BlockLootSubProvider {
     protected void generate() {
         transmute();
         selenic();
+        dropTable(EsotericismTinkerTranscendenceTable.transcendenceAnvil.get());
 
     }
 

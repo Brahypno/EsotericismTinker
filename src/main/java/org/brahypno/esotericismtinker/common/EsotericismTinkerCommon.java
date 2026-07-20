@@ -9,6 +9,10 @@ import net.minecraftforge.registries.RegistryObject;
 import org.brahypno.esotericismtinker.EsotericismTinker;
 import org.brahypno.esotericismtinker.EsotericismTinkerModule;
 import org.brahypno.esotericismtinker.common.Items.EsotericismBookItem;
+import org.brahypno.esotericismtinker.transcendence.table.EsotericismTinkerTranscendenceTable;
+import slimeknights.tconstruct.library.tools.part.IMaterialItem;
+
+import java.util.function.Consumer;
 
 import static org.brahypno.esotericismtinker.EsotericismTinker.MODID;
 
@@ -25,5 +29,9 @@ public class EsotericismTinkerCommon extends EsotericismTinkerModule {
 
     public static void addTabs(CreativeModeTab.ItemDisplayParameters itemDisplayParameters, CreativeModeTab.Output output) {
         output.accept(hypnagogic_transmute.get());
+        output.accept(EsotericismTinkerTranscendenceTable.transcendenceAnvil.get());
+
+        Consumer<ItemStack> consumer = output::accept;
+        ((IMaterialItem) EsotericismTinkerTranscendenceTable.transcendenceAnvil.asItem()).addVariants(consumer, "");
     }
 }

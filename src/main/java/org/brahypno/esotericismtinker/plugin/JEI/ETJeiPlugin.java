@@ -6,6 +6,7 @@ import mezz.jei.api.helpers.IGuiHelper;
 import mezz.jei.api.registration.IRecipeCatalystRegistration;
 import mezz.jei.api.registration.IRecipeCategoryRegistration;
 import mezz.jei.api.registration.IRecipeRegistration;
+import mezz.jei.api.runtime.IJeiRuntime;
 import net.minecraft.client.Minecraft;
 import net.minecraft.core.RegistryAccess;
 import net.minecraft.resources.ResourceLocation;
@@ -16,13 +17,17 @@ import org.brahypno.esotericismtinker.library.recipe.EsotericismTinkerRecipeType
 import org.brahypno.esotericismtinker.library.recipe.selenic.SelenicAstrolabeRecipe;
 import org.brahypno.esotericismtinker.library.recipe.selenic.SelenicTinkerPartRecipe;
 import org.brahypno.esotericismtinker.selenic.EsotericismTinkerSelenic;
-import org.brahypno.esotericismtinker.smeltery.EsotericismTinkerSmeltery;
 import org.brahypno.esotericismtinker.smeltery.recipe.entitymelting.ByproductEntityMeltingRecipe;
 import org.brahypno.esotericismtinker.smeltery.recipe.entitymelting.ByproductEntityMeltingRecipeRegistry;
+import org.brahypno.esotericismtinker.transcendence.appearance.recipe.StigmataRecipeAdapter;
+import org.brahypno.esotericismtinker.transcendence.table.EsotericismTinkerTranscendenceTable;
+import org.brahypno.esotericismtinker.tools.EsotericismTinkerModifiers;
 import org.jetbrains.annotations.NotNull;
 import slimeknights.mantle.recipe.helper.RecipeHelper;
+import slimeknights.tconstruct.library.modifiers.ModifierEntry;
 import slimeknights.tconstruct.library.recipe.TinkerRecipeTypes;
 import slimeknights.tconstruct.library.recipe.melting.MeltingRecipe;
+import slimeknights.tconstruct.plugin.jei.TConstructJEIConstants;
 
 import java.util.List;
 
@@ -47,6 +52,7 @@ public class ETJeiPlugin implements IModPlugin {
         registration.addRecipeCategories(new SelenicAstrolabeRecipeCategory<>());
 
         registration.addRecipeCategories(new SelenicTinkerPartRecipeCategory());
+        registration.addRecipeCategories(new StigmataRecipeCategory(guiHelper));
     }
 
     @Override
@@ -88,6 +94,16 @@ public class ETJeiPlugin implements IModPlugin {
                 SelenicTinkerPartRecipeCategory.TYPE,
                 partDisplays
         );
+
+        List<StigmataRecipeAdapter> stigmataRecipes = Minecraft.getInstance().level
+                .getRecipeManager()
+                .getAllRecipesFor(EsotericismTinkerRecipeTypes.STIGMATA_TYPE.get());
+        List<StigmataJeiRecipe> stigmataDisplays =
+                StigmataJeiDisplayFactory.createAll(
+                        Minecraft.getInstance().level,
+                        stigmataRecipes
+                );
+        registration.addRecipes(StigmataRecipeCategory.TYPE, stigmataDisplays);
     }
 
     @Override
@@ -100,10 +116,20 @@ public class ETJeiPlugin implements IModPlugin {
                 SelenicAstrolabeRecipeCategory.TYPE,
                 SelenicTinkerPartRecipeCategory.TYPE
         );
+
+        registration.addRecipeCatalyst(
+                new ItemStack(EsotericismTinkerTranscendenceTable.transcendenceAnvil),
+                StigmataRecipeCategory.TYPE
+        );
         
         registration.addRecipeCatalyst(
-                new ItemStack(EsotericismTinkerSmeltery.transmuteController),
-                TransmuteCategory.TYPE
+                new ItemStack(EsotericismTinkerTranscendenceTable.transcendenceAnvil),
+                StigmataRecipeCategory.TYPE
         );
+    }
+
+    @Override
+    public void onRuntimeAvailable(IJeiRuntime jeiRuntime) {
+        jeiRuntime.getIngredientManager().addIngredientsAtRuntime(TConstructJEIConstants.MODIFIER_TYPE, List.of(new ModifierEntry(EsotericismTinkerModifiers.STIGMATA, 1), new ModifierEntry(EsotericismTinkerModifiers.STIGMATA, 2), new ModifierEntry(EsotericismTinkerModifiers.STIGMATA, 3)));
     }
 }

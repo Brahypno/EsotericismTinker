@@ -1,0 +1,8 @@
+{
+  "variants": {
+    "facing=north": { "model": "esotericism_tinker:block/transcendence_anvil" },
+    "facing=east": { "model": "esotericism_tinker:block/transcendence_anvil", "y": 90 },
+    "facing=south": { "model": "esotericism_tinker:block/transcendence_anvil", "y": 180 },
+    "facing=west": { "model": "esotericism_tinker:block/transcendence_anvil", "y": 270 }
+  }
+}
