@@ -15,6 +15,8 @@ import org.brahypno.esotericismtinker.library.modifiers.modules.build.AllSlotMod
 import org.brahypno.esotericismtinker.library.modifiers.modules.combat.*;
 import org.brahypno.esotericismtinker.library.modifiers.modules.harvest.BlockLootMultiplierModule;
 import org.brahypno.esotericismtinker.library.modifiers.modules.harvest.EntityLootMultiplierModule;
+import org.brahypno.esotericismtinker.library.modifiers.modules.transcendence.NoumenonModule;
+import org.brahypno.esotericismtinker.library.modifiers.modules.transcendence.StigmataModule;
 import org.brahypno.esotericismtinker.library.modifiers.modules.weapon.SelfDestroyModule;
 import org.brahypno.esotericismtinker.library.modifiers.modules.weapon.SwappableCircleWeaponAttack;
 import org.brahypno.esotericismtinker.tools.modifiers.tools.ritual_blade.SelfSacrifice;
@@ -22,6 +24,7 @@ import org.brahypno.esotericismtinker.tools.traits.combat.ForceHurt;
 import org.brahypno.esotericismtinker.tools.traits.combat.ForceRemove;
 import org.brahypno.esotericismtinker.tools.traits.harvest.ForceDrop;
 import slimeknights.tconstruct.library.json.variable.entity.EntityVariable;
+import slimeknights.tconstruct.library.modifiers.ModifierId;
 import slimeknights.tconstruct.library.modifiers.modules.ModifierModule;
 import slimeknights.tconstruct.library.modifiers.util.ModifierDeferredRegister;
 import slimeknights.tconstruct.library.modifiers.util.StaticModifier;
@@ -32,6 +35,8 @@ public final class EsotericismTinkerModifiers extends EsotericismTinkerModule {
     public static final StaticModifier<ForceHurt> force_hurt = MODIFIERS.register("force_hurt", ForceHurt::new);
     public static final StaticModifier<ForceDrop> force_drop = MODIFIERS.register("force_drop", ForceDrop::new);
     public static final StaticModifier<ForceRemove> force_remove = MODIFIERS.register("force_remove", ForceRemove::new);
+    public static final ModifierId NOUMENON_CROWN = id("noumenon_crown");
+    public static final ModifierId STIGMATA = id("stigmata");
 
     @SuppressWarnings({"removal"})
     public EsotericismTinkerModifiers() {
@@ -75,10 +80,16 @@ public final class EsotericismTinkerModifiers extends EsotericismTinkerModule {
             ModifierModule.LOADER.register(EsotericismTinker.getLocation("projectile_spawn_module"), ProjectileSpawnModule.LOADER);
             ModifierModule.LOADER.register(EsotericismTinker.getLocation("all_slot_module"), AllSlotModule.LOADER);
             ModifierModule.LOADER.register(EsotericismTinker.getLocation("my_creative_flight_module"), FlightModule.LOADER);
+            ModifierModule.LOADER.register(EsotericismTinker.getLocation("noumenon"), NoumenonModule.LOADER);
+            ModifierModule.LOADER.register(EsotericismTinker.getLocation("stigmata"), StigmataModule.LOADER);
 
             EntityVariable.LOADER.register(EsotericismTinker.getLocation("horizontal_look_x"), HORIZONTAL_LOOK_X.getLoader());
             EntityVariable.LOADER.register(EsotericismTinker.getLocation("horizontal_look_z"), HORIZONTAL_LOOK_Z.getLoader());
 
         }
+    }
+
+    private static ModifierId id(String name) {
+        return new ModifierId(EsotericismTinker.MODID, name);
     }
 }

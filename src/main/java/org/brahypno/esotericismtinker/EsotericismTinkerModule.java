@@ -4,6 +4,7 @@ import net.minecraft.core.registries.Registries;
 import net.minecraft.world.item.BlockItem;
 import net.minecraft.world.item.CreativeModeTab;
 import net.minecraft.world.item.Item;
+import net.minecraft.world.inventory.MenuType;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.SoundType;
 import net.minecraft.world.level.block.state.BlockBehaviour;
@@ -41,6 +42,7 @@ public abstract class EsotericismTinkerModule {
 
     public static final DeferredRegister<StructurePieceType> STRUCTURE_PIECE_TYPES =
             DeferredRegister.create(Registries.STRUCTURE_PIECE, MODID);
+    public static final DeferredRegister<MenuType<?>> MENUS = DeferredRegister.create(ForgeRegistries.MENU_TYPES, MODID);
     protected static final Function<Block, ? extends BlockItem> TOOLTIP_BLOCK_ITEM = b -> new BlockTooltipItem(b, new Item.Properties());
 
     public static void initRegisters(IEventBus bus) {
@@ -53,6 +55,7 @@ public abstract class EsotericismTinkerModule {
         FEATURES.register(bus);
         STRUCTURE_TYPES.register(bus);
         STRUCTURE_PIECE_TYPES.register(bus);
+        MENUS.register(bus);
 
     }
 

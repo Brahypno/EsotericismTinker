@@ -18,8 +18,14 @@ import org.brahypno.esotericismtinker.EsotericismTinker;
 import org.brahypno.esotericismtinker.common.EsotericismTinkerCommon;
 import org.brahypno.esotericismtinker.common.EsotericismTinkerTagKeys;
 import org.brahypno.esotericismtinker.fluids.EsotericismTinkerFluids;
+import org.brahypno.esotericismtinker.library.recipe.EsotericismTinkerRecipeTypes;
 import org.brahypno.esotericismtinker.smeltery.EsotericismTinkerSmeltery;
+import org.brahypno.esotericismtinker.tools.EsotericismTinkerModifiers;
 import org.brahypno.esotericismtinker.tools.data.ToolsRecipesProvider;
+import org.brahypno.esotericismtinker.transcendence.appearance.StigmataStage;
+import org.brahypno.esotericismtinker.transcendence.appearance.data.StigmataRecipeBuilder;
+import org.brahypno.esotericismtinker.transcendence.intrinsic.data.NoumenonLevelRecipeBuilder;
+import org.brahypno.esotericismtinker.transcendence.table.EsotericismTinkerTranscendenceTable;
 import org.jetbrains.annotations.NotNull;
 import slimeknights.mantle.recipe.crafting.ShapedRetexturedRecipeBuilder;
 import slimeknights.mantle.recipe.data.ICommonRecipeHelper;
@@ -40,6 +46,7 @@ import slimeknights.tconstruct.shared.TinkerMaterials;
 import slimeknights.tconstruct.shared.block.SlimeType;
 import slimeknights.tconstruct.smeltery.TinkerSmeltery;
 import slimeknights.tconstruct.smeltery.block.component.SearedTankBlock;
+import slimeknights.tconstruct.tables.TinkerTables;
 import slimeknights.tconstruct.world.TinkerWorld;
 
 import java.util.Objects;
@@ -59,6 +66,8 @@ public class EsotericismTinkerRecipeProvider extends RecipeProvider implements I
         new ToolsRecipesProvider().buildRecipes(consumer);
         addCastingRecipes(consumer);
         addByproductEntityMeltingRecipes(consumer);
+        addTranscendenceRecipes(consumer);
+        addModifierRecipes(consumer);
     }
 
     private void addCastingRecipes(Consumer<FinishedRecipe> consumer) {
@@ -68,8 +77,34 @@ public class EsotericismTinkerRecipeProvider extends RecipeProvider implements I
                                 .save(consumer, prefix(EsotericismTinkerCommon.hypnagogic_transmute, "common/"));
     }
 
+    private void addTranscendenceRecipes(Consumer<FinishedRecipe> consumer) {
+        StigmataRecipeBuilder.stigmata(Ingredient.of(Items.DIAMOND), StigmataStage.MANIFESTATION)
+                             .save(consumer, EsotericismTinker.getLocation("transcendence/stigmata/manifestation"));
+        StigmataRecipeBuilder.stigmata(Ingredient.of(Items.NETHER_STAR), StigmataStage.ALIENATION)
+                             .save(consumer, EsotericismTinker.getLocation("transcendence/stigmata/alienation"));
+        StigmataRecipeBuilder.stigmata(Ingredient.of(Items.DRAGON_HEAD), StigmataStage.SEALING)
+                             .save(consumer, EsotericismTinker.getLocation("transcendence/stigmata/sealing"));
+        ItemCastingRecipeBuilder.castingRecipe(
+                                        ItemOutput.fromItem(EsotericismTinkerTranscendenceTable.transcendenceAnvil),
+                                        EsotericismTinkerRecipeTypes.RECURSIVE_RETEXTURED_CASTING_BASIN_SERIALIZER.get())
+                                .setFluidAndTime(EsotericismTinkerFluids.blood_soul, FluidType.BUCKET_VOLUME * 8).setCast(TinkerTables.tinkersAnvil, true)
+                                .save(consumer, EsotericismTinker.getLocation("transcendence/casting/transcendence_anvil"));
+        ItemCastingRecipeBuilder.castingRecipe(
+                                        ItemOutput.fromItem(EsotericismTinkerTranscendenceTable.transcendenceAnvil),
+                                        EsotericismTinkerRecipeTypes.RECURSIVE_RETEXTURED_CASTING_BASIN_SERIALIZER.get())
+                                .setFluidAndTime(EsotericismTinkerFluids.blood_soul, FluidType.BUCKET_VOLUME * 8).setCast(TinkerTables.scorchedAnvil, true)
+                                .save(consumer, EsotericismTinker.getLocation("transcendence/casting/scorched_transcendence_anvil"));
+    }
 
     private void addByproductEntityMeltingRecipes(Consumer<FinishedRecipe> consumer) {
+    }
+
+    private void addModifierRecipes(Consumer<FinishedRecipe> consumer) {
+        NoumenonLevelRecipeBuilder.modifier(EsotericismTinkerModifiers.NOUMENON_CROWN)
+                                  .addInput(EsotericismTinkerTranscendenceTable.transcendenceAnvil.get())
+                                  .setMaxLevel(3)
+                                  .disallowCrystal()
+                                  .save(consumer, EsotericismTinker.getLocation("noumenon_crown"));
     }
 
     private void addTransmuteRecipes(Consumer<FinishedRecipe> consumer) {

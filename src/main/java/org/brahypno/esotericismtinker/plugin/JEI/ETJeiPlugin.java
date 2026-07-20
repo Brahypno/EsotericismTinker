@@ -17,6 +17,8 @@ import org.brahypno.esotericismtinker.library.recipe.selenic.SelenicTinkerPartRe
 import org.brahypno.esotericismtinker.selenic.EsotericismTinkerSelenic;
 import org.brahypno.esotericismtinker.smeltery.recipe.entitymelting.ByproductEntityMeltingRecipe;
 import org.brahypno.esotericismtinker.smeltery.recipe.entitymelting.ByproductEntityMeltingRecipeRegistry;
+import org.brahypno.esotericismtinker.transcendence.appearance.recipe.StigmataRecipeAdapter;
+import org.brahypno.esotericismtinker.transcendence.table.EsotericismTinkerTranscendenceTable;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.List;
@@ -41,6 +43,7 @@ public class ETJeiPlugin implements IModPlugin {
         registration.addRecipeCategories(new SelenicAstrolabeRecipeCategory<>());
 
         registration.addRecipeCategories(new SelenicTinkerPartRecipeCategory());
+        registration.addRecipeCategories(new StigmataRecipeCategory(guiHelper));
     }
 
     @Override
@@ -76,6 +79,16 @@ public class ETJeiPlugin implements IModPlugin {
                 SelenicTinkerPartRecipeCategory.TYPE,
                 partDisplays
         );
+
+        List<StigmataRecipeAdapter> stigmataRecipes = Minecraft.getInstance().level
+                .getRecipeManager()
+                .getAllRecipesFor(EsotericismTinkerRecipeTypes.STIGMATA_TYPE.get());
+        List<StigmataJeiRecipe> stigmataDisplays =
+                StigmataJeiDisplayFactory.createAll(
+                        Minecraft.getInstance().level,
+                        stigmataRecipes
+                );
+        registration.addRecipes(StigmataRecipeCategory.TYPE, stigmataDisplays);
     }
 
     @Override
@@ -87,6 +100,10 @@ public class ETJeiPlugin implements IModPlugin {
                 new ItemStack(EsotericismTinkerSelenic.armillaryCrown),
                 SelenicAstrolabeRecipeCategory.TYPE,
                 SelenicTinkerPartRecipeCategory.TYPE
+        );
+        registration.addRecipeCatalyst(
+                new ItemStack(EsotericismTinkerTranscendenceTable.transcendenceAnvil),
+                StigmataRecipeCategory.TYPE
         );
     }
 }

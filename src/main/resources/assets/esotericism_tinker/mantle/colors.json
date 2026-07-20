@@ -1,5 +1,10 @@
 {
   "modifier.esotericism_tinker": {
-    "self_sacrifice": "#AA0066"
+    "self_sacrifice": "#AA0066",
+    "noumenon_crown": "#D4AF37",
+    "stigmata": "#4B286D"
+  },
+  "stat.tconstruct.slot": {
+    "delusions": "#C8A0F0"
   }
 }
