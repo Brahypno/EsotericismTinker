@@ -58,6 +58,7 @@ public class EsotericismTinkerRecipeProvider extends RecipeProvider implements I
         addTransmuteRecipes(consumer);
         new ToolsRecipesProvider().buildRecipes(consumer);
         addCastingRecipes(consumer);
+        addByproductEntityMeltingRecipes(consumer);
     }
 
     private void addCastingRecipes(Consumer<FinishedRecipe> consumer) {
@@ -67,6 +68,9 @@ public class EsotericismTinkerRecipeProvider extends RecipeProvider implements I
                                 .save(consumer, prefix(EsotericismTinkerCommon.hypnagogic_transmute, "common/"));
     }
 
+
+    private void addByproductEntityMeltingRecipes(Consumer<FinishedRecipe> consumer) {
+    }
 
     private void addTransmuteRecipes(Consumer<FinishedRecipe> consumer) {
         String folder = "smeltery/ashen/";

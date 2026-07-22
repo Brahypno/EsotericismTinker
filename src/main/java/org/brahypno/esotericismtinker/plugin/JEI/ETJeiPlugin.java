@@ -15,6 +15,8 @@ import org.brahypno.esotericismtinker.library.recipe.EsotericismTinkerRecipeType
 import org.brahypno.esotericismtinker.library.recipe.selenic.SelenicAstrolabeRecipe;
 import org.brahypno.esotericismtinker.library.recipe.selenic.SelenicTinkerPartRecipe;
 import org.brahypno.esotericismtinker.selenic.EsotericismTinkerSelenic;
+import org.brahypno.esotericismtinker.smeltery.recipe.entitymelting.ByproductEntityMeltingRecipe;
+import org.brahypno.esotericismtinker.smeltery.recipe.entitymelting.ByproductEntityMeltingRecipeRegistry;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.List;
@@ -35,6 +37,7 @@ public class ETJeiPlugin implements IModPlugin {
             ArsJeiCompat.registerCategories(registration);
         }
         IGuiHelper guiHelper = registration.getJeiHelpers().getGuiHelper();
+        registration.addRecipeCategories(new ByproductEntityMeltingCategory(guiHelper));
         registration.addRecipeCategories(new SelenicAstrolabeRecipeCategory<>());
 
         registration.addRecipeCategories(new SelenicTinkerPartRecipeCategory());
@@ -48,6 +51,11 @@ public class ETJeiPlugin implements IModPlugin {
         if (ModList.get().isLoaded("ars_nouveau")){
             ArsJeiCompat.registerRecipes(registration);
         }
+        List<ByproductEntityMeltingRecipe> byproductEntityMelting = Minecraft.getInstance().level
+                .getRecipeManager()
+                .getAllRecipesFor(ByproductEntityMeltingRecipeRegistry.TYPE.get());
+        registration.addRecipes(ByproductEntityMeltingCategory.TYPE, byproductEntityMelting);
+
         List<SelenicAstrolabeRecipe> astrolabe_recipes = Minecraft.getInstance().level
                 .getRecipeManager()
                 .getAllRecipesFor(EsotericismTinkerRecipeTypes.SELENIC_ASTROLABE_TYPE.get());

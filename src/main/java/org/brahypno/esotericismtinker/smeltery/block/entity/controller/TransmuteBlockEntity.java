@@ -23,7 +23,7 @@ import slimeknights.tconstruct.common.config.Config;
 import slimeknights.tconstruct.library.recipe.FluidValues;
 import slimeknights.tconstruct.smeltery.block.controller.ControllerBlock;
 import slimeknights.tconstruct.smeltery.block.entity.controller.HeatingStructureBlockEntity;
-import slimeknights.tconstruct.smeltery.block.entity.module.EntityMeltingModule;
+import org.brahypno.esotericismtinker.smeltery.block.entity.module.ByproductEntityMeltingModule;
 import slimeknights.tconstruct.smeltery.block.entity.module.MeltingModuleInventory;
 import slimeknights.tconstruct.smeltery.block.entity.module.alloying.MultiAlloyingModule;
 import slimeknights.tconstruct.smeltery.block.entity.module.alloying.SmelteryAlloyTank;
@@ -54,8 +54,8 @@ public class TransmuteBlockEntity extends HeatingStructureBlockEntity {
     private int heater = 0;
     private int accelerator = 1;
     private boolean heaterUpdateQueue = false;
-    protected final EntityMeltingModule entityModule =
-            new EntityMeltingModule(this, tank, this::canMeltEntities, this::insertIntoInventory, () -> structure == null ? null : structure.getBounds());
+    protected final ByproductEntityMeltingModule entityModule =
+            new ByproductEntityMeltingModule(this, tank, this::canMeltEntities, this::insertIntoInventory, () -> structure == null ? null : structure.getBounds());
     /**
      * Module handling alloys
      */

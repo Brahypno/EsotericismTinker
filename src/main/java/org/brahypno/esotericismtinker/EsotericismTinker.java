@@ -45,9 +45,12 @@ import org.brahypno.esotericismtinker.library.recipe.EsotericismTinkerRecipeType
 import org.brahypno.esotericismtinker.network.EsotericismTinkerNetwork;
 import org.brahypno.esotericismtinker.selenic.EsotericismTinkerSelenic;
 import org.brahypno.esotericismtinker.smeltery.EsotericismTinkerSmeltery;
+import org.brahypno.esotericismtinker.smeltery.recipe.entitymelting.ByproductEntityMeltingRecipeRegistry;
 import org.brahypno.esotericismtinker.tools.EsotericismTinkerModifiers;
 import org.brahypno.esotericismtinker.tools.EsotericismTinkerTools;
 import org.brahypno.esotericismtinker.tools.data.EsotericismTinkerFluidEffectProvider;
+import org.brahypno.esotericismtinker.transcendence.appearance.config.StigmataConfig;
+import org.brahypno.esotericismtinker.transcendence.intrinsic.data.NoumenonCostDataProvider;
 import org.brahypno.esotericismtinker.world.data.EsotericismTinkerDataPackProvider;
 import org.brahypno.esotericismtinker.world.worldgen.EsotericismTinkerWorldgenRegistry;
 import org.slf4j.Logger;
@@ -87,6 +90,8 @@ public class EsotericismTinker {
         MinecraftForge.EVENT_BUS.addListener(EventPriority.HIGHEST, PlayerLeftClickEvent::onLeftClickEntity);
         ModLoadingContext.get().registerConfig(ModConfig.Type.COMMON, Config.SPEC, "EsotericismTinkerConfig.toml");
         EsotericismTinkerRecipeTypes.register(modEventBus);
+        ByproductEntityMeltingRecipeRegistry.SERIALIZERS.register(modEventBus);
+        ByproductEntityMeltingRecipeRegistry.TYPES.register(modEventBus);
         EsotericismTinkerNetwork.registerPackets();
         if (ModList.get().isLoaded("ars_nouveau")){
             NovaRegistry.init(modEventBus);
