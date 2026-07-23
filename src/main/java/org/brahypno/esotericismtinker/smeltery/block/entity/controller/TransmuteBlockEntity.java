@@ -19,7 +19,6 @@ import org.brahypno.esotericismtinker.smeltery.block.entity.module.SuperByproduc
 import org.brahypno.esotericismtinker.smeltery.block.entity.multiblock.TransmuteMultiblock;
 import org.jetbrains.annotations.NotNull;
 import slimeknights.tconstruct.common.TinkerTags;
-import slimeknights.tconstruct.common.config.Config;
 import slimeknights.tconstruct.library.recipe.FluidValues;
 import slimeknights.tconstruct.smeltery.block.controller.ControllerBlock;
 import slimeknights.tconstruct.smeltery.block.entity.controller.HeatingStructureBlockEntity;
@@ -75,7 +74,7 @@ public class TransmuteBlockEntity extends HeatingStructureBlockEntity {
 
     @Override
     protected @NotNull MeltingModuleInventory createMeltingInventory() {
-        return new SuperByproductMeltingModuleInventory(this, tank, Config.COMMON.foundryOreRate);
+        return new SuperByproductMeltingModuleInventory(this, tank, org.brahypno.esotericismtinker.Config.TRANSMUTE_FOUNDRY_ORE_RATE);
     }
 
     @Override
