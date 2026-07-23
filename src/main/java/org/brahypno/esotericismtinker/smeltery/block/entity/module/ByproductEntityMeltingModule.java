@@ -12,6 +12,7 @@ import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.AABB;
 import net.minecraftforge.fluids.FluidStack;
 import net.minecraftforge.fluids.capability.IFluidHandler;
+import org.brahypno.esotericismtinker.Config;
 import org.brahypno.esotericismtinker.smeltery.recipe.entitymelting.ByproductEntityMeltingRecipe;
 import org.brahypno.esotericismtinker.smeltery.recipe.entitymelting.ByproductEntityMeltingRecipeCache;
 import slimeknights.mantle.block.entity.MantleBlockEntity;
@@ -93,6 +94,9 @@ public class ByproductEntityMeltingModule {
           } else {
             EntityMeltingRecipe recipe = findRecipe(type);
             FluidStack fluid = recipe != null ? recipe.getOutput(living) : getDefaultFluid();
+            fluid = fluid.copy();
+            long multipliedAmount = (long) fluid.getAmount() * Config.BYPRODUCT_ENTITY_MELTING_MULTIPLIER.get();
+            fluid.setAmount((int) Math.min(Integer.MAX_VALUE, multipliedAmount));
             int damage = recipe != null ? recipe.getDamage() : 2;
             if (entity.hurt(source, damage)) {
               tank.fill(fluid, IFluidHandler.FluidAction.EXECUTE);

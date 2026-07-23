@@ -5,8 +5,8 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraftforge.fluids.FluidStack;
 import net.minecraftforge.fluids.capability.IFluidHandler;
 import net.minecraftforge.items.ItemHandlerHelper;
+import org.brahypno.esotericismtinker.Config;
 import org.brahypno.esotericismtinker.smeltery.block.entity.controller.TransmuteBlockEntity;
-import slimeknights.tconstruct.common.config.Config;
 import slimeknights.tconstruct.library.recipe.melting.IMeltingContainer;
 import slimeknights.tconstruct.library.recipe.melting.IMeltingRecipe;
 import slimeknights.tconstruct.smeltery.block.entity.controller.HeatingStructureBlockEntity;
@@ -148,7 +148,7 @@ public class SuperByproductMeltingModuleInventory extends MeltingModuleInventory
             throw new IndexOutOfBoundsException();
         }
         if (smeltery_modules[slot] == null){
-            smeltery_modules[slot] = new MeltingModule(parent, recipe -> tryFillTank(slot, recipe), Config.COMMON.smelteryOreRate, slot);
+            smeltery_modules[slot] = new MeltingModule(parent, recipe -> tryFillTank(slot, recipe), Config.TRANSMUTE_SMELTERY_ORE_RATE, slot);
         }
         return smeltery_modules[slot];
     }
