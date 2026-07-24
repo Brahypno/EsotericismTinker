@@ -1,0 +1,16 @@
+{
+  "title": "Entity Melting",
+  "text": [
+    {
+      "text": "The Transmute can melt living entities just as a smeltery can, but the End's power draws more from every life consumed."
+    },
+    {
+      "text": "Ordinary entity melting produces twice the usual amount of fluid by default.",
+      "paragraph": true
+    },
+    {
+      "text": "Certain entities also have special byproduct melting recipes. When melted, they yield an additional byproduct fluid alongside the primary output; both fluids are collected by the Transmute.",
+      "paragraph": true
+    }
+  ]
+}
