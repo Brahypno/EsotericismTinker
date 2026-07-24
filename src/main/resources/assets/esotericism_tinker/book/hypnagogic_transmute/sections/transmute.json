@@ -16,6 +16,11 @@
     "data": "transmute/byproducts.json"
   },
   {
+    "name": "entity_melting",
+    "type": "mantle:text",
+    "data": "transmute/entity_melting.json"
+  },
+  {
     "name": "controller",
     "type": "mantle:image_text",
     "data": "transmute/controller.json"

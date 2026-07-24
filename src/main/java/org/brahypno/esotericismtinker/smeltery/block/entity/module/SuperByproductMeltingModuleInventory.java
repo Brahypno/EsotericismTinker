@@ -16,7 +16,6 @@ import slimeknights.tconstruct.smeltery.block.entity.tank.SmelteryTank;
 
 import javax.annotation.Nonnull;
 import java.util.Arrays;
-import java.util.Random;
 import java.util.function.Consumer;
 
 public class SuperByproductMeltingModuleInventory extends MeltingModuleInventory {
@@ -125,7 +124,7 @@ public class SuperByproductMeltingModuleInventory extends MeltingModuleInventory
 
     private boolean tryFillTankFoundry(int index, IMeltingRecipe recipe) {
         IMeltingContainer inv = getModule(index);
-        // 1) 涓讳骇鐗?
+        // 1) Main output
         FluidStack main = recipe.getOutput(inv);
         if (main.isEmpty() || main.getAmount() <= 0)
             return false;
@@ -135,8 +134,8 @@ public class SuperByproductMeltingModuleInventory extends MeltingModuleInventory
             return false;
 
         fluidHandler.fill(main, IFluidHandler.FluidAction.EXECUTE);
-        while (count < inv.getStack().getCount() * 2) {
-            // 4) 璁╅厤鏂规妸鍓骇鐗╃亴杩涗复鏃?tank锛堢┖闂寸瓑鍚屼簬鐪熷疄缃愬瓙鍦ㄧ亴瀹屼富浜х墿鍚庣殑鍓╀綑绌洪棿锛?
+        while (count < inv.getStack().getCount()) {
+            // 4) Let the recipe fill its byproducts into the real fluid handler.
             recipe.handleByproducts(inv, fluidHandler);
             ++count;
         }
@@ -156,9 +155,7 @@ public class SuperByproductMeltingModuleInventory extends MeltingModuleInventory
     private boolean tryFillTankSmeltery(int index, IMeltingRecipe recipe) {
         FluidStack fluid = recipe.getOutput(getSmelteryModule(index));
         IMeltingContainer inv = getModule(index);
-        Random defaultRand = new Random();
-        float value = 1.2F + defaultRand.nextFloat() * 0.2F;
-        fluid.setAmount((Mth.ceil(fluid.getAmount() * inv.getStack().getCount() * value)));
+        fluid.setAmount((Mth.ceil(fluid.getAmount() * inv.getStack().getCount())));
         if (fluidHandler.fill(fluid.copy(), IFluidHandler.FluidAction.SIMULATE) == fluid.getAmount()){
             fluidHandler.fill(fluid, IFluidHandler.FluidAction.EXECUTE);
             return true;
@@ -169,7 +166,7 @@ public class SuperByproductMeltingModuleInventory extends MeltingModuleInventory
     private boolean tryFillFluidTransmute(int index, IMeltingRecipe recipe) {
         IMeltingContainer inv = getModule(index);
 
-        // 1) 涓讳骇鐗?
+        // 1) Main output
         FluidStack main = recipe.getOutput(inv);
         if (main.isEmpty() || main.getAmount() <= 0)
             return false;
@@ -182,11 +179,11 @@ public class SuperByproductMeltingModuleInventory extends MeltingModuleInventory
         SmelteryTank<HeatingStructureBlockEntity> tank = new SmelteryTank<>(parent);
         tank.setCapacity(Math.max(0, main.getAmount() * 10));
         while (count < inv.getStack().getCount()) {
-            // 4) 璁╅厤鏂规妸鍓骇鐗╃亴杩涗复鏃?tank锛堢┖闂寸瓑鍚屼簬鐪熷疄缃愬瓙鍦ㄧ亴瀹屼富浜х墿鍚庣殑鍓╀綑绌洪棿锛?
+            // 4) Let the recipe fill its byproducts into the temporary tank.
             recipe.handleByproducts(inv, tank);
             ++count;
         }
-        // 5) 璇诲彇鍓骇鐗╁垪琛ㄤ笌鎬婚噺
+        // 5) Collect the non-empty byproduct fluids and their total amount.
         java.util.List<FluidStack> bys = collectNonEmptyFluids(tank);
 
         long M = main.getAmount();
