@@ -38,23 +38,17 @@ public class Config {
             BUILDER.comment("The accelerator fuel rate provided by each block").defineInRange("TransmuteFuelAccelerator", 15, 0, 20000);
 
     public static final OreRate TRANSMUTE_SMELTERY_ORE_RATE;
-    public static final OreRate TRANSMUTE_FOUNDRY_ORE_RATE;
 
     static {
         BUILDER.comment("Ore rates used by the transmute smeltery mode").push("SmelteryModeOreRate");
         // TConstruct smeltery defaults are 12 nuggets and 8 shards.
         TRANSMUTE_SMELTERY_ORE_RATE = new OreRate(BUILDER, 24, 16);
         BUILDER.pop();
-
-        BUILDER.comment("Ore rates used by the transmute foundry mode").push("FoundryModeOreRate");
-        // TConstruct foundry defaults are 9 nuggets and 4 shards.
-        TRANSMUTE_FOUNDRY_ORE_RATE = new OreRate(BUILDER, 18, 8);
-        BUILDER.pop();
     }
 
     public static final ForgeConfigSpec.IntValue BYPRODUCT_ENTITY_MELTING_MULTIPLIER =
             BUILDER.comment("Multiplier applied to normal TConstruct entity melting outputs in the transmute")
-                    .defineInRange("ByproductEntityMeltingMultiplier", 2, 1, 100);
+                   .defineInRange("ByproductEntityMeltingMultiplier", 2, 1, 100);
 
     static {
         BUILDER.pop();
@@ -82,7 +76,9 @@ public class Config {
         generateTransmuteRuins = GENERATE_TRANSMUTE_RUINS.get();
     }
 
-    /** Configurable ore-rate implementation equivalent to TConstruct's ore-rate config. */
+    /**
+     * Configurable ore-rate implementation equivalent to TConstruct's ore-rate config.
+     */
     public static final class OreRate implements IMeltingContainer.IOreRate {
         private final ForgeConfigSpec.ConfigValue<Integer> nuggetsPerMetal;
         private final ForgeConfigSpec.ConfigValue<Integer> shardsPerGem;
