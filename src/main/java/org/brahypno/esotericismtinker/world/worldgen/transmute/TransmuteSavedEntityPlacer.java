@@ -4,12 +4,9 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.nbt.*;
 import net.minecraft.util.Mth;
-import net.minecraft.world.DifficultyInstance;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.MobSpawnType;
-import net.minecraft.world.entity.SpawnGroupData;
-import net.minecraft.world.entity.decoration.HangingEntity;
 import net.minecraft.world.entity.monster.ZombieVillager;
 import net.minecraft.world.level.WorldGenLevel;
 import net.minecraft.world.level.block.Mirror;
@@ -24,18 +21,11 @@ import java.util.List;
 import java.util.Optional;
 
 public final class TransmuteSavedEntityPlacer {
+    private static final MobSpawnType ZOMBIE_VILLAGER_SPAWN_TYPE = MobSpawnType.STRUCTURE;
 
     private TransmuteSavedEntityPlacer() {}
 
-    public static void spawnSavedEntities(
-            WorldGenLevel level,
-            BoundingBox processBox,
-            StructureTemplate template,
-            StructurePlaceSettings settings,
-            BlockPos placePos
-    ) {
-        List<StructureTemplate.StructureEntityInfo> entities = template.entityInfoList;
-
+    public static void spawnSavedEntities(WorldGenLevel level, BoundingBox processBox, List<StructureTemplate.StructureEntityInfo> entities, StructurePlaceSettings settings, BlockPos placePos) {
         for (StructureTemplate.StructureEntityInfo info : entities) {
             CompoundTag rawNbt = info.nbt;
             String id = rawNbt.getString("id");
@@ -57,13 +47,7 @@ public final class TransmuteSavedEntityPlacer {
                || id.equals("tconstruct:fancy_item_frame");
     }
 
-    private static void spawnSavedFrame(
-            WorldGenLevel level,
-            BoundingBox processBox,
-            StructureTemplate.StructureEntityInfo info,
-            StructurePlaceSettings settings,
-            BlockPos placePos
-    ) {
+    private static void spawnSavedFrame(WorldGenLevel level, BoundingBox processBox, StructureTemplate.StructureEntityInfo info, StructurePlaceSettings settings, BlockPos placePos) {
         CompoundTag rawNbt = info.nbt;
         BlockPos tilePos = transformBlockPos(info.blockPos, settings, placePos);
 
@@ -81,6 +65,11 @@ public final class TransmuteSavedEntityPlacer {
             return;
         }
 
+        /*
+         * Entity range and collision queries can request chunks participating
+         * in the same generation dependency chain. Chunk-local indexing makes
+         * duplicate range queries unnecessary here.
+         */
         if (!canPlaceHangingEntity(level, tilePos, facing)){
             return;
         }
@@ -90,23 +79,10 @@ public final class TransmuteSavedEntityPlacer {
             return;
         }
 
-        Entity created = entity.get();
-        if (created instanceof HangingEntity hanging && !hanging.survives()){
-            return;
-        }
-
-        level.addFreshEntity(created);
+        level.addFreshEntity(entity.get());
     }
 
-    private static final MobSpawnType ZOMBIE_VILLAGER_SPAWN_TYPE = MobSpawnType.STRUCTURE;
-
-    private static void spawnNaturalZombieVillager(
-            WorldGenLevel level,
-            BoundingBox processBox,
-            StructureTemplate.StructureEntityInfo info,
-            StructurePlaceSettings settings,
-            BlockPos placePos
-    ) {
+    private static void spawnNaturalZombieVillager(WorldGenLevel level, BoundingBox processBox, StructureTemplate.StructureEntityInfo info, StructurePlaceSettings settings, BlockPos placePos) {
         Vec3 entityPos = transformVec(info.pos, settings, placePos);
         BlockPos blockPos = BlockPos.containing(entityPos);
 
@@ -118,60 +94,39 @@ public final class TransmuteSavedEntityPlacer {
             return;
         }
 
-        ZombieVillager zombie = EntityType.ZOMBIE_VILLAGER.create(level.getLevel());
+        ZombieVillager zombie =
+                EntityType.ZOMBIE_VILLAGER.create(level.getLevel());
+
         if (zombie == null){
             return;
         }
 
-        float yaw = readYaw(info.nbt) + yawOffset(settings.getRotation());
-        yaw = Mth.wrapDegrees(yaw);
+        float yaw = Mth.wrapDegrees(readYaw(info.nbt) + yawOffset(settings.getRotation()));
 
-        zombie.moveTo(
-                entityPos.x(),
-                entityPos.y(),
-                entityPos.z(),
-                yaw,
-                0.0F
-        );
+        zombie.moveTo(entityPos.x(), entityPos.y(), entityPos.z(), yaw, 0.0F);
+
         zombie.setYHeadRot(yaw);
         zombie.setYBodyRot(yaw);
 
-        DifficultyInstance difficulty = level.getCurrentDifficultyAt(blockPos);
+        zombie.finalizeSpawn(level, level.getCurrentDifficultyAt(blockPos), ZOMBIE_VILLAGER_SPAWN_TYPE, null, null);
 
-        SpawnGroupData spawnData = zombie.finalizeSpawn(
-                level,
-                difficulty,
-                ZOMBIE_VILLAGER_SPAWN_TYPE,
-                null,
-                null
-        );
-
-        // spawnData 当前不用，但保留局部变量方便调试，也避免你之后要扩展 group spawn 逻辑。
         zombie.setPersistenceRequired();
-
         level.addFreshEntity(zombie);
     }
 
-    private static boolean canSpawnZombieVillagerAt(
-            WorldGenLevel level,
-            BlockPos pos
-    ) {
+    private static boolean canSpawnZombieVillagerAt(WorldGenLevel level, BlockPos pos) {
         BlockState state = level.getBlockState(pos);
-        BlockState above = level.getBlockState(pos.above());
+        BlockPos abovePos = pos.above();
+        BlockState above = level.getBlockState(abovePos);
         BlockPos belowPos = pos.below();
         BlockState below = level.getBlockState(belowPos);
 
         return state.getCollisionShape(level, pos).isEmpty()
-               && above.getCollisionShape(level, pos.above()).isEmpty()
+               && above.getCollisionShape(level, abovePos).isEmpty()
                && below.isFaceSturdy(level, belowPos, Direction.UP);
     }
 
-    private static CompoundTag transformHangingNbt(
-            CompoundTag rawNbt,
-            BlockPos tilePos,
-            Vec3 entityPos,
-            StructurePlaceSettings settings
-    ) {
+    private static CompoundTag transformHangingNbt(CompoundTag rawNbt, BlockPos tilePos, Vec3 entityPos, StructurePlaceSettings settings) {
         CompoundTag nbt = rawNbt.copy();
 
         Direction rawFacing = readFacing(rawNbt);
@@ -197,42 +152,22 @@ public final class TransmuteSavedEntityPlacer {
         return Direction.from3DDataValue(nbt.getByte("Facing"));
     }
 
-    private static Direction rotateFacing(
-            Direction facing,
-            Rotation rotation,
-            Mirror mirror
-    ) {
+    private static Direction rotateFacing(Direction facing, Rotation rotation, Mirror mirror) {
         Direction mirrored = mirror.mirror(facing);
         return rotation.rotate(mirrored);
     }
 
-    private static BlockPos transformBlockPos(
-            BlockPos localPos,
-            StructurePlaceSettings settings,
-            BlockPos placePos
-    ) {
+    private static BlockPos transformBlockPos(BlockPos localPos, StructurePlaceSettings settings, BlockPos placePos) {
         return StructureTemplate.calculateRelativePosition(settings, localPos).offset(placePos);
     }
 
-    private static Vec3 transformVec(
-            Vec3 localPos,
-            StructurePlaceSettings settings,
-            BlockPos placePos
-    ) {
+    private static Vec3 transformVec(Vec3 localPos, StructurePlaceSettings settings, BlockPos placePos) {
         Vec3 transformed = StructureTemplate.transformedVec3d(settings, localPos);
 
-        return transformed.add(
-                placePos.getX(),
-                placePos.getY(),
-                placePos.getZ()
-        );
+        return transformed.add(placePos.getX(), placePos.getY(), placePos.getZ());
     }
 
-    private static boolean canPlaceHangingEntity(
-            WorldGenLevel level,
-            BlockPos tilePos,
-            Direction facing
-    ) {
+    private static boolean canPlaceHangingEntity(WorldGenLevel level, BlockPos tilePos, Direction facing) {
         BlockPos supportPos = tilePos.relative(facing.getOpposite());
         BlockState support = level.getBlockState(supportPos);
 

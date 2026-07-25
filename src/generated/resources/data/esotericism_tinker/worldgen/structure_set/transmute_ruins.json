@@ -2,8 +2,8 @@
   "placement": {
     "type": "minecraft:random_spread",
     "salt": 709957548,
-    "separation": 12,
-    "spacing": 40
+    "separation": 16,
+    "spacing": 80
   },
   "structures": [
     {
@@ -12,7 +12,7 @@
     },
     {
       "structure": "esotericism_tinker:transmute_ruin_broken",
-      "weight": 4
+      "weight": 6
     },
     {
       "structure": "esotericism_tinker:transmute_ruin_ruined",

@@ -53,12 +53,12 @@ public final class TransmuteRuinStructures {
                 new StructureSet(
                         List.of(
                                 StructureSet.entry(structures.getOrThrow(COMPLETE), 1),
-                                StructureSet.entry(structures.getOrThrow(BROKEN), 4),
+                                StructureSet.entry(structures.getOrThrow(BROKEN), 6),
                                 StructureSet.entry(structures.getOrThrow(RUINED), 3)
                         ),
                         new RandomSpreadStructurePlacement(
-                                40,
-                                12,
+                                80,
+                                16,
                                 RandomSpreadType.LINEAR,
                                 709957548
                         )

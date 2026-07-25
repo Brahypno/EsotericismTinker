@@ -22,121 +22,70 @@ import org.brahypno.esotericismtinker.smeltery.EsotericismTinkerSmeltery;
 import org.brahypno.esotericismtinker.world.worldgen.selenic.SelenicRuinNoise;
 
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 
 public final class TransmuteRuinPostProcessor {
 
     private TransmuteRuinPostProcessor() {}
 
-    public static void process(WorldGenLevel level, BoundingBox placedBox, BoundingBox generationBox, RandomSource random, TransmuteRuinKind kind, long ruinSeed, StructureTemplate template, StructurePlaceSettings settings, BlockPos placePos) {
+    public static void process(WorldGenLevel level, BoundingBox placedBox, BoundingBox generationBox, RandomSource random, TransmuteRuinKind kind, long ruinSeed, Set<BlockPos> templateBlocks, List<StructureTemplate.StructureEntityInfo> templateEntities, StructurePlaceSettings settings, BlockPos placePos) {
         BoundingBox processBox = intersect(placedBox, generationBox);
+
         if (processBox == null){
             return;
         }
 
-        Set<BlockPos> templateBlocks = collectTemplateSolidPositions(template, settings, placePos, processBox);
+        boolean shouldErode = kind != TransmuteRuinKind.COMPLETE;
+        Set<BlockPos> tntPositions = shouldErode ? new HashSet<>() : Set.of();
 
-        fillLootContainers(level, processBox, random);
-        randomizeFunctionalAshenBlocks(level, processBox, random, kind);
-        damageTransmuteControllers(level, processBox, random, kind);
-
-        Set<BlockPos> trapProtected = processTntTrapGroups(level, processBox);
-        erodeStructure(level, placedBox, processBox, kind, ruinSeed, trapProtected, templateBlocks);
-
-        TransmuteSavedEntityPlacer.spawnSavedEntities(level, processBox, template, settings, placePos);
-    }
-
-
-    private static void fillLootContainers(
-            WorldGenLevel level,
-            BoundingBox box,
-            RandomSource random
-    ) {
-        for (BlockPos cursor : BlockPos.betweenClosed(
-                box.minX(),
-                box.minY(),
-                box.minZ(),
-                box.maxX(),
-                box.maxY(),
-                box.maxZ()
-        )) {
-            BlockPos pos = cursor.immutable();
+        for (BlockPos pos : templateBlocks) {
             BlockState state = level.getBlockState(pos);
             Block block = state.getBlock();
 
-            if (isNotLootContainer(block)){
-                continue;
+            if (isLootContainer(block)){
+                RandomizableContainerBlockEntity.setLootTable(level, random, pos, BuiltInLootTables.END_CITY_TREASURE);
             }
 
-            RandomizableContainerBlockEntity.setLootTable(
-                    level,
-                    random,
-                    pos,
-                    BuiltInLootTables.END_CITY_TREASURE
-            );
-        }
-    }
+            if (isFunctionalAshenBlock(state)
+                && random.nextFloat()
+                   < kind.functionalReplaceChance()){
+                level.setBlock(pos, randomAshenBlock(random), Block.UPDATE_CLIENTS);
 
-    private static boolean isNotLootContainer(Block block) {
-        return !(block instanceof ChestBlock)
-               && !(block instanceof BarrelBlock)
-               && !(block instanceof ShulkerBoxBlock);
-    }
-
-    private static void randomizeFunctionalAshenBlocks(
-            WorldGenLevel level,
-            BoundingBox box,
-            RandomSource random,
-            TransmuteRuinKind kind
-    ) {
-        for (BlockPos cursor : BlockPos.betweenClosed(
-                box.minX(),
-                box.minY(),
-                box.minZ(),
-                box.maxX(),
-                box.maxY(),
-                box.maxZ()
-        )) {
-            BlockPos pos = cursor.immutable();
-            BlockState state = level.getBlockState(pos);
-
-            if (!isFunctionalAshenBlock(state)){
-                continue;
+                state = level.getBlockState(pos);
             }
 
-            if (random.nextFloat() >= kind.functionalReplaceChance()){
-                continue;
+            if (state.is(EsotericismTinkerSmeltery.transmuteController.get())){
+                if (random.nextFloat()
+                    < kind.controllerAirChance()){
+                    level.setBlock(pos, Blocks.AIR.defaultBlockState(), Block.UPDATE_CLIENTS);
+
+                    continue;
+                }
+
+                if (random.nextFloat()
+                    < kind.controllerLoseItemsChance()){
+                    clearControllerItems(level, pos);
+                }
             }
 
-            level.setBlock(pos, randomAshenBlock(random), Block.UPDATE_CLIENTS);
-        }
-    }
-
-    private static Set<BlockPos> collectTemplateSolidPositions(StructureTemplate template, StructurePlaceSettings settings, BlockPos placePos, BoundingBox processBox) {
-        Set<BlockPos> positions = new HashSet<>();
-
-        if (template.palettes.isEmpty()){
-            return positions;
-        }
-
-        StructureTemplate.Palette palette = settings.getRandomPalette(template.palettes, placePos);
-
-        for (StructureTemplate.StructureBlockInfo info : palette.blocks()) {
-            if (!isRealTemplateBlock(info.state())){
-                continue;
-            }
-
-            BlockPos worldPos = StructureTemplate.calculateRelativePosition(settings, info.pos()).offset(placePos);
-            if (isInside(processBox, worldPos)){
-                positions.add(worldPos.immutable());
+            if (shouldErode && state.is(Blocks.TNT)){
+                tntPositions.add(pos);
             }
         }
 
-        return positions;
+        if (shouldErode){
+            Set<BlockPos> trapProtected = collectTrapProtectedPositions(level, processBox, tntPositions);
+            erodeStructure(level, placedBox, kind, ruinSeed, trapProtected, templateBlocks);
+        }
+
+        TransmuteSavedEntityPlacer.spawnSavedEntities(level, processBox, templateEntities, settings, placePos);
     }
 
-    private static boolean isRealTemplateBlock(BlockState state) {
-        return !state.isAir() && !state.is(Blocks.STRUCTURE_VOID) && !state.is(Blocks.STRUCTURE_BLOCK) && !state.is(Blocks.JIGSAW);
+    private static boolean isLootContainer(Block block) {
+        return block instanceof ChestBlock
+               || block instanceof BarrelBlock
+               || block instanceof ShulkerBoxBlock;
     }
 
     private static boolean isFunctionalAshenBlock(BlockState state) {
@@ -152,80 +101,39 @@ public final class TransmuteRuinPostProcessor {
                 .orElse(EsotericismTinkerSmeltery.ashenStone.get().defaultBlockState());
     }
 
-    private static void damageTransmuteControllers(
-            WorldGenLevel level,
-            BoundingBox box,
-            RandomSource random,
-            TransmuteRuinKind kind
-    ) {
-        for (BlockPos cursor : BlockPos.betweenClosed(
-                box.minX(),
-                box.minY(),
-                box.minZ(),
-                box.maxX(),
-                box.maxY(),
-                box.maxZ()
-        )) {
-            BlockPos pos = cursor.immutable();
-            BlockState state = level.getBlockState(pos);
-
-            if (!state.is(EsotericismTinkerSmeltery.transmuteController.get())){
-                continue;
-            }
-
-            if (random.nextFloat() < kind.controllerAirChance()){
-                level.setBlock(pos, Blocks.AIR.defaultBlockState(), Block.UPDATE_CLIENTS);
-                continue;
-            }
-
-            if (random.nextFloat() < kind.controllerLoseItemsChance()){
-                clearControllerItems(level, pos);
-            }
-        }
-    }
-
     private static void clearControllerItems(WorldGenLevel level, BlockPos pos) {
         BlockEntity be = level.getBlockEntity(pos);
         if (be == null){
             return;
         }
 
-        boolean[] changed = {false};
         be.getCapability(ForgeCapabilities.ITEM_HANDLER).ifPresent(handler -> {
             if (!(handler instanceof IItemHandlerModifiable modifiable)){
                 return;
             }
 
+            boolean changed = false;
             for (int i = 0; i < modifiable.getSlots(); i++) {
-                modifiable.setStackInSlot(i, ItemStack.EMPTY);
+                if (!modifiable.getStackInSlot(i).isEmpty()){
+                    modifiable.setStackInSlot(i, ItemStack.EMPTY);
+                    changed = true;
+                }
             }
-            changed[0] = true;
+
+            if (changed){
+                be.setChanged();
+            }
         });
-
-        if (changed[0]){
-            be.setChanged();
-            return;
-        }
-
-        BlockState state = level.getBlockState(pos);
-        level.setBlock(pos, Blocks.AIR.defaultBlockState(), Block.UPDATE_CLIENTS);
-        level.setBlock(pos, state, Block.UPDATE_CLIENTS);
     }
 
-    private static void erodeStructure(WorldGenLevel level, BoundingBox placedBox, BoundingBox processBox, TransmuteRuinKind kind, long ruinSeed, Set<BlockPos> trapProtected, Set<BlockPos> templateBlocks) {
-        if (kind == TransmuteRuinKind.COMPLETE){
-            return;
-        }
-
+    private static void erodeStructure(WorldGenLevel level, BoundingBox placedBox, TransmuteRuinKind kind, long ruinSeed, Set<BlockPos> trapProtected, Set<BlockPos> templateBlocks) {
         int coarseSalt = seedSalt(ruinSeed, 73127);
         int fineSalt = seedSalt(ruinSeed, 9137);
         int collapseSalt = seedSalt(ruinSeed, 44021);
 
-        for (BlockPos cursor : BlockPos.betweenClosed(processBox.minX(), processBox.minY(), processBox.minZ(), processBox.maxX(), processBox.maxY(),
-                                                      processBox.maxZ())) {
-            BlockPos pos = cursor.immutable();
-
-            if (!templateBlocks.contains(pos) || trapProtected.contains(pos)){
+        // Iterate only real blocks from the selected template palette, never the whole bounding-box volume.
+        for (BlockPos pos : templateBlocks) {
+            if (trapProtected.contains(pos)){
                 continue;
             }
 
@@ -234,7 +142,7 @@ public final class TransmuteRuinPostProcessor {
                 continue;
             }
 
-            float chance = erosionChance(level, placedBox, pos, kind, coarseSalt, fineSalt);
+            float chance = erosionChance(level, placedBox, pos, kind, coarseSalt, fineSalt, templateBlocks);
             chance = Math.max(chance, collapseChance(placedBox, pos, kind, collapseSalt));
 
             if (stableFloat(pos, ruinSeed, 812873) < chance){
@@ -243,7 +151,7 @@ public final class TransmuteRuinPostProcessor {
         }
     }
 
-    private static float erosionChance(WorldGenLevel level, BoundingBox box, BlockPos pos, TransmuteRuinKind kind, int coarseSalt, int fineSalt) {
+    private static float erosionChance(WorldGenLevel level, BoundingBox box, BlockPos pos, TransmuteRuinKind kind, int coarseSalt, int fineSalt, Set<BlockPos> templateBlocks) {
         float chance = kind.eraseChance();
 
         float coarse = SelenicRuinNoise.value2D(pos, coarseSalt, 13.0D);
@@ -259,7 +167,7 @@ public final class TransmuteRuinPostProcessor {
             chance += 0.08F;
         }
 
-        if (!hasSupport(level, pos)){
+        if (!hasSupport(level, pos, templateBlocks)){
             chance += kind.unsupportedExtraChance();
         }
 
@@ -297,15 +205,19 @@ public final class TransmuteRuinPostProcessor {
         }
 
         Block block = state.getBlock();
-        return !(block instanceof BasePressurePlateBlock) && isNotLootContainer(block);
+        return !(block instanceof BasePressurePlateBlock) && !isLootContainer(block);
     }
 
     private static boolean isStoneProtected(BlockState state) {
         return state.is(Blocks.STONE);
     }
 
-    private static boolean hasSupport(WorldGenLevel level, BlockPos pos) {
+    private static boolean hasSupport(WorldGenLevel level, BlockPos pos, Set<BlockPos> templateBlocks) {
         BlockPos below = pos.below();
+        if (templateBlocks.contains(below)){
+            return true;
+        }
+
         return level.getBlockState(below).isFaceSturdy(level, below, Direction.UP);
     }
 
@@ -324,11 +236,10 @@ public final class TransmuteRuinPostProcessor {
         return new BoundingBox(minX, minY, minZ, maxX, maxY, maxZ);
     }
 
-    private static Set<BlockPos> processTntTrapGroups(WorldGenLevel level, BoundingBox processBox) {
+    private static Set<BlockPos> collectTrapProtectedPositions(WorldGenLevel level, BoundingBox processBox, Set<BlockPos> tntPositions) {
         Set<BlockPos> protectedPositions = new HashSet<>();
-
-        for (TntTrapGroup group : collectTntTrapGroups(level, processBox)) {
-            for (BlockPos pos : group.positions()) {
+        for (BlockPos tntPos : tntPositions) {
+            for (BlockPos pos : collectTntTrapPositions(level, tntPos)) {
                 if (isInside(processBox, pos)){
                     protectedPositions.add(pos);
                 }
@@ -338,36 +249,7 @@ public final class TransmuteRuinPostProcessor {
         return protectedPositions;
     }
 
-    private static Set<TntTrapGroup> collectTntTrapGroups(
-            WorldGenLevel level,
-            BoundingBox box
-    ) {
-        Set<TntTrapGroup> groups = new HashSet<>();
-
-        for (BlockPos cursor : BlockPos.betweenClosed(
-                box.minX(),
-                box.minY(),
-                box.minZ(),
-                box.maxX(),
-                box.maxY(),
-                box.maxZ()
-        )) {
-            BlockPos pos = cursor.immutable();
-
-            if (!level.getBlockState(pos).is(Blocks.TNT)){
-                continue;
-            }
-
-            groups.add(new TntTrapGroup(pos, collectTntTrapPositions(level, pos)));
-        }
-
-        return groups;
-    }
-
-    private static Set<BlockPos> collectTntTrapPositions(
-            WorldGenLevel level,
-            BlockPos tntPos
-    ) {
+    private static Set<BlockPos> collectTntTrapPositions(WorldGenLevel level, BlockPos tntPos) {
         Set<BlockPos> positions = new HashSet<>();
         positions.add(tntPos);
 
@@ -398,11 +280,7 @@ public final class TransmuteRuinPostProcessor {
                && pos.getZ() <= box.maxZ();
     }
 
-    private static float stableFloat(
-            BlockPos pos,
-            long seed,
-            int salt
-    ) {
+    private static float stableFloat(BlockPos pos, long seed, int salt) {
         long value = seed;
         value ^= (long) pos.getX() * 341873128712L;
         value ^= (long) pos.getY() * 132897987541L;
@@ -418,13 +296,7 @@ public final class TransmuteRuinPostProcessor {
         return (value >>> 40) / (float) (1 << 24);
     }
 
-    private record TntTrapGroup(BlockPos anchor, Set<BlockPos> positions) {}
-
     private static float collapseChance(BoundingBox box, BlockPos pos, TransmuteRuinKind kind, int salt) {
-        if (kind == TransmuteRuinKind.COMPLETE){
-            return 0.0F;
-        }
-
         double y = normalize(pos.getY(), box.minY(), box.maxY());
         int cellSize = kind == TransmuteRuinKind.RUINED ? 6 : 8;
 

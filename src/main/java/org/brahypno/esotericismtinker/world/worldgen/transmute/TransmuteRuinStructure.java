@@ -8,6 +8,7 @@ import net.minecraft.world.level.block.Rotation;
 import net.minecraft.world.level.levelgen.Heightmap;
 import net.minecraft.world.level.levelgen.structure.Structure;
 import net.minecraft.world.level.levelgen.structure.StructureType;
+import net.minecraft.world.level.levelgen.structure.templatesystem.StructureTemplate;
 import org.brahypno.esotericismtinker.Config;
 import org.brahypno.esotericismtinker.world.worldgen.EsotericismTinkerWorldgenRegistry;
 import org.jetbrains.annotations.NotNull;
@@ -60,10 +61,14 @@ public class TransmuteRuinStructure extends Structure {
         BlockPos origin = new BlockPos(x, y.get(), z);
         Rotation rotation = Rotation.getRandom(context.random());
         long ruinSeed = context.random().nextLong();
+        StructureTemplate template = context.structureTemplateManager().getOrCreate(TransmuteRuinPiece.TEMPLATE);
+        if (!TransmuteRuinPiece.isValidTemplate(template)){
+            return Optional.empty();
+        }
 
         return Optional.of(new GenerationStub(
                 origin,
-                builder -> builder.addPiece(new TransmuteRuinPiece(origin, kind, rotation, ruinSeed))
+                builder -> builder.addPiece(new TransmuteRuinPiece(origin, kind, rotation, ruinSeed, template))
         ));
     }
 
@@ -77,11 +82,7 @@ public class TransmuteRuinStructure extends Structure {
         return (long) x * (long) x + (long) z * (long) z >= minDistance * minDistance;
     }
 
-    private static Optional<Integer> findStableSurfaceY(
-            GenerationContext context,
-            int centerX,
-            int centerZ
-    ) {
+    private static Optional<Integer> findStableSurfaceY(GenerationContext context, int centerX, int centerZ) {
         int[][] offsets = {
                 {0, 0},
                 {FOOTPRINT_RADIUS, 0},

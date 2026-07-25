@@ -7,8 +7,8 @@ import org.jetbrains.annotations.NotNull;
 import javax.annotation.Nullable;
 
 public enum TransmuteRuinKind implements StringRepresentable {
-    COMPLETE("complete", 0.00F, 0.12F, 0.00F, 0.00F, 0.00F),
-    BROKEN("broken", 0.34F, 0.55F, 0.24F, 0.45F, 0.16F),
+    COMPLETE("complete", 0.25F, 0.12F, 0.12F, 0.15F, 0.10F),
+    BROKEN("broken", 0.43F, 0.55F, 0.24F, 0.45F, 0.16F),
     RUINED("ruined", 0.72F, 0.85F, 0.55F, 0.85F, 0.28F);
 
     public static final Codec<TransmuteRuinKind> CODEC =
