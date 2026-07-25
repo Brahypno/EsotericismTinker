@@ -25,7 +25,9 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Function;
 
-/** Melting display for the Transmute mode, which exchanges main and byproduct totals. */
+/**
+ * Melting display for the Transmute mode, which exchanges main and byproduct totals.
+ */
 public class TransmuteCategory extends AbstractMeltingCategory {
     public static final RecipeType<MeltingRecipe> TYPE =
             RecipeType.create(EsotericismTinker.MODID, "transmute", MeltingRecipe.class);
@@ -55,6 +57,7 @@ public class TransmuteCategory extends AbstractMeltingCategory {
     }
 
     @Override
+    @SuppressWarnings("removal")
     public void setRecipe(IRecipeLayoutBuilder builder, MeltingRecipe recipe, IFocusGroup focuses) {
         builder.addSlot(RecipeIngredientRole.INPUT, 24, 18).addIngredients(recipe.getInput());
 
@@ -64,9 +67,9 @@ public class TransmuteCategory extends AbstractMeltingCategory {
                 ignored -> MeltingFluidCallback.INSTANCE);
 
         builder.addSlot(RecipeIngredientRole.RENDER_ONLY, 4, 4)
-                .addTooltipCallback(FUEL_TOOLTIP)
-                .setFluidRenderer(1, false, 12, 32)
-                .addIngredients(ForgeTypes.FLUID_STACK, MeltingFuelHandler.getUsableFuels(recipe.getTemperature()));
+               .addTooltipCallback(FUEL_TOOLTIP)
+               .setFluidRenderer(1, false, 12, 32)
+               .addIngredients(ForgeTypes.FLUID_STACK, MeltingFuelHandler.getUsableFuels(recipe.getTemperature()));
     }
 
     /**
@@ -76,19 +79,19 @@ public class TransmuteCategory extends AbstractMeltingCategory {
      */
     static List<List<FluidStack>> createTransmuteOutputs(MeltingRecipe recipe) {
         List<List<FluidStack>> source = recipe.getOutputWithByproducts();
-        if (source.isEmpty() || source.get(0).isEmpty()) {
+        if (source.isEmpty() || source.get(0).isEmpty()){
             return source;
         }
 
         List<FluidStack> mainVariants = copyStacks(source.get(0));
         OreRateType oreType = recipe.getOreType();
-        if (oreType != null) {
+        if (oreType != null){
             for (FluidStack main : mainVariants) {
                 main.setAmount(Config.COMMON.foundryOreRate.applyOreBoost(oreType, main.getAmount()));
             }
         }
 
-        if (source.size() == 1) {
+        if (source.size() == 1){
             return List.of(mainVariants);
         }
 
@@ -100,17 +103,17 @@ public class TransmuteCategory extends AbstractMeltingCategory {
         for (int i = 1; i < source.size(); i++) {
             List<FluidStack> variants = copyStacks(source.get(i));
             byproducts.add(variants);
-            if (!variants.isEmpty()) {
+            if (!variants.isEmpty()){
                 int amount = variants.get(0).getAmount();
                 byproductTotal += amount;
-                if (amount > largestAmount) {
+                if (amount > largestAmount){
                     largestAmount = amount;
                     largestIndex = i - 1;
                 }
             }
         }
 
-        if (byproductTotal <= 0) {
+        if (byproductTotal <= 0){
             List<List<FluidStack>> unchanged = new ArrayList<>(source.size());
             unchanged.add(mainVariants);
             unchanged.addAll(byproducts);
@@ -123,7 +126,7 @@ public class TransmuteCategory extends AbstractMeltingCategory {
 
         long distributed = 0;
         for (List<FluidStack> variants : byproducts) {
-            if (variants.isEmpty()) {
+            if (variants.isEmpty()){
                 continue;
             }
             long share = mainTotal * variants.get(0).getAmount() / byproductTotal;
@@ -134,7 +137,7 @@ public class TransmuteCategory extends AbstractMeltingCategory {
         }
 
         long remainder = mainTotal - distributed;
-        if (remainder > 0 && largestIndex >= 0) {
+        if (remainder > 0 && largestIndex >= 0){
             for (FluidStack variant : byproducts.get(largestIndex)) {
                 variant.setAmount(saturatedInt((long) variant.getAmount() + remainder));
             }
