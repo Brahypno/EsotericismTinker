@@ -1,7 +1,0 @@
-{
-  "type": "esotericism_tinker:stigmata",
-  "selector": {
-    "item": "minecraft:dragon_head"
-  },
-  "target_stage": "sealing"
-}

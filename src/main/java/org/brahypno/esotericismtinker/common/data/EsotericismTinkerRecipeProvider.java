@@ -80,10 +80,13 @@ public class EsotericismTinkerRecipeProvider extends RecipeProvider implements I
     private void addTranscendenceRecipes(Consumer<FinishedRecipe> consumer) {
         StigmataRecipeBuilder.stigmata(Ingredient.of(Items.DIAMOND), StigmataStage.MANIFESTATION)
                              .save(consumer, EsotericismTinker.getLocation("transcendence/stigmata/manifestation"));
+        /*
         StigmataRecipeBuilder.stigmata(Ingredient.of(Items.NETHER_STAR), StigmataStage.ALIENATION)
                              .save(consumer, EsotericismTinker.getLocation("transcendence/stigmata/alienation"));
         StigmataRecipeBuilder.stigmata(Ingredient.of(Items.DRAGON_HEAD), StigmataStage.SEALING)
                              .save(consumer, EsotericismTinker.getLocation("transcendence/stigmata/sealing"));
+
+         */
         ItemCastingRecipeBuilder.castingRecipe(
                                         ItemOutput.fromItem(EsotericismTinkerTranscendenceTable.transcendenceAnvil),
                                         EsotericismTinkerRecipeTypes.RECURSIVE_RETEXTURED_CASTING_BASIN_SERIALIZER.get())
@@ -101,8 +104,12 @@ public class EsotericismTinkerRecipeProvider extends RecipeProvider implements I
 
     private void addModifierRecipes(Consumer<FinishedRecipe> consumer) {
         NoumenonLevelRecipeBuilder.modifier(EsotericismTinkerModifiers.NOUMENON_CROWN)
-                                  .addInput(EsotericismTinkerTranscendenceTable.transcendenceAnvil.get())
-                                  .setMaxLevel(3)
+                                  .addInput(Items.GLOW_INK_SAC)
+                                  .addInput(Items.LANTERN)
+                                  .addInput(Items.GLOW_INK_SAC)
+                                  .addInput(Blocks.AMETHYST_BLOCK)
+                                  .addInput(Blocks.AMETHYST_BLOCK)
+                                  .setMaxLevel(1)
                                   .disallowCrystal()
                                   .save(consumer, EsotericismTinker.getLocation("noumenon_crown"));
     }

@@ -3,12 +3,22 @@
   "allow_crystal": false,
   "inputs": [
     {
-      "item": "esotericism_tinker:transcendence_anvil"
+      "item": "minecraft:glow_ink_sac"
+    },
+    {
+      "item": "minecraft:lantern"
+    },
+    {
+      "item": "minecraft:glow_ink_sac"
+    },
+    {
+      "item": "minecraft:amethyst_block"
+    },
+    {
+      "item": "minecraft:amethyst_block"
     }
   ],
-  "level": {
-    "max": 3
-  },
+  "level": 1,
   "result": "esotericism_tinker:noumenon_crown",
   "tools": {
     "tag": "tconstruct:modifiable"
