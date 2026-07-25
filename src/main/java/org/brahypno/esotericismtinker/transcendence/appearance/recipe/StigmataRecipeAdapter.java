@@ -3,6 +3,7 @@ package org.brahypno.esotericismtinker.transcendence.appearance.recipe;
 import net.minecraft.core.RegistryAccess;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.util.RandomSource;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.crafting.RecipeSerializer;
 import net.minecraft.world.item.crafting.RecipeType;
@@ -32,13 +33,13 @@ public record StigmataRecipeAdapter(StigmataRecipe data) implements ITinkerStati
 
     @Override
     public boolean matches(ITinkerStationContainer container, Level level) {
-        return getMatchError(container) == null;
+        return null == getMatchError(container);
     }
 
     @Override
     public RecipeResult<LazyToolStack> getValidatedResult(ITinkerStationContainer container, RegistryAccess access) {
         Component error = getMatchError(container);
-        if (error != null){
+        if (null != error){
             return RecipeResult.failure(error);
         }
 
@@ -46,7 +47,8 @@ public record StigmataRecipeAdapter(StigmataRecipe data) implements ITinkerStati
         StigmataMutationResult mutation = StigmataLogic.applyTarget(
                 tool,
                 container.getInput(PART_INPUT),
-                data.targetStage()
+                data.targetStage(),
+                RandomSource.create()
         );
         return mutation.success() ? ITinkerStationRecipe.success(tool, container) : RecipeResult.failure(mutation.error());
     }
@@ -58,7 +60,7 @@ public record StigmataRecipeAdapter(StigmataRecipe data) implements ITinkerStati
     public void updateInputs(LazyToolStack result, IMutableTinkerStationContainer container, boolean isServer) {
         List<ItemStack> materialSlots = materialSlots(container);
         Component error = StigmataRecipeMatcher.getError(container.getInput(PART_INPUT), materialSlots);
-        if (error != null)
+        if (null != error)
             return;
 
         StigmataRecipeMatch match = StigmataRecipeMatcher.createValidatedMatch(data, container.getInput(PART_INPUT), materialSlots);
@@ -99,7 +101,7 @@ public record StigmataRecipeAdapter(StigmataRecipe data) implements ITinkerStati
     }
 
     private Component getMatchError(ITinkerStationContainer container) {
-        if (container.getInputCount() != 5){
+        if (5 != container.getInputCount()){
             return Component.translatable("message.esotericism_tinker.stigmata.invalid_input_count", container.getInputCount());
         }
 

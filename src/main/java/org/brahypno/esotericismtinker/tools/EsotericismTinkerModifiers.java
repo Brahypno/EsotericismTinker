@@ -16,7 +16,9 @@ import org.brahypno.esotericismtinker.library.modifiers.modules.combat.*;
 import org.brahypno.esotericismtinker.library.modifiers.modules.harvest.BlockLootMultiplierModule;
 import org.brahypno.esotericismtinker.library.modifiers.modules.harvest.EntityLootMultiplierModule;
 import org.brahypno.esotericismtinker.library.modifiers.modules.transcendence.NoumenonModule;
+import org.brahypno.esotericismtinker.library.modifiers.modules.transcendence.StigmataArmorConsequenceModule;
 import org.brahypno.esotericismtinker.library.modifiers.modules.transcendence.StigmataModule;
+import org.brahypno.esotericismtinker.library.modifiers.modules.transcendence.StigmataToolConsequenceModule;
 import org.brahypno.esotericismtinker.library.modifiers.modules.weapon.SelfDestroyModule;
 import org.brahypno.esotericismtinker.library.modifiers.modules.weapon.SwappableCircleWeaponAttack;
 import org.brahypno.esotericismtinker.tools.modifiers.tools.ritual_blade.SelfSacrifice;
@@ -47,7 +49,7 @@ public final class EsotericismTinkerModifiers extends EsotericismTinkerModule {
         Vec3 look = entity.getLookAngle();
         double lengthSqr = look.x * look.x + look.z * look.z;
 
-        if (lengthSqr < 1.0E-6D){
+        if (1.0E-6D > lengthSqr){
             return 0.0f;
         }
 
@@ -63,7 +65,7 @@ public final class EsotericismTinkerModifiers extends EsotericismTinkerModule {
 
     @SubscribeEvent
     void registerSerializers(RegisterEvent event) {
-        if (event.getRegistryKey() == Registries.RECIPE_SERIALIZER){
+        if (Registries.RECIPE_SERIALIZER == event.getRegistryKey()){
             ModifierModule.LOADER.register(EsotericismTinker.getLocation("swappable_circle_weapon_attack"), SwappableCircleWeaponAttack.LOADER);
             ModifierModule.LOADER.register(EsotericismTinker.getLocation("effects_remover"), MobEffectsRemoverModule.LOADER);
             ModifierModule.LOADER.register(EsotericismTinker.getLocation("self_mob_effect"), SelfMobEffectModule.LOADER);
@@ -82,6 +84,8 @@ public final class EsotericismTinkerModifiers extends EsotericismTinkerModule {
             ModifierModule.LOADER.register(EsotericismTinker.getLocation("my_creative_flight_module"), FlightModule.LOADER);
             ModifierModule.LOADER.register(EsotericismTinker.getLocation("noumenon"), NoumenonModule.LOADER);
             ModifierModule.LOADER.register(EsotericismTinker.getLocation("stigmata"), StigmataModule.LOADER);
+            ModifierModule.LOADER.register(EsotericismTinker.getLocation("stigmata_tool_consequence"), StigmataToolConsequenceModule.LOADER);
+            ModifierModule.LOADER.register(EsotericismTinker.getLocation("stigmata_armor_consequence"), StigmataArmorConsequenceModule.LOADER);
 
             EntityVariable.LOADER.register(EsotericismTinker.getLocation("horizontal_look_x"), HORIZONTAL_LOOK_X.getLoader());
             EntityVariable.LOADER.register(EsotericismTinker.getLocation("horizontal_look_z"), HORIZONTAL_LOOK_Z.getLoader());

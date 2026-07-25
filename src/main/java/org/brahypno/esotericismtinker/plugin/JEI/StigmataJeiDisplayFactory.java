@@ -2,6 +2,7 @@ package org.brahypno.esotericismtinker.plugin.JEI;
 
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.util.RandomSource;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
@@ -50,7 +51,7 @@ public final class StigmataJeiDisplayFactory {
         .toList();
     for (StigmataRecipeAdapter recipe : orderedRecipes) {
       StigmataJeiRecipe display = create(recipe, pool);
-      if (display != null) {
+      if (null != display) {
         displays.add(display);
       }
     }
@@ -74,7 +75,7 @@ public final class StigmataJeiDisplayFactory {
     int attempts = Math.max(MAX_EXAMPLES * 8, pool.tools.size() * 4);
     for (int seed = 0; seed < attempts && before.size() < MAX_EXAMPLES; seed++) {
       DisplayRow row = buildRow(recipe.data().targetStage(), selectors, pool, seed);
-      if (row == null) {
+      if (null == row) {
         continue;
       }
       before.add(row.before);
@@ -109,23 +110,23 @@ public final class StigmataJeiDisplayFactory {
     ToolStack base = ToolStack.from(renderStack);
     base.ensureHasData();
     Set<ResourceLocation> nativeParts = nativePartIds(base);
-    if (nativeParts.size() < 2) {
+    if (2 > nativeParts.size()) {
       return null;
     }
 
     PartChoice manifestation = pool.choosePart(nativeParts, true, null, seed * 3 + 1);
     PartChoice alienation = pool.choosePart(nativeParts, false, null, seed * 3 + 2);
     PartChoice sealing = pool.choosePart(nativeParts, true,
-        manifestation == null ? null : manifestation.id, seed * 3 + 3);
-    if (manifestation == null || alienation == null || sealing == null) {
+        null == manifestation ? null : manifestation.id, seed * 3 + 3);
+    if (null == manifestation || null == alienation || null == sealing) {
       return null;
     }
 
     ToolStack before = base.copy();
-    if (target.index() >= 2 && !apply(before, manifestation.stack, StigmataStage.MANIFESTATION)) {
+    if (2 <= target.index() && !apply(before, manifestation.stack, StigmataStage.MANIFESTATION)) {
       return null;
     }
-    if (target.index() >= 3 && !apply(before, alienation.stack, StigmataStage.ALIENATION)) {
+    if (3 <= target.index() && !apply(before, alienation.stack, StigmataStage.ALIENATION)) {
       return null;
     }
 
@@ -135,7 +136,7 @@ public final class StigmataJeiDisplayFactory {
       case SEALING -> sealing;
     };
     List<ItemStack> tierMaterials = pool.chooseMaterials(current.tier, seed);
-    if (tierMaterials.size() < 3) {
+    if (3 > tierMaterials.size()) {
       return null;
     }
 
@@ -151,7 +152,8 @@ public final class StigmataJeiDisplayFactory {
   }
 
   private static boolean apply(ToolStack tool, ItemStack part, StigmataStage stage) {
-    StigmataMutationResult result = StigmataLogic.applyTarget(tool, part, stage);
+    StigmataMutationResult result =
+        StigmataLogic.applyTarget(tool, part, stage, RandomSource.create(0L));
     return result.success();
   }
 
@@ -159,7 +161,7 @@ public final class StigmataJeiDisplayFactory {
     Set<ResourceLocation> ids = new HashSet<>();
     for (IToolPart part : ToolPartsHook.parts(tool.getDefinition())) {
       ResourceLocation id = BuiltInRegistries.ITEM.getKey(part.asItem());
-      if (id != null) {
+      if (null != id) {
         ids.add(id);
       }
     }
@@ -200,7 +202,7 @@ public final class StigmataJeiDisplayFactory {
             continue;
           }
           ResourceLocation partId = ForgeRegistries.ITEMS.getKey(item);
-          if (partId == null) {
+          if (null == partId) {
             continue;
           }
           for (IMaterial material : MaterialRegistry.getMaterials()) {
@@ -208,7 +210,7 @@ public final class StigmataJeiDisplayFactory {
             if (!material.isHidden() && part.canUseMaterial(variant.getId())) {
               ItemStack stack = part.withMaterial(variant);
               StigmataMaterialInput resolved = StigmataMaterialResolver.resolvePart(stack);
-              if (resolved != null) {
+              if (null != resolved) {
                 parts.add(new PartChoice(partId, stack, resolved.tier()));
               }
             }
@@ -221,12 +223,12 @@ public final class StigmataJeiDisplayFactory {
       for (Item item : ForgeRegistries.ITEMS.getValues()) {
         ItemStack stack = item.getDefaultInstance();
         StigmataMaterialInput resolved = StigmataMaterialResolver.resolve(stack);
-        if (resolved == null || resolved.unitsPerItem() <= 0.0D) {
+        if (null == resolved || 0.0D >= resolved.unitsPerItem()) {
           continue;
         }
 
         int count = (int)Math.ceil((requiredUnits - 1.0E-7D) / resolved.unitsPerItem());
-        if (count < 1 || count > stack.getMaxStackSize()) {
+        if (1 > count || stack.getMaxStackSize() < count) {
           continue;
         }
         double overpay = count * resolved.unitsPerItem() - requiredUnits;
@@ -252,25 +254,25 @@ public final class StigmataJeiDisplayFactory {
                           ResourceLocation excluded, int seed) {
       List<PartChoice> matching = parts.stream()
           .filter(choice -> nativeParts.contains(choice.id) == requireNative)
-          .filter(choice -> excluded == null || !excluded.equals(choice.id))
+          .filter(choice -> null == excluded || !excluded.equals(choice.id))
           .toList();
       return matching.isEmpty() ? null : matching.get(Math.floorMod(seed, matching.size()));
     }
 
     private static MaterialChoice betterMaterialChoice(MaterialChoice first, MaterialChoice second) {
       int overpay = Double.compare(first.overpay(), second.overpay());
-      if (overpay != 0) {
-        return overpay < 0 ? first : second;
+      if (0 != overpay) {
+        return 0 > overpay ? first : second;
       }
       int count = Integer.compare(first.requiredCount(), second.requiredCount());
-      if (count != 0) {
-        return count < 0 ? first : second;
+      if (0 != count) {
+        return 0 > count ? first : second;
       }
       ResourceLocation firstId = ForgeRegistries.ITEMS.getKey(first.stack().getItem());
       ResourceLocation secondId = ForgeRegistries.ITEMS.getKey(second.stack().getItem());
       String firstName = Objects.toString(firstId, "");
       String secondName = Objects.toString(secondId, "");
-      return firstName.compareTo(secondName) <= 0 ? first : second;
+      return 0 >= firstName.compareTo(secondName) ? first : second;
     }
 
     List<ItemStack> chooseMaterials(int tier, int seed) {

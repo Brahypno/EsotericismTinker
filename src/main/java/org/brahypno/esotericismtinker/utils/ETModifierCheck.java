@@ -49,8 +49,7 @@ public class ETModifierCheck {
     public static int getModifierLevel(@NotNull LivingEntity entity, ModifierId id, EquipmentSlot slot) {
         if (null == entity.getItemBySlot(slot))
             return 0;
-        ItemStack stack = entity.getItemBySlot(slot);
-        return stack.getItem() instanceof IModifiable ? ModifierUtil.getModifierLevel(entity.getItemBySlot(slot), id) : 0;
+        return ModifierUtil.getModifierLevel(entity.getItemBySlot(slot), id);
     }
 
     public static int getMainhandModifierLevel(LivingEntity entity, ModifierId modifierId) {

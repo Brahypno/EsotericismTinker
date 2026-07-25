@@ -7,6 +7,17 @@
   "modules": [
     {
       "type": "esotericism_tinker:stigmata"
+    },
+    {
+      "type": "esotericism_tinker:stigmata_tool_consequence",
+      "tool": {
+        "type": "mantle:inverted",
+        "inverted_type": "mantle:tag",
+        "tag": "tconstruct:modifiable/armor/worn"
+      }
+    },
+    {
+      "type": "esotericism_tinker:stigmata_armor_consequence"
     }
   ],
   "tooltip_display": "always"

@@ -2,8 +2,17 @@ package org.brahypno.esotericismtinker.transcendence.appearance;
 
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.util.RandomSource;
+import org.brahypno.esotericismtinker.transcendence.intrinsic.NoumenonData;
 import org.jetbrains.annotations.Nullable;
+import slimeknights.tconstruct.library.materials.IMaterialRegistry;
+import slimeknights.tconstruct.library.materials.MaterialRegistry;
+import slimeknights.tconstruct.library.materials.definition.IMaterial;
+import slimeknights.tconstruct.library.materials.definition.MaterialVariant;
+import slimeknights.tconstruct.library.tools.definition.module.material.ToolMaterialHook;
+import slimeknights.tconstruct.library.tools.definition.module.material.ToolPartsHook;
 import slimeknights.tconstruct.library.tools.nbt.IToolContext;
+import slimeknights.tconstruct.library.tools.nbt.MaterialNBT;
 import slimeknights.tconstruct.library.tools.nbt.ToolStack;
 
 import java.util.ArrayList;
@@ -24,10 +33,12 @@ public final class StigmataData {
     private static final String MANIFESTATION = "manifestation";
     private static final String ALIENATION = "alienation";
     private static final String SEALING = "sealing";
+    private static final String CONSEQUENCE_SEED = "consequence_seed";
 
     private @Nullable StigmataEntry manifestation;
     private @Nullable StigmataEntry alienation;
     private @Nullable StigmataEntry sealing;
+    private int consequenceSeed = -1;
 
     public StigmataData() {}
 
@@ -36,17 +47,99 @@ public final class StigmataData {
         copy.manifestation = manifestation;
         copy.alienation = alienation;
         copy.sealing = sealing;
+        copy.consequenceSeed = consequenceSeed;
         return copy;
     }
 
-    public int stage() {
-        if (manifestation == null){
+    public boolean hasConsequenceSeed() {
+        return 0 <= consequenceSeed;
+    }
+
+    public int consequenceSeed() {
+        return consequenceSeed;
+    }
+
+    public void assignConsequenceSeed(RandomSource random) {
+        if (!hasConsequenceSeed()) {
+            consequenceSeed = random.nextInt(0x100);
+        }
+    }
+
+    public StigmataConsequence consequence() {
+        return StigmataConsequence.fromSeed(consequenceSeed);
+    }
+
+    /**
+     * Computes burden from the exact materials recorded by each active Stigmata stage.
+     */
+    public int burden() {
+        return materialTier(manifestation)
+               + materialTier(alienation) * 2
+               + materialTier(sealing) * 4;
+    }
+
+    /**
+     * Computes the target tool's inherent Stigmata capacity from its resolvable materials.
+     */
+    public static int capacity(IToolContext context) {
+        MaterialNBT materials = context.getMaterials();
+        int partCount = ToolPartsHook.parts(context.getDefinition()).size();
+        if (0 == partCount){
+            partCount = ToolMaterialHook.stats(context.getDefinition()).size();
+        }
+
+        double tierTotal = 0.0D;
+        int resolvedMaterialCount = 0;
+        for (int index = 0; index < materials.size(); index++) {
+            MaterialVariant variant = materials.get(index);
+            IMaterial material = variant.get();
+            if (IMaterial.UNKNOWN == material){
+                continue;
+            }
+
+            tierTotal += material.getTier();
+            resolvedMaterialCount++;
+        }
+
+        double averageMaterialTier =
+                0 == resolvedMaterialCount ? 0.0D : tierTotal / resolvedMaterialCount;
+        int baseCapacity = (int) Math.floor(5.0D * averageMaterialTier);
+        int partPenalty = 2 * Math.max(0, partCount - 2);
+        return Math.max(0, baseCapacity - partPenalty);
+    }
+
+    /**
+     * Assigned Noumenon tuning levels offset burden but never increase capacity.
+     */
+    public static int attunement(IToolContext context) {
+        long total = 0L;
+        for (int value : NoumenonData.read(context).tunings.values()) {
+            total += Math.max(0, value);
+        }
+        return (int) Math.min(Integer.MAX_VALUE, total);
+    }
+
+    public int overload(IToolContext context) {
+        return Math.max(0, burden() - capacity(context) - attunement(context));
+    }
+
+    private static int materialTier(@Nullable StigmataEntry entry) {
+        if (null == entry){
             return 0;
         }
-        if (alienation == null){
+        IMaterialRegistry materials = MaterialRegistry.getInstance();
+        IMaterial material = materials.getMaterial(entry.materialId());
+        return IMaterial.UNKNOWN == material ? 0 : material.getTier();
+    }
+
+    public int stage() {
+        if (null == manifestation){
+            return 0;
+        }
+        if (null == alienation){
             return 1;
         }
-        if (sealing == null){
+        if (null == sealing){
             return 2;
         }
         return 3;
@@ -88,15 +181,15 @@ public final class StigmataData {
 
     public List<StigmataEntry> activeEntries() {
         int stage = stage();
-        if (stage == 0){
+        if (0 == stage){
             return Collections.emptyList();
         }
         List<StigmataEntry> result = new ArrayList<>(stage);
         result.add(manifestation);
-        if (stage >= 2){
+        if (2 <= stage){
             result.add(alienation);
         }
-        if (stage >= 3){
+        if (3 <= stage){
             result.add(sealing);
         }
         return Collections.unmodifiableList(result);
@@ -107,10 +200,10 @@ public final class StigmataData {
      * This is intentionally deterministic for commands, old saves and malformed NBT.
      */
     public void normalize() {
-        if (manifestation == null){
+        if (null == manifestation){
             alienation = null;
             sealing = null;
-        }else if (alienation == null){
+        }else if (null == alienation){
             sealing = null;
         }
     }
@@ -118,13 +211,16 @@ public final class StigmataData {
     public CompoundTag serialize() {
         normalize();
         CompoundTag tag = new CompoundTag();
-        if (manifestation != null){
+        if (hasConsequenceSeed()){
+            tag.putInt(CONSEQUENCE_SEED, consequenceSeed);
+        }
+        if (null != manifestation){
             tag.put(MANIFESTATION, manifestation.serialize());
         }
-        if (alienation != null){
+        if (null != alienation){
             tag.put(ALIENATION, alienation.serialize());
         }
-        if (sealing != null){
+        if (null != sealing){
             tag.put(SEALING, sealing.serialize());
         }
         return tag;
@@ -132,6 +228,9 @@ public final class StigmataData {
 
     public static StigmataData deserialize(CompoundTag tag) {
         StigmataData data = new StigmataData();
+        if (tag.contains(CONSEQUENCE_SEED, CompoundTag.TAG_INT)){
+            data.consequenceSeed = tag.getInt(CONSEQUENCE_SEED) & 0xFF;
+        }
         if (tag.contains(MANIFESTATION, CompoundTag.TAG_COMPOUND)){
             data.manifestation = StigmataEntry.deserialize(tag.getCompound(MANIFESTATION));
         }
@@ -157,7 +256,7 @@ public final class StigmataData {
 
     public void write(ToolStack tool) {
         normalize();
-        if (stage() == 0){
+        if (0 == stage()){
             tool.getPersistentData().remove(KEY);
         }else {
             tool.getPersistentData().put(KEY, serialize());

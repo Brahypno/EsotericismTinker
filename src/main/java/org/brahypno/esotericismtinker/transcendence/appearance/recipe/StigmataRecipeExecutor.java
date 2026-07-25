@@ -1,5 +1,6 @@
 package org.brahypno.esotericismtinker.transcendence.appearance.recipe;
 
+import net.minecraft.util.RandomSource;
 import net.minecraft.world.item.ItemStack;
 import org.brahypno.esotericismtinker.transcendence.appearance.StigmataLogic;
 import org.brahypno.esotericismtinker.transcendence.appearance.StigmataMutationResult;
@@ -13,8 +14,11 @@ import java.util.List;
 public final class StigmataRecipeExecutor {
     private StigmataRecipeExecutor() {}
 
-    public static StigmataMutationResult execute(ToolStack simulatedTool, ItemStack partStack, List<ItemStack> materialSlots, ItemStack selectorStack, StigmataRecipeMatch match) {
-        StigmataMutationResult mutation = StigmataLogic.applyTarget(simulatedTool, partStack, match.recipe().targetStage());
+    public static StigmataMutationResult execute(
+            ToolStack simulatedTool, ItemStack partStack, List<ItemStack> materialSlots,
+            ItemStack selectorStack, StigmataRecipeMatch match, RandomSource random) {
+        StigmataMutationResult mutation =
+                StigmataLogic.applyTarget(simulatedTool, partStack, match.recipe().targetStage(), random);
         if (!mutation.success())
             return mutation;
 

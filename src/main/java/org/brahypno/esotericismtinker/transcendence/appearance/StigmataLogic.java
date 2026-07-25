@@ -3,6 +3,7 @@ package org.brahypno.esotericismtinker.transcendence.appearance;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.util.RandomSource;
 import net.minecraft.world.item.ItemStack;
 import org.brahypno.esotericismtinker.tools.EsotericismTinkerModifiers;
 import slimeknights.tconstruct.library.tools.definition.ToolDefinition;
@@ -28,7 +29,8 @@ import java.util.stream.Collectors;
 public final class StigmataLogic {
     private StigmataLogic() {}
 
-    public static StigmataMutationResult applyTarget(ToolStack targetTool, ItemStack partStack, StigmataStage targetStage) {
+    public static StigmataMutationResult applyTarget(
+            ToolStack targetTool, ItemStack partStack, StigmataStage targetStage, RandomSource random) {
         StigmataData original = StigmataData.read(targetTool);
         StigmataData changed = original.copy();
 
@@ -48,7 +50,7 @@ public final class StigmataLogic {
         }
 
         StigmataEntry incoming = StigmataPartResolver.resolve(partStack);
-        if (incoming == null){
+        if (null == incoming){
             return StigmataMutationResult.failure("message.esotericism_tinker.stigmata.not_tool_part");
         }
 
@@ -70,6 +72,9 @@ public final class StigmataLogic {
         }
 
         changed.set(targetStage, incoming);
+        if (!changed.hasConsequenceSeed()){
+            changed.assignConsequenceSeed(random);
+        }
         changed.write(targetTool);
         ensureModifier(targetTool, targetStage);
         targetTool.rebuildStats();
@@ -98,7 +103,7 @@ public final class StigmataLogic {
                 }
 
                 StigmataEntry manifestation = data.get(StigmataStage.MANIFESTATION);
-                if (manifestation == null){
+                if (null == manifestation){
                     yield StigmataMutationResult.failure("message.esotericism_tinker.stigmata.missing_manifestation");
                 }
 
