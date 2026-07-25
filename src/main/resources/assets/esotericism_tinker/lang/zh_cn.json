@@ -243,5 +243,6 @@
   "gui.esotericism_tinker.transcendence_anvil.investiture.invalid": "副手工具没有可供选择的工具定义强化。",
   "gui.esotericism_tinker.transcendence_anvil.investiture.locked": "该工具的授勋已经固定，无法再次选择。",
   "gui.esotericism_tinker.transcendence_anvil.investiture.selection_invalid": "授勋选择无效。",
-  "jei.esotericism_tinker.stigmata": "三重圣痕"
+  "jei.esotericism_tinker.stigmata": "三重圣痕",
+  "jei.esotericism_tinker.transmute.title": "嬗变"
 }

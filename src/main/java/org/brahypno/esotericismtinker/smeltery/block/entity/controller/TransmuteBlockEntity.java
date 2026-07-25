@@ -15,6 +15,7 @@ import org.brahypno.esotericismtinker.common.EsotericismTinkerTagKeys;
 import org.brahypno.esotericismtinker.smeltery.EsotericismTinkerSmeltery;
 import org.brahypno.esotericismtinker.smeltery.block.component.AshenAlloySwitchBlock;
 import org.brahypno.esotericismtinker.smeltery.block.component.AshenButtonBlock;
+import org.brahypno.esotericismtinker.smeltery.block.entity.module.ByproductEntityMeltingModule;
 import org.brahypno.esotericismtinker.smeltery.block.entity.module.SuperByproductMeltingModuleInventory;
 import org.brahypno.esotericismtinker.smeltery.block.entity.multiblock.TransmuteMultiblock;
 import org.jetbrains.annotations.NotNull;
@@ -22,7 +23,6 @@ import slimeknights.tconstruct.common.TinkerTags;
 import slimeknights.tconstruct.library.recipe.FluidValues;
 import slimeknights.tconstruct.smeltery.block.controller.ControllerBlock;
 import slimeknights.tconstruct.smeltery.block.entity.controller.HeatingStructureBlockEntity;
-import org.brahypno.esotericismtinker.smeltery.block.entity.module.ByproductEntityMeltingModule;
 import slimeknights.tconstruct.smeltery.block.entity.module.MeltingModuleInventory;
 import slimeknights.tconstruct.smeltery.block.entity.module.alloying.MultiAlloyingModule;
 import slimeknights.tconstruct.smeltery.block.entity.module.alloying.SmelteryAlloyTank;
@@ -54,7 +54,8 @@ public class TransmuteBlockEntity extends HeatingStructureBlockEntity {
     private int accelerator = 1;
     private boolean heaterUpdateQueue = false;
     protected final ByproductEntityMeltingModule entityModule =
-            new ByproductEntityMeltingModule(this, tank, this::canMeltEntities, this::insertIntoInventory, () -> structure == null ? null : structure.getBounds());
+            new ByproductEntityMeltingModule(this, tank, this::canMeltEntities, this::insertIntoInventory,
+                                             () -> structure == null ? null : structure.getBounds());
     /**
      * Module handling alloys
      */
@@ -74,7 +75,7 @@ public class TransmuteBlockEntity extends HeatingStructureBlockEntity {
 
     @Override
     protected @NotNull MeltingModuleInventory createMeltingInventory() {
-        return new SuperByproductMeltingModuleInventory(this, tank, org.brahypno.esotericismtinker.Config.TRANSMUTE_FOUNDRY_ORE_RATE);
+        return new SuperByproductMeltingModuleInventory(this, tank, slimeknights.tconstruct.common.config.Config.COMMON.foundryOreRate);
     }
 
     @Override
