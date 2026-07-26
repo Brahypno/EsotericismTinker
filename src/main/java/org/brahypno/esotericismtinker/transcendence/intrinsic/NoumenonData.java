@@ -40,9 +40,9 @@ public class NoumenonData {
      */
     public final Map<ResourceLocation, Integer> sublimations = new LinkedHashMap<>();
     /**
-     * Rejection and conflict stabilizers applied to the tool.
+     * Substrate assigned to Tuning. Tuning is a single accumulated value, not a set of typed entries.
      */
-    public final Map<ResourceLocation, Integer> tunings = new LinkedHashMap<>();
+    public int tuning;
 
     /**
      * Source tool definition captured by Investiture.
@@ -69,7 +69,7 @@ public class NoumenonData {
 
         result.receptionSlots.putAll(readReceptionMap(data, NoumenonKeys.RECEPTION_SLOTS));
         result.sublimations.putAll(readResourceMap(data, NoumenonKeys.SUBLIMATIONS));
-        result.tunings.putAll(readResourceMap(data, NoumenonKeys.TUNINGS));
+        result.tuning = readTuning(data);
 
         String investiture = data.getString(NoumenonKeys.INVESTED_DEFINITION);
         if (!investiture.isEmpty())
@@ -99,7 +99,10 @@ public class NoumenonData {
 
         writeStringMap(data, NoumenonKeys.RECEPTION_SLOTS, receptionSlots);
         writeResourceMap(data, NoumenonKeys.SUBLIMATIONS, sublimations);
-        writeResourceMap(data, NoumenonKeys.TUNINGS, tunings);
+        if (tuning > 0)
+            data.putInt(NoumenonKeys.TUNING, tuning);
+        else
+            data.remove(NoumenonKeys.TUNING);
 
         if (investedDefinition == null)
             data.remove(NoumenonKeys.INVESTED_DEFINITION);
@@ -135,11 +138,7 @@ public class NoumenonData {
     }
 
     public int usedTuningPoints() {
-        int used = 0;
-        for (Map.Entry<ResourceLocation, Integer> entry : tunings.entrySet()) {
-            used += NoumenonDatabase.getTuningCost(entry.getKey()) * entry.getValue();
-        }
-        return used;
+        return Math.max(0, tuning);
     }
 
     public int usedSubstratePoints() {
@@ -240,6 +239,13 @@ public class NoumenonData {
                 result.put(id, tag.getInt(raw));
         }
         return result;
+    }
+
+    /**
+     * Reads the scalar form first, then migrates old ID-to-level maps by summing their positive values.
+     */
+    private static int readTuning(IModDataView data) {
+        return Math.max(0, data.getInt(NoumenonKeys.TUNING));
     }
 
     private static void writeStringMap(ToolDataNBT data, ResourceLocation key, Map<String, Integer> map) {

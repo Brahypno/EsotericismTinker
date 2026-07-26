@@ -73,12 +73,10 @@ public final class NoumenonTestCommands {
                                                                                                                             IntegerArgumentType.getInteger(ctx,
                                                                                                                                                            "level"))))))
                                                   .then(Commands.literal("tuning")
-                                                                .then(Commands.argument("id", StringArgumentType.string())
-                                                                              .then(Commands.argument("level", IntegerArgumentType.integer(0))
-                                                                                            .executes(ctx -> setTuning(ctx.getSource(),
-                                                                                                                       StringArgumentType.getString(ctx, "id"),
-                                                                                                                       IntegerArgumentType.getInteger(ctx,
-                                                                                                                                                      "level"))))))
+                                                                .then(Commands.argument("value", IntegerArgumentType.integer(0))
+                                                                              .executes(ctx -> setTuning(
+                                                                                      ctx.getSource(),
+                                                                                      IntegerArgumentType.getInteger(ctx, "value")))))
                                                   .then(Commands.literal("investiture_list_offhand")
                                                                 .executes(ctx -> listInvestitureFromOffhand(ctx.getSource())))
                                                   .then(Commands.literal("investiture_from_offhand")
@@ -122,7 +120,7 @@ public final class NoumenonTestCommands {
             ));
             message(source, Component.translatable("command.esotericism_tinker.noumenon_test.dump.reception", data.receptionSlots));
             message(source, Component.translatable("command.esotericism_tinker.noumenon_test.dump.sublimation", data.sublimations));
-            message(source, Component.translatable("command.esotericism_tinker.noumenon_test.dump.tuning", data.tunings));
+            message(source, Component.translatable("command.esotericism_tinker.noumenon_test.dump.tuning", data.tuning));
             message(source, Component.translatable(
                     "command.esotericism_tinker.noumenon_test.dump.investiture",
                     definitionDisplayName(data.investedDefinition),
@@ -151,7 +149,7 @@ public final class NoumenonTestCommands {
             data.debugElevationPoints = 0;
             data.receptionSlots.clear();
             data.sublimations.clear();
-            data.tunings.clear();
+            data.tuning = 0;
             data.clearInvestiture();
         }, "cleared");
     }
@@ -266,8 +264,8 @@ public final class NoumenonTestCommands {
         });
     }
 
-    private static int setTuning(CommandSourceStack source, String id, int level) {
-        return mutate(source, data -> putOrRemove(data.tunings, parse(id), level), "tuning " + id + "=" + level);
+    private static int setTuning(CommandSourceStack source, int value) {
+        return mutate(source, data -> data.tuning = value, "tuning=" + value);
     }
 
     private static int listInvestitureFromOffhand(CommandSourceStack source) {
@@ -327,10 +325,10 @@ public final class NoumenonTestCommands {
             data.level = 2;
             data.receptionSlots.clear();
             data.sublimations.clear();
-            data.tunings.clear();
+            data.tuning = 0;
             data.receptionSlots.put("upgrades", 2);
             data.receptionSlots.put("abilities", 1);
-            data.tunings.put(NoumenonKeys.id("softened_rejection"), 2);
+            data.tuning = 2;
         }, "preset basic");
     }
 
@@ -339,11 +337,11 @@ public final class NoumenonTestCommands {
             data.level = 3;
             data.receptionSlots.clear();
             data.sublimations.clear();
-            data.tunings.clear();
+            data.tuning = 0;
             data.receptionSlots.put("upgrades", 2);
             data.receptionSlots.put("abilities", 1);
             data.sublimations.put(NoumenonKeys.id("broad_melee_sweep"), 3);
-            data.tunings.put(NoumenonKeys.id("softened_rejection"), 2);
+            data.tuning = 2;
         }, "preset broad_melee");
     }
 

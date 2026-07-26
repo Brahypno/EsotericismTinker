@@ -15,7 +15,6 @@ public final class NoumenonEntries {
     public static void register() {
         registerReceptions();
         registerSublimations();
-        registerTunings();
         registerInvestitures();
     }
 
@@ -42,14 +41,6 @@ public final class NoumenonEntries {
                 new NoumenonRequirement(List.of(TinkerTags.Items.AOE), List.of(), List.of()),
                 (context, source, level) -> {},
                 display("aoe_control", "trait", Items.DIAMOND_PICKAXE)));
-    }
-
-    private static void registerTunings() {
-        NoumenonDatabase.registerTuning(new NoumenonTuningEntry(
-                id("softened_rejection"), 1, 8, 1,
-                NoumenonRequirement.unrestricted(),
-                (context, data, level, rejection) -> rejection - level,
-                display("softened_rejection", "tuning", Items.AMETHYST_SHARD)));
     }
 
     private static void registerInvestitures() {

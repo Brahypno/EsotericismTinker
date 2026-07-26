@@ -5,7 +5,7 @@
 ## 当前结构
 
 - `NoumenonCoreModifier`：阳性核心 modifier。
-- `NoumenonDatabase`：容受、升华、调律、授勋 GUI 元数据注册表。
+- `NoumenonDatabase`：容受、升华、授勋 GUI 元数据注册表。
 - `NoumenonData`：读写工具 persistentData。
 - `NoumenonInvestitureLogic`：从来源工具 ToolStack 捕获工具定义 traits 快照。
 - `test/NoumenonTestCommands`：测试指令。
@@ -14,7 +14,7 @@
 
 - Substrate（基质）供给：`level * 2 + 1`，由 Reception 和 Tuning 共同消耗。
 - Elevation 供给：`level²`，由 Sublimation 和 Investiture traits 共同消耗。
-- 已配置项目记录在各自的 map 中，并作为负向点数消耗。
+- 容受、升华和授勋项目记录在各自的 map 中；调律直接记录为一个整数，因为它只作为调和项起效。
 - 最终显示值为等级供给与负向消耗之和。
 - `points add/remove` 是独立的 debug 调整量，只叠加到等级供给，不覆盖等级公式。
 - `receptionSlots` 直接以真实 TConstruct `SlotType` 名称为键，例如 `upgrades`、`abilities`；不提供旧 Reception entry id

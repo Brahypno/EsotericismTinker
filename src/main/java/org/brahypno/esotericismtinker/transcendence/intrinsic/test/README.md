@@ -33,7 +33,7 @@ Substrate 由容受和调律消耗；Elevation 由升华和授勋词条消耗。
 /esotericism_tinker noumenon_test reception upgrades 2
 /esotericism_tinker noumenon_test reception abilities 1
 /esotericism_tinker noumenon_test sublimation esotericism_tinker:broad_melee_sweep 3
-/esotericism_tinker noumenon_test tuning esotericism_tinker:softened_rejection 2
+/esotericism_tinker noumenon_test tuning 2
 ```
 
 Reception 直接保存真实的 TConstruct `SlotType` 名称；不接受或迁移旧的 Reception entry id。

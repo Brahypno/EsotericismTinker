@@ -20,7 +20,7 @@ public final class NoumenonKeys {
      */
     public static final ResourceLocation RECEPTION_SLOTS = id("noumenon_reception_slots");
     public static final ResourceLocation SUBLIMATIONS = id("noumenon_sublimations");
-    public static final ResourceLocation TUNINGS = id("noumenon_tunings");
+    public static final ResourceLocation TUNING = id("noumenon_tuning");
 
     /**
      * Source tool definition captured by Investiture.

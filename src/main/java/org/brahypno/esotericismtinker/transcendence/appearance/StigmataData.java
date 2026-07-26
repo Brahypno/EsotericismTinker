@@ -112,11 +112,7 @@ public final class StigmataData {
      * Assigned Noumenon tuning levels offset burden but never increase capacity.
      */
     public static int attunement(IToolContext context) {
-        long total = 0L;
-        for (int value : NoumenonData.read(context).tunings.values()) {
-            total += Math.max(0, value);
-        }
-        return (int) Math.min(Integer.MAX_VALUE, total);
+        return Math.max(0, NoumenonData.read(context).tuning);
     }
 
     public int overload(IToolContext context) {
