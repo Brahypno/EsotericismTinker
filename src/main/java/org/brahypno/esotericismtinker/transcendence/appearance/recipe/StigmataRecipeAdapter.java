@@ -44,12 +44,7 @@ public record StigmataRecipeAdapter(StigmataRecipe data) implements ITinkerStati
         }
 
         ToolStack tool = ToolStack.from(container.getTinkerableStack().copy());
-        StigmataMutationResult mutation = StigmataLogic.applyTarget(
-                tool,
-                container.getInput(PART_INPUT),
-                data.targetStage(),
-                RandomSource.create()
-        );
+        StigmataMutationResult mutation = StigmataLogic.applyTarget(tool, container.getInput(PART_INPUT), data.targetStage(), RandomSource.create(), false);
         return mutation.success() ? ITinkerStationRecipe.success(tool, container) : RecipeResult.failure(mutation.error());
     }
 

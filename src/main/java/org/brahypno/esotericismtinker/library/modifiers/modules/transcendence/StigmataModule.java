@@ -55,9 +55,7 @@ public record StigmataModule(ModifierCondition<IToolContext> condition)
     }
 
     @Override
-    public void addTraits(
-            IToolContext context, ModifierEntry modifier,
-            TraitBuilder builder, boolean firstEncounter) {
+    public void addTraits(IToolContext context, ModifierEntry modifier, TraitBuilder builder, boolean firstEncounter) {
         if (!firstEncounter || !condition.matches(context, modifier)){
             return;
         }
@@ -83,6 +81,10 @@ public record StigmataModule(ModifierCondition<IToolContext> condition)
                     "modifier.esotericism_tinker.stigmata.overload.tooltip",
                     StigmataOverloadDegree.fromValues(overload, burden).displayName(),
                     data.consequence().displayName()));
+        }else {
+            tooltip.add(Component.translatable(
+                    "modifier.esotericism_tinker.stigmata.overload.tooltip_1",
+                    StigmataOverloadDegree.fromValues(overload, burden).displayName()));
         }
     }
 }

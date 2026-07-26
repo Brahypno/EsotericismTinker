@@ -28,9 +28,11 @@ public class EsotericismTinkerModifierProvider
                 .levelDisplay(new ModifierLevelDisplay.UniqueForLevels(3))
                 .addModule(StigmataModule.INSTANCE)
                 .addModule(StigmataToolConsequenceModule.builder()
-                        .toolItem(ItemPredicate.tag(TinkerTags.Items.WORN_ARMOR).inverted())
-                        .build())
-                .addModule(StigmataArmorConsequenceModule.INSTANCE);
+                                                        .toolItem(ItemPredicate.tag(TinkerTags.Items.WORN_ARMOR).inverted())
+                                                        .build())
+                .addModule(StigmataArmorConsequenceModule.builder()
+                                                         .toolItem(ItemPredicate.tag(TinkerTags.Items.ARMOR))
+                                                         .build());
     }
 
     @Override

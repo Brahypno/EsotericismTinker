@@ -18,6 +18,8 @@ import net.minecraftforge.network.PacketDistributor;
 import org.brahypno.esotericismtinker.library.recipe.EsotericismTinkerRecipeTypes;
 import org.brahypno.esotericismtinker.network.EsotericismTinkerNetwork;
 import org.brahypno.esotericismtinker.network.UpdateTranscendenceAnvilRecipePacket;
+import org.brahypno.esotericismtinker.transcendence.appearance.StigmataData;
+import org.brahypno.esotericismtinker.transcendence.appearance.recipe.StigmataRecipeAdapter;
 import org.brahypno.esotericismtinker.transcendence.intrinsic.NoumenonAllocationLogic;
 import org.brahypno.esotericismtinker.transcendence.intrinsic.NoumenonData;
 import org.brahypno.esotericismtinker.transcendence.intrinsic.NoumenonInvestitureLogic;
@@ -452,7 +454,8 @@ public final class TranscendenceAnvilBlockEntity extends RetexturedTableBlockEnt
     }
 
     private UpdateTranscendenceAnvilRecipePacket createRecipePacket() {
-        return new UpdateTranscendenceAnvilRecipePacket(worldPosition.asLong(), lastRecipe == null ? null : lastRecipe.getId(), synchronizedPreview, currentError);
+        return new UpdateTranscendenceAnvilRecipePacket(worldPosition.asLong(), lastRecipe == null ? null : lastRecipe.getId(), synchronizedPreview,
+                                                        currentError);
     }
 
     @Override
@@ -482,6 +485,16 @@ public final class TranscendenceAnvilBlockEntity extends RetexturedTableBlockEnt
 
         if (recipe == null || craftedResult == null){
             return;
+        }
+        if (recipe instanceof StigmataRecipeAdapter && !level.isClientSide){
+            ToolStack finalTool = ToolStack.from(resultItem);
+
+            StigmataData data = StigmataData.read(finalTool);
+            if (!data.hasConsequenceSeed()){
+                data.assignConsequenceSeed(level.getRandom());
+                data.write(finalTool);
+                finalTool.rebuildStats();
+            }
         }
 
         ItemStack tinkerable = getItem(0);
@@ -594,6 +607,11 @@ public final class TranscendenceAnvilBlockEntity extends RetexturedTableBlockEnt
             );
             RetexturedHelper.onTextureUpdated(this);
         }
+        wrapper.refresh(0);
+        craftingResult.clearContent();
+
+        pendingBaseTool = getItem(0).copy();
+        resetReceptionBaseline();
     }
 
     @Override

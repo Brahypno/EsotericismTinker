@@ -2,20 +2,25 @@ package org.brahypno.esotericismtinker.library.modifiers.modules.transcendence;
 
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
+import net.minecraft.network.chat.Component;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.entity.projectile.Projectile;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.TooltipFlag;
 import net.minecraft.world.level.Level;
 import net.minecraftforge.event.entity.player.PlayerEvent;
 import org.brahypno.esotericismtinker.library.modifiers.modules.transcendence.StigmataConsequenceEffects.ConsequenceState;
 import org.brahypno.esotericismtinker.transcendence.appearance.StigmataData;
+import slimeknights.mantle.client.TooltipKey;
 import slimeknights.mantle.data.loadable.record.RecordLoadable;
 import slimeknights.tconstruct.library.modifiers.ModifierEntry;
 import slimeknights.tconstruct.library.modifiers.ModifierHooks;
 import slimeknights.tconstruct.library.modifiers.hook.behavior.ToolDamageModifierHook;
 import slimeknights.tconstruct.library.modifiers.hook.combat.MeleeDamageModifierHook;
 import slimeknights.tconstruct.library.modifiers.hook.combat.MeleeHitModifierHook;
+import slimeknights.tconstruct.library.modifiers.hook.display.TooltipModifierHook;
 import slimeknights.tconstruct.library.modifiers.hook.interaction.InventoryTickModifierHook;
 import slimeknights.tconstruct.library.modifiers.hook.mining.BlockBreakModifierHook;
 import slimeknights.tconstruct.library.modifiers.hook.mining.BreakSpeedContext;
@@ -40,7 +45,7 @@ import java.util.List;
  */
 public record StigmataToolConsequenceModule(ModifierCondition<IToolContext> condition) implements ModifierModule, MeleeHitModifierHook, LauncherHitModifierHook,
         MeleeDamageModifierHook, BreakSpeedModifierHook, BlockBreakModifierHook, ToolDamageModifierHook,
-        InventoryTickModifierHook, ConditionalModule<IToolContext> {
+        InventoryTickModifierHook, TooltipModifierHook, ConditionalModule<IToolContext> {
     public static final RecordLoadable<StigmataToolConsequenceModule> LOADER = RecordLoadable.create(
             ModifierCondition.CONTEXT_FIELD, StigmataToolConsequenceModule::new);
 
@@ -48,7 +53,7 @@ public record StigmataToolConsequenceModule(ModifierCondition<IToolContext> cond
             HookProvider.<StigmataToolConsequenceModule>defaultHooks(ModifierHooks.MELEE_HIT, ModifierHooks.LAUNCHER_HIT,
                                                                      ModifierHooks.MELEE_DAMAGE, ModifierHooks.BREAK_SPEED,
                                                                      ModifierHooks.BLOCK_BREAK, ModifierHooks.TOOL_DAMAGE,
-                                                                     ModifierHooks.INVENTORY_TICK);
+                                                                     ModifierHooks.INVENTORY_TICK, ModifierHooks.TOOLTIP);
 
     public static Builder builder() {
         return new Builder();
@@ -163,6 +168,20 @@ public record StigmataToolConsequenceModule(ModifierCondition<IToolContext> cond
             return;
         }
         StigmataConsequenceEffects.get(state.data().consequence()).onInventoryTick(state, modifier, world, holder, itemSlot, isSelected, true, stack);
+    }
+
+    @Override
+    public void addTooltip(
+            IToolStackView tool, ModifierEntry modifier, @Nullable Player player,
+            List<Component> tooltip, TooltipKey tooltipKey, TooltipFlag tooltipFlag) {
+        if (TooltipKey.SHIFT != tooltipKey){
+            return;
+        }
+        ConsequenceState state = getActiveState(tool, modifier);
+        if (null != state){
+            StigmataConsequenceEffects.get(state.data().consequence())
+                                      .addTooltip(state, false, tooltip);
+        }
     }
 
     @Override

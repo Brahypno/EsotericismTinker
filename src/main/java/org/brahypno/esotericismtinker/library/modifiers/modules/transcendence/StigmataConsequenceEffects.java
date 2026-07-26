@@ -2,6 +2,8 @@ package org.brahypno.esotericismtinker.library.modifiers.modules.transcendence;
 
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.particles.ParticleTypes;
+import net.minecraft.ChatFormatting;
+import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
@@ -30,6 +32,7 @@ import net.minecraftforge.fml.common.Mod;
 import org.brahypno.esotericismtinker.EsotericismTinker;
 import org.brahypno.esotericismtinker.transcendence.appearance.StigmataConsequence;
 import org.brahypno.esotericismtinker.transcendence.appearance.StigmataData;
+import org.brahypno.esotericismtinker.transcendence.appearance.StigmataStage;
 import slimeknights.tconstruct.library.modifiers.ModifierEntry;
 import slimeknights.tconstruct.library.modifiers.hook.mining.BreakSpeedContext;
 import slimeknights.tconstruct.library.tools.context.EquipmentContext;
@@ -95,6 +98,18 @@ public final class StigmataConsequenceEffects {
     }
 
     public interface Handler {
+        default void addTooltip(
+                ConsequenceState state, boolean armor, List<Component> tooltip) {
+            StigmataStage stage = StigmataStage.byIndex(state.stage());
+            if (null == stage){
+                return;
+            }
+            Component problem = armor
+                                ? state.data().consequence().armorStageName(stage)
+                                : state.data().consequence().stageName(stage);
+            tooltip.add(problem.copy().withStyle(ChatFormatting.DARK_RED));
+        }
+
         default int onToolDamage(
                 ConsequenceState state, ModifierEntry modifier, int amount,
                 @Nullable LivingEntity holder) {

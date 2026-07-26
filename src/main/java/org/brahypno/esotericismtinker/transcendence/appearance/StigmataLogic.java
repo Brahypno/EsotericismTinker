@@ -30,7 +30,8 @@ public final class StigmataLogic {
     private StigmataLogic() {}
 
     public static StigmataMutationResult applyTarget(
-            ToolStack targetTool, ItemStack partStack, StigmataStage targetStage, RandomSource random) {
+            ToolStack targetTool, ItemStack partStack, StigmataStage targetStage,
+            RandomSource random, boolean assignConsequenceSeed) {
         StigmataData original = StigmataData.read(targetTool);
         StigmataData changed = original.copy();
 
@@ -38,7 +39,11 @@ public final class StigmataLogic {
         int target = targetStage.index();
 
         if (target > current + 1){
-            return StigmataMutationResult.failure("message.esotericism_tinker.stigmata.invalid_jump", current, target);
+            return StigmataMutationResult.failure(
+                    "message.esotericism_tinker.stigmata.invalid_jump",
+                    current,
+                    target
+            );
         }
 
         if (target < current){
@@ -51,30 +56,36 @@ public final class StigmataLogic {
 
         StigmataEntry incoming = StigmataPartResolver.resolve(partStack);
         if (null == incoming){
-            return StigmataMutationResult.failure("message.esotericism_tinker.stigmata.not_tool_part");
+            return StigmataMutationResult.failure(
+                    "message.esotericism_tinker.stigmata.not_tool_part"
+            );
         }
 
         ToolDefinition definition = targetTool.getDefinition();
         Set<ResourceLocation> nativeParts = collectNativePartIds(definition);
 
-        /*
-         * 普通工具仍按精确部件 ID 判断。
-         * 只有 TOOL_PARTS 为空的远古工具等特殊定义，才回退到材料属性类型判断。
-         */
         boolean isNativePart = nativeParts.isEmpty()
                                ? ToolMaterialHook.stats(definition).contains(incoming.statType())
                                : nativeParts.contains(incoming.partId());
 
         StigmataMutationResult validation =
-                validatePart(targetStage, isNativePart, original, incoming.partId(), partStack.getHoverName());
+                validatePart(
+                        targetStage,
+                        isNativePart,
+                        original,
+                        incoming.partId(),
+                        partStack.getHoverName()
+                );
         if (!validation.success()){
             return validation;
         }
 
         changed.set(targetStage, incoming);
-        if (!changed.hasConsequenceSeed()){
+
+        if (assignConsequenceSeed && !changed.hasConsequenceSeed()){
             changed.assignConsequenceSeed(random);
         }
+
         changed.write(targetTool);
         ensureModifier(targetTool, targetStage);
         targetTool.rebuildStats();

@@ -229,6 +229,7 @@
   "modifier.esotericism_tinker.stigmata.overload.severe": "Severe Overload",
   "modifier.esotericism_tinker.stigmata.overload.critical": "Critical Overload",
   "modifier.esotericism_tinker.stigmata.overload.tooltip": "%s: %s",
+  "modifier.esotericism_tinker.stigmata.overload.tooltip_1": "%s",
 
   "stigmata_consequence.esotericism_tinker.exaltation.name": "Exaltation",
   "stigmata_consequence.esotericism_tinker.exaltation.manifestation": "It begins to lift all that it touches; none know who shall rise next.",

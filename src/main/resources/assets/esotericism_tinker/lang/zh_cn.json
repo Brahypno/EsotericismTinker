@@ -229,6 +229,7 @@
   "modifier.esotericism_tinker.stigmata.overload.severe": "严重超载",
   "modifier.esotericism_tinker.stigmata.overload.critical": "极度超载",
   "modifier.esotericism_tinker.stigmata.overload.tooltip": "%s：%s",
+  "modifier.esotericism_tinker.stigmata.overload.tooltip_1": "%s",
 
   "stigmata_consequence.esotericism_tinker.exaltation.name": "举扬",
   "stigmata_consequence.esotericism_tinker.exaltation.manifestation": "它开始举起触及之物；无人知晓下一位会是谁。",
