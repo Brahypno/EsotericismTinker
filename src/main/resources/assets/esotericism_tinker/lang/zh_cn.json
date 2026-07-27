@@ -211,6 +211,8 @@
   "gui.esotericism_tinker.transcendence_anvil.reception.no_preview": "当前没有可用的制作预览",
   "gui.esotericism_tinker.transcendence_anvil.sublimation": "升华",
   "gui.esotericism_tinker.transcendence_anvil.tuning": "调律",
+  "gui.esotericism_tinker.transcendence_anvil.tuning.committed": "无法在此降低已经固化的调律",
+  "gui.esotericism_tinker.transcendence_anvil.tuning.no_preview": "当前没有可用的制作预览",
   "gui.esotericism_tinker.transcendence_anvil.investiture": "授勋",
 
   "_comment.esotericism_tinker.stigmata": "权现圣痕",
@@ -397,6 +399,7 @@
   "gui.esotericism_tinker.transcendence_anvil.substrate_unavailable": "%s：- / -",
   "gui.esotericism_tinker.transcendence_anvil.reception_entry": "%1$s：%2$s %3$s",
   "gui.esotericism_tinker.transcendence_anvil.reception_cost": "（%s）",
+  "gui.esotericism_tinker.transcendence_anvil.tuning_entry": "%1$s：%2$s %3$s",
   "gui.esotericism_tinker.transcendence_anvil.investiture.offhand": "将工具放在副手位置以解锁授勋功能。",
   "gui.esotericism_tinker.transcendence_anvil.investiture.invalid": "副手工具没有可供选择的工具定义强化。",
   "gui.esotericism_tinker.transcendence_anvil.investiture.locked": "该工具的授勋已经固定，无法再次选择。",

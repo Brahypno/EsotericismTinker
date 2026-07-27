@@ -14,6 +14,7 @@ import net.minecraft.world.item.ItemStack;
 import org.brahypno.esotericismtinker.network.EsotericismTinkerNetwork;
 import org.brahypno.esotericismtinker.network.TranscendenceInvestiturePacket;
 import org.brahypno.esotericismtinker.network.TranscendenceReceptionPacket;
+import org.brahypno.esotericismtinker.network.TranscendenceTuningPacket;
 import org.brahypno.esotericismtinker.transcendence.intrinsic.NoumenonAllocationLogic;
 import org.brahypno.esotericismtinker.transcendence.intrinsic.NoumenonData;
 import org.brahypno.esotericismtinker.transcendence.intrinsic.NoumenonDatabase;
@@ -93,6 +94,7 @@ public final class TranscendenceAnvilScreen
     private final TranscendenceLeftStationLayout leftLayout = new TranscendenceLeftStationLayout();
     private final List<AbstractWidget> leftWidgets = new ArrayList<>();
     private final List<ReceptionButtons> receptionButtons = new ArrayList<>();
+    private ReceptionButtons tuningButtons;
     private final List<SlotType> receptionTypes = new ArrayList<>();
     private final List<ModifierEntry> investitureTraits = new ArrayList<>();
 
@@ -161,6 +163,7 @@ public final class TranscendenceAnvilScreen
             removeWidget(widget);
         leftWidgets.clear();
         receptionButtons.clear();
+        tuningButtons = null;
     }
 
     private Button addLeftButton(Component label, int x, int y, int width, int height, Button.OnPress action) {
@@ -211,6 +214,8 @@ public final class TranscendenceAnvilScreen
 
         if (leftPage == TranscendenceLeftPage.RECEPTION){
             rebuildReceptionWidgets();
+        }else if (leftPage == TranscendenceLeftPage.TUNING){
+            rebuildTuningWidgets();
         }else if (leftPage == TranscendenceLeftPage.INVESTITURE){
             rebuildInvestitureWidgets();
         }
@@ -268,6 +273,71 @@ public final class TranscendenceAnvilScreen
                                      && validateReceptionChange(slotType, -1) == null;
             buttons.plus().active = validateReceptionChange(slotType, 1) == null;
         }
+        refreshTuningButtons();
+    }
+
+    private void rebuildTuningWidgets() {
+        var row = leftLayout.receptionRow(0);
+        Button minus = addLeftButton(
+                Component.literal("-"),
+                row.minusButton().x(), row.minusButton().y(),
+                row.minusButton().width(), row.minusButton().height(),
+                button -> changeTuning(-1)
+        );
+        Button plus = addLeftButton(
+                Component.literal("+"),
+                row.plusButton().x(), row.plusButton().y(),
+                row.plusButton().width(), row.plusButton().height(),
+                button -> changeTuning(1)
+        );
+        tuningButtons = new ReceptionButtons(null, minus, plus);
+        refreshTuningButtons();
+    }
+
+    private void refreshTuningButtons() {
+        if (tuningButtons == null){
+            return;
+        }
+        tuningButtons.minus().active =
+                menu.getPendingTuning() > menu.getInitialTuning()
+                && validateTuningChange(-1) == null;
+        tuningButtons.plus().active = validateTuningChange(1) == null;
+    }
+
+    private void changeTuning(int delta) {
+        if (validateTuningChange(delta) == null){
+            EsotericismTinkerNetwork.CHANNEL.sendToServer(
+                    new TranscendenceTuningPacket(menu.containerId, delta)
+            );
+        }
+    }
+
+    private Component validateTuningChange(int delta) {
+        LazyToolStack input = menu.getInputTool();
+        if (input == null || input.getStack().isEmpty()){
+            return Component.translatable(
+                    "gui.esotericism_tinker.transcendence_anvil.tuning.no_preview"
+            );
+        }
+
+        int target = menu.getPendingTuning() + delta;
+        if (target < menu.getInitialTuning()){
+            return Component.translatable(
+                    "gui.esotericism_tinker.transcendence_anvil.tuning.committed"
+            );
+        }
+
+        ToolStack candidate = input.getTool().copy();
+        return NoumenonAllocationLogic.validateAndApply(candidate, data -> {
+            data.receptionSlots.clear();
+            for (SlotType type : receptionTypes) {
+                int value = menu.getPendingReception(type.getName());
+                if (value > 0){
+                    data.receptionSlots.put(type.getName(), value);
+                }
+            }
+            data.tuning = target;
+        });
     }
 
     private void clampReceptionScroll() {
@@ -304,6 +374,7 @@ public final class TranscendenceAnvilScreen
                     data.receptionSlots.put(name, value);
                 }
             }
+            data.tuning = menu.getPendingTuning();
         });
     }
 
@@ -581,8 +652,7 @@ public final class TranscendenceAnvilScreen
     }
 
     private void renderReadOnlyPageContents(GuiGraphics graphics) {
-        if (leftPage != TranscendenceLeftPage.SUBLIMATION
-            && leftPage != TranscendenceLeftPage.TUNING){
+        if (leftPage != TranscendenceLeftPage.SUBLIMATION){
             return;
         }
 
@@ -636,6 +706,21 @@ public final class TranscendenceAnvilScreen
         graphics.drawString(font, substrate, substrateBounds.x(), substrateY, 0xFFD7A900, false);
 
         if (leftPage != TranscendenceLeftPage.RECEPTION){
+            if (leftPage == TranscendenceLeftPage.TUNING){
+                var row = leftLayout.receptionRow(0);
+                int textY = row.label().y()
+                            + Math.max(1, (row.label().height() - font.lineHeight) / 2);
+                Component line = Component.translatable(
+                        "gui.esotericism_tinker.transcendence_anvil.tuning_entry",
+                        Component.translatable("noumenon.esotericism_tinker.tuning"),
+                        menu.getPendingTuning(),
+                        Component.translatable(
+                                "gui.esotericism_tinker.transcendence_anvil.reception_cost",
+                                1
+                        ).withStyle(ChatFormatting.DARK_GRAY)
+                );
+                graphics.drawString(font, line, row.label().x(), textY, 0xFFFFFFFF, false);
+            }
             return;
         }
 

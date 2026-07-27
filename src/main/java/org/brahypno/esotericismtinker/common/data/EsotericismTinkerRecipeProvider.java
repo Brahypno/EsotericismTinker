@@ -80,13 +80,13 @@ public class EsotericismTinkerRecipeProvider extends RecipeProvider implements I
     private void addTranscendenceRecipes(Consumer<FinishedRecipe> consumer) {
         StigmataRecipeBuilder.stigmata(Ingredient.of(Items.DIAMOND), StigmataStage.MANIFESTATION)
                              .save(consumer, EsotericismTinker.getLocation("transcendence/stigmata/manifestation"));
-        /*
+
         StigmataRecipeBuilder.stigmata(Ingredient.of(Items.NETHER_STAR), StigmataStage.ALIENATION)
                              .save(consumer, EsotericismTinker.getLocation("transcendence/stigmata/alienation"));
         StigmataRecipeBuilder.stigmata(Ingredient.of(Items.DRAGON_HEAD), StigmataStage.SEALING)
                              .save(consumer, EsotericismTinker.getLocation("transcendence/stigmata/sealing"));
 
-         */
+         
         ItemCastingRecipeBuilder.castingRecipe(
                                         ItemOutput.fromItem(EsotericismTinkerTranscendenceTable.transcendenceAnvil),
                                         EsotericismTinkerRecipeTypes.RECURSIVE_RETEXTURED_CASTING_BASIN_SERIALIZER.get())

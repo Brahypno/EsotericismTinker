@@ -42,6 +42,8 @@ public final class TranscendenceAnvilMenu extends TabbedContainerMenu<Transcende
 
     private final Map<String, Integer> syncedInitialReception = new LinkedHashMap<>();
     private final Map<String, Integer> syncedPendingReception = new LinkedHashMap<>();
+    private int syncedInitialTuning;
+    private int syncedPendingTuning;
     private int syncedPendingInvestitureIndex = -1;
 
     public TranscendenceAnvilMenu(int id, Inventory inventory, @Nullable TranscendenceAnvilBlockEntity station) {
@@ -115,6 +117,29 @@ public final class TranscendenceAnvilMenu extends TabbedContainerMenu<Transcende
         addDataSlot(new DataSlot() {
             @Override
             public int get() {
+                return station == null ? syncedInitialTuning : station.getInitialTuning();
+            }
+
+            @Override
+            public void set(int value) {
+                syncedInitialTuning = value;
+            }
+        });
+        addDataSlot(new DataSlot() {
+            @Override
+            public int get() {
+                return station == null ? syncedPendingTuning : station.getPendingTuning();
+            }
+
+            @Override
+            public void set(int value) {
+                syncedPendingTuning = value;
+            }
+        });
+
+        addDataSlot(new DataSlot() {
+            @Override
+            public int get() {
                 return station == null
                         ? syncedPendingInvestitureIndex
                         : station.getPendingInvestitureIndex();
@@ -155,11 +180,20 @@ public final class TranscendenceAnvilMenu extends TabbedContainerMenu<Transcende
                 return true;
             }
         }
-        return syncedPendingInvestitureIndex >= 0;
+        return getPendingTuning() != getInitialTuning()
+               || syncedPendingInvestitureIndex >= 0;
     }
 
     public int getPendingReception(String slotType) {
         return syncedPendingReception.getOrDefault(slotType, station == null ? 0 : station.getPendingReception(slotType));
+    }
+
+    public int getInitialTuning() {
+        return syncedInitialTuning;
+    }
+
+    public int getPendingTuning() {
+        return syncedPendingTuning;
     }
 
     @Nullable

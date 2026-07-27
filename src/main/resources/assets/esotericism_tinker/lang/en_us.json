@@ -211,6 +211,8 @@
   "gui.esotericism_tinker.transcendence_anvil.reception.no_preview": "No crafting preview is available",
   "gui.esotericism_tinker.transcendence_anvil.sublimation": "Sublimation",
   "gui.esotericism_tinker.transcendence_anvil.tuning": "Tuning",
+  "gui.esotericism_tinker.transcendence_anvil.tuning.committed": "Committed Tuning cannot be reduced here",
+  "gui.esotericism_tinker.transcendence_anvil.tuning.no_preview": "No crafting preview is available",
   "gui.esotericism_tinker.transcendence_anvil.investiture": "Investiture",
 
   "_comment.esotericism_tinker.stigmata": "Appearance Stigmata",
@@ -397,6 +399,7 @@
   "gui.esotericism_tinker.transcendence_anvil.substrate_unavailable": "%s: - / -",
   "gui.esotericism_tinker.transcendence_anvil.reception_entry": "%1$s: %2$s %3$s",
   "gui.esotericism_tinker.transcendence_anvil.reception_cost": "(%s)",
+  "gui.esotericism_tinker.transcendence_anvil.tuning_entry": "%1$s: %2$s %3$s",
   "gui.esotericism_tinker.transcendence_anvil.investiture.offhand": "Place a tool in the offhand slot to unlock Investiture.",
   "gui.esotericism_tinker.transcendence_anvil.investiture.invalid": "The offhand tool has no selectable definition modifier.",
   "gui.esotericism_tinker.transcendence_anvil.investiture.locked": "This tool's Investiture has already been fixed.",

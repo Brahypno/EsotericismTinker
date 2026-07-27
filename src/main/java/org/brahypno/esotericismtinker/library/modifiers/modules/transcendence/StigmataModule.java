@@ -76,15 +76,15 @@ public record StigmataModule(ModifierCondition<IToolContext> condition)
         StigmataData data = StigmataData.read(tool);
         int overload = data.overload(tool);
         int burden = data.burden();
-        if (0 < overload && data.hasConsequenceSeed()){
-            tooltip.add(Component.translatable(
-                    "modifier.esotericism_tinker.stigmata.overload.tooltip",
-                    StigmataOverloadDegree.fromValues(overload, burden).displayName(),
-                    data.consequence().displayName()));
-        }else {
-            tooltip.add(Component.translatable(
-                    "modifier.esotericism_tinker.stigmata.overload.tooltip_1",
-                    StigmataOverloadDegree.fromValues(overload, burden).displayName()));
-        }
+        if (0 < overload)
+            if (data.hasConsequenceSeed())
+                tooltip.add(Component.translatable(
+                        "modifier.esotericism_tinker.stigmata.overload.tooltip",
+                        StigmataOverloadDegree.fromValues(overload, burden).displayName(),
+                        data.consequence().displayName()));
+            else
+                tooltip.add(Component.translatable("modifier.esotericism_tinker.stigmata.overload.tooltip_1",
+                                                   StigmataOverloadDegree.fromValues(overload, burden).displayName()));
+
     }
 }

@@ -57,6 +57,8 @@ public final class TranscendenceAnvilBlockEntity extends RetexturedTableBlockEnt
     private final TranscendenceStationContainer wrapper = new TranscendenceStationContainer(this);
     private final Map<String, Integer> initialReception = new LinkedHashMap<>();
     private final Map<String, Integer> pendingReception = new LinkedHashMap<>();
+    private int initialTuning;
+    private int pendingTuning;
     private ItemStack pendingInvestitureSource = ItemStack.EMPTY;
     private int pendingInvestitureIndex = -1;
 
@@ -104,7 +106,9 @@ public final class TranscendenceAnvilBlockEntity extends RetexturedTableBlockEnt
     }
 
     public boolean hasPendingGuiChanges() {
-        return !pendingReception.equals(initialReception) || pendingInvestitureIndex >= 0;
+        return !pendingReception.equals(initialReception)
+               || pendingTuning != initialTuning
+               || pendingInvestitureIndex >= 0;
     }
 
     private void clearPendingForNewTool(ItemStack current) {
@@ -121,6 +125,14 @@ public final class TranscendenceAnvilBlockEntity extends RetexturedTableBlockEnt
 
     public int getPendingReception(String slotType) {
         return pendingReception.getOrDefault(slotType, getInitialReception(slotType));
+    }
+
+    public int getInitialTuning() {
+        return initialTuning;
+    }
+
+    public int getPendingTuning() {
+        return pendingTuning;
     }
 
     public int getPendingInvestitureIndex() {
@@ -155,7 +167,7 @@ public final class TranscendenceAnvilBlockEntity extends RetexturedTableBlockEnt
         }
 
         ToolStack base = ToolStack.from(original.copy());
-        Component error = validateReceptionCandidate(base, candidate);
+        Component error = validateAllocationCandidate(base, candidate, pendingTuning);
         if (error != null){
             currentError = error;
             craftingResult.clearContent();
@@ -169,6 +181,37 @@ public final class TranscendenceAnvilBlockEntity extends RetexturedTableBlockEnt
         craftingResult.clearContent();
         craftingResult.getResult();
 
+        setChanged();
+        return true;
+    }
+
+    public boolean adjustTuning(int delta) {
+        if (level == null || level.isClientSide || (delta != 1 && delta != -1)){
+            return false;
+        }
+
+        int target = pendingTuning + delta;
+        if (target < initialTuning){
+            return false;
+        }
+
+        ItemStack original = getItem(0);
+        if (original.isEmpty()){
+            return false;
+        }
+
+        ToolStack base = ToolStack.from(original.copy());
+        Component error = validateAllocationCandidate(base, pendingReception, target);
+        if (error != null){
+            currentError = error;
+            craftingResult.clearContent();
+            return false;
+        }
+
+        pendingTuning = target;
+        currentError = null;
+        craftingResult.clearContent();
+        craftingResult.getResult();
         setChanged();
         return true;
     }
@@ -236,16 +279,21 @@ public final class TranscendenceAnvilBlockEntity extends RetexturedTableBlockEnt
     }
 
     @Nullable
-    private Component validateReceptionCandidate(ToolStack recipePreview, Map<String, Integer> candidate) {
+    private Component validateAllocationCandidate(ToolStack recipePreview,
+                                                  Map<String, Integer> reception,
+                                                  int tuning) {
         return NoumenonAllocationLogic.validateAndApply(recipePreview, data -> {
             data.receptionSlots.clear();
-            data.receptionSlots.putAll(candidate);
+            data.receptionSlots.putAll(reception);
+            data.tuning = tuning;
         });
     }
 
     private void resetReceptionBaseline() {
         initialReception.clear();
         pendingReception.clear();
+        initialTuning = 0;
+        pendingTuning = 0;
 
         LazyToolStack tool = getTool();
         if (tool == null || tool.getStack().isEmpty()){
@@ -255,6 +303,8 @@ public final class TranscendenceAnvilBlockEntity extends RetexturedTableBlockEnt
         NoumenonData data = NoumenonData.read(tool.getTool());
         initialReception.putAll(data.receptionSlots);
         pendingReception.putAll(data.receptionSlots);
+        initialTuning = data.tuning;
+        pendingTuning = data.tuning;
     }
 
     @Nullable
@@ -262,6 +312,7 @@ public final class TranscendenceAnvilBlockEntity extends RetexturedTableBlockEnt
         Component receptionError = NoumenonAllocationLogic.validateAndApply(preview, data -> {
             data.receptionSlots.clear();
             data.receptionSlots.putAll(pendingReception);
+            data.tuning = pendingTuning;
         });
         if (receptionError != null){
             return receptionError;
@@ -546,7 +597,7 @@ public final class TranscendenceAnvilBlockEntity extends RetexturedTableBlockEnt
         wrapper.refresh(slot);
 
         /*
-         * 中心工具发生变化时，原工具对应的容受和授勋 pending 状态
+         * 中心工具发生变化时，原工具对应的容受、调律和授勋 pending 状态
          * 不能继承到新工具。
          */
         if (slot == 0
