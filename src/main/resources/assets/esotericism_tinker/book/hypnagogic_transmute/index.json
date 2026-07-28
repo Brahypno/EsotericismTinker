@@ -47,6 +47,13 @@
     }
   },
   {
+    "name": "transcendence",
+    "data": "sections/transcendence.json",
+    "icon": {
+      "item": "esotericism_tinker:transcendence_anvil"
+    }
+  },
+  {
     "name": "selenic",
     "data": "sections/selenic.json",
     "icon": {

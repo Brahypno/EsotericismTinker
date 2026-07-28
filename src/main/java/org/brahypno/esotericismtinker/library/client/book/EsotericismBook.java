@@ -2,6 +2,7 @@ package org.brahypno.esotericismtinker.library.client.book;
 
 import net.minecraft.resources.ResourceLocation;
 import org.brahypno.esotericismtinker.common.Items.EsotericismBookItem;
+import org.brahypno.esotericismtinker.library.client.book.content.ContentStigmata;
 import org.brahypno.esotericismtinker.library.client.book.transformer.ExplorationPageInjectorTransformer;
 import slimeknights.mantle.client.book.BookLoader;
 import slimeknights.mantle.client.book.data.BookData;
@@ -18,7 +19,7 @@ public class EsotericismBook {
     private static final BookData[] ALL_BOOKS = {HYPNAGOGIC_TRANSMUTE};
 
     public static void initBook() {
-
+        BookLoader.registerPageType(ContentStigmata.ID, ContentStigmata.class);
         HYPNAGOGIC_TRANSMUTE.addTransformer(ToolTagInjectorTransformer.INSTANCE);
         HYPNAGOGIC_TRANSMUTE.addTransformer(ModifierTagInjectorTransformer.INSTANCE);
         addStandardData(HYPNAGOGIC_TRANSMUTE, TRANSMUTE_BOOK_ID, ExplorationPageInjectorTransformer.INSTANCE);

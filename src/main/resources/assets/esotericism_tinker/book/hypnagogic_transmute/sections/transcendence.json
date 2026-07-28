@@ -1,0 +1,32 @@
+[
+  {
+    "name": "index",
+    "type": "mantle:index",
+    "data": "transcendence/index.json"
+  },
+  {
+    "name": "anvil",
+    "type": "mantle:showcase",
+    "data": "transcendence/anvil.json"
+  },
+  {
+    "name": "crowning",
+    "type": "tconstruct:modifier",
+    "data": "transcendence/crowning.json"
+  },
+  {
+    "name": "stigmata",
+    "type": "esotericism_tinker:stigmata",
+    "data": "transcendence/stigmata.json"
+  },
+  {
+    "name": "inscription_rules",
+    "type": "mantle:text",
+    "data": "transcendence/inscription_rules.json"
+  },
+  {
+    "name": "overload",
+    "type": "mantle:text",
+    "data": "transcendence/overload.json"
+  }
+]

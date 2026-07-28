@@ -405,5 +405,7 @@
   "gui.esotericism_tinker.transcendence_anvil.investiture.locked": "This tool's Investiture has already been fixed.",
   "gui.esotericism_tinker.transcendence_anvil.investiture.selection_invalid": "The Investiture selection is invalid.",
   "jei.esotericism_tinker.stigmata": "Trinity Stigmata",
-  "jei.esotericism_tinker.stigmata.stage": "Stage %s"
+  "jei.esotericism_tinker.stigmata.stage": "Stage %s",
+  "book.esotericism_tinker.stigmata.stage": "Stage %s",
+  "book.esotericism_tinker.stigmata.no_recipe": "No available Stigmata recipe was found."
 }

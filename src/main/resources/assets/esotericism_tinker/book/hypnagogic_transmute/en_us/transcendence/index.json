@@ -1,0 +1,11 @@
+{
+  "title": "Transcendence",
+  "subText": "Stigmata inscribe the form; the Crown ordains the station.",
+  "operations": [
+    {
+      "before": "anvil",
+      "action": "add_group",
+      "data": "Theurgy"
+    }
+  ]
+}

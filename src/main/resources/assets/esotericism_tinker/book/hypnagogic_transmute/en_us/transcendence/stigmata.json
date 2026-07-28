@@ -1,0 +1,13 @@
+{
+  "title": "Triple Inscription",
+  "modifier_id": "esotericism_tinker:stigmata",
+  "text": [
+    {
+      "text": "Inscription makes a tool remember the traits of a part's material. The tool part determines the form; three offerings no lower than that part's material tier steady its substance; a final offering determines the intended stage."
+    },
+    {
+      "text": "Manifestation and Sealing require a part native to the tool, while Alienation requires one foreign to it. A later Stigma does not erase the former—it makes the tool bear still more forms.",
+      "paragraph": true
+    }
+  ]
+}

@@ -1,0 +1,16 @@
+{
+  "title": "Transcendence Anvil",
+  "item": {
+    "item": "esotericism_tinker:transcendence_anvil"
+  },
+  "text": [
+    {
+      "text": "The Transcendence Anvil cannot forge a new tool. It repairs and strengthens that which already exists, then permits it to bear the alterations of theurgy.",
+      "paragraph": true
+    },
+    {
+      "text": "Here a tool reveals two aspects. Stigmata make its hidden form manifest, while Crowning ordains it to a higher station. The two may sustain one another—or enter into conflict.",
+      "paragraph": true
+    }
+  ]
+}

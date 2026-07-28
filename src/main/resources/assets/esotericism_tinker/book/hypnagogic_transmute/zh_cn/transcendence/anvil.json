@@ -1,0 +1,16 @@
+{
+  "title": "超越砧",
+  "item": {
+    "item": "esotericism_tinker:transcendence_anvil"
+  },
+  "text": [
+    {
+      "text": "超越砧不能铸成新的工具，却能修复、强化既有之物，并使其承受通神术的改易。",
+      "paragraph": true
+    },
+    {
+      "text": "工具在此展现其位格与灵知：刻痕使隐藏的形质显现，戴冠则为它指定更高的位置。二者可以相济，也可能彼此冲突。",
+      "paragraph": true
+    }
+  ]
+}

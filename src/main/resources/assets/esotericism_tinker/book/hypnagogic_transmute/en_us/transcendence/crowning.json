@@ -1,0 +1,17 @@
+{
+  "modifier_id": "esotericism_tinker:noumenon_crown",
+  "text": [
+    {
+      "text": "Crowning does not place an ornament upon a tool. It makes the tool bear a station that was not formerly its own. Once fixed, the Crown cannot be removed."
+    },
+    {
+      "text": "The Crown grants Substrate and Elevation. Substrate is assigned to Reception and Tuning; Elevation serves Sublimation and Investiture. Reception admits further enhancements, while Tuning quiets structural burden and make tool harmony. Sublimation ascends through the tool's own definition; Investiture inherits the intrinsic traits of another.",
+      "paragraph": true
+    }
+  ],
+  "more_text_space": true,
+  "effects": [
+    "The Crown is not donned—it is borne",
+    "Assign the Crown's gifts at the Transcendence Anvil"
+  ]
+}

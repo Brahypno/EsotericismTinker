@@ -405,5 +405,7 @@
   "gui.esotericism_tinker.transcendence_anvil.investiture.locked": "该工具的授勋已经固定，无法再次选择。",
   "gui.esotericism_tinker.transcendence_anvil.investiture.selection_invalid": "授勋选择无效。",
   "jei.esotericism_tinker.stigmata": "三重圣痕",
-  "jei.esotericism_tinker.stigmata.stage": "阶段 %s"
+  "jei.esotericism_tinker.stigmata.stage": "阶段 %s",
+  "book.esotericism_tinker.stigmata.stage": "阶段 %s",
+  "book.esotericism_tinker.stigmata.no_recipe": "未发现可用的刻痕配方。"
 }
