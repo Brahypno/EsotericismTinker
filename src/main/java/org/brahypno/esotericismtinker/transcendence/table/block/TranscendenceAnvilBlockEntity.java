@@ -14,6 +14,7 @@ import net.minecraft.world.item.crafting.RecipeManager;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraftforge.client.model.data.ModelData;
+import net.minecraftforge.event.ForgeEventFactory;
 import net.minecraftforge.network.PacketDistributor;
 import org.brahypno.esotericismtinker.library.recipe.EsotericismTinkerRecipeTypes;
 import org.brahypno.esotericismtinker.network.EsotericismTinkerNetwork;
@@ -516,6 +517,10 @@ public final class TranscendenceAnvilBlockEntity extends RetexturedTableBlockEnt
         }
 
         if (hasPendingGuiChanges()){
+            resultItem.onCraftedBy(level, player, amount);
+            ForgeEventFactory.firePlayerCraftingEvent(player, resultItem, wrapper);
+            playCraftSound(player);
+
             ItemStack toolStack = getItem(0);
             if (!toolStack.isEmpty()){
                 toolStack.shrink(1);
@@ -537,6 +542,7 @@ public final class TranscendenceAnvilBlockEntity extends RetexturedTableBlockEnt
         if (recipe == null || craftedResult == null){
             return;
         }
+
         if (recipe instanceof StigmataRecipeAdapter && !level.isClientSide){
             ToolStack finalTool = ToolStack.from(resultItem);
 
@@ -547,6 +553,10 @@ public final class TranscendenceAnvilBlockEntity extends RetexturedTableBlockEnt
                 finalTool.rebuildStats();
             }
         }
+
+        resultItem.onCraftedBy(level, player, amount);
+        ForgeEventFactory.firePlayerCraftingEvent(player, resultItem, wrapper);
+        playCraftSound(player);
 
         ItemStack tinkerable = getItem(0);
 
