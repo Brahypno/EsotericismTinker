@@ -86,7 +86,7 @@ public class EsotericismTinkerRecipeProvider extends RecipeProvider implements I
         StigmataRecipeBuilder.stigmata(Ingredient.of(Items.DRAGON_HEAD), StigmataStage.SEALING)
                              .save(consumer, EsotericismTinker.getLocation("transcendence/stigmata/sealing"));
 
-         
+
         ItemCastingRecipeBuilder.castingRecipe(
                                         ItemOutput.fromItem(EsotericismTinkerTranscendenceTable.transcendenceAnvil),
                                         EsotericismTinkerRecipeTypes.RECURSIVE_RETEXTURED_CASTING_BASIN_SERIALIZER.get())
@@ -112,6 +112,35 @@ public class EsotericismTinkerRecipeProvider extends RecipeProvider implements I
                                   .setMaxLevel(1)
                                   .disallowCrystal()
                                   .save(consumer, EsotericismTinker.getLocation("noumenon_crown"));
+        NoumenonLevelRecipeBuilder.modifier(EsotericismTinkerModifiers.NOUMENON_CROWN)
+                                  .addInput(Items.GOLDEN_APPLE)
+                                  .addInput(Items.HEART_OF_THE_SEA)
+                                  .addInput(Items.GOLDEN_APPLE)
+                                  .addInput(Blocks.RESPAWN_ANCHOR)
+                                  .addInput(Blocks.RESPAWN_ANCHOR)
+                                  .setLevelRange(2, 2)
+                                  .disallowCrystal()
+                                  .save(consumer, EsotericismTinker.getLocation("noumenon_crown_2"));
+
+        NoumenonLevelRecipeBuilder.modifier(EsotericismTinkerModifiers.NOUMENON_CROWN)
+                                  .addInput(Items.BLAZE_ROD)
+                                  .addInput(Items.NETHERITE_UPGRADE_SMITHING_TEMPLATE)
+                                  .addInput(Items.BLAZE_ROD)
+                                  .addInput(TinkerMaterials.roseGold.getBlockItemTag())
+                                  .addInput(TinkerMaterials.roseGold.getBlockItemTag())
+                                  .setLevelRange(3, 3)
+                                  .disallowCrystal()
+                                  .save(consumer, EsotericismTinker.getLocation("noumenon_crown_3"));
+
+        NoumenonLevelRecipeBuilder.modifier(EsotericismTinkerModifiers.NOUMENON_CROWN)
+                                  .addInput(Blocks.END_ROD)
+                                  .addInput(TinkerWorld.enderGeode.asItem())
+                                  .addInput(Blocks.END_ROD)
+                                  .addInput(Blocks.BEACON)
+                                  .addInput(Blocks.BEACON)
+                                  .setLevelRange(4, 4)
+                                  .disallowCrystal()
+                                  .save(consumer, EsotericismTinker.getLocation("noumenon_crown_4"));
     }
 
     private void addTransmuteRecipes(Consumer<FinishedRecipe> consumer) {

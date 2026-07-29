@@ -1,0 +1,7 @@
+{
+  "type": "esotericism_tinker:stigmata",
+  "selector": {
+    "item": "minecraft:nether_star"
+  },
+  "target_stage": "alienation"
+}

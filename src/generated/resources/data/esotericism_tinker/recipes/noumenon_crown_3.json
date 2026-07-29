@@ -1,0 +1,26 @@
+{
+  "type": "esotericism_tinker:noumenon_level",
+  "allow_crystal": false,
+  "inputs": [
+    {
+      "item": "minecraft:blaze_rod"
+    },
+    {
+      "item": "minecraft:netherite_upgrade_smithing_template"
+    },
+    {
+      "item": "minecraft:blaze_rod"
+    },
+    {
+      "tag": "forge:storage_blocks/rose_gold"
+    },
+    {
+      "tag": "forge:storage_blocks/rose_gold"
+    }
+  ],
+  "level": 3,
+  "result": "esotericism_tinker:noumenon_crown",
+  "tools": {
+    "tag": "tconstruct:modifiable"
+  }
+}

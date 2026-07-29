@@ -1,0 +1,26 @@
+{
+  "type": "esotericism_tinker:noumenon_level",
+  "allow_crystal": false,
+  "inputs": [
+    {
+      "item": "minecraft:end_rod"
+    },
+    {
+      "item": "tconstruct:ender_slime_crystal"
+    },
+    {
+      "item": "minecraft:end_rod"
+    },
+    {
+      "item": "minecraft:beacon"
+    },
+    {
+      "item": "minecraft:beacon"
+    }
+  ],
+  "level": 4,
+  "result": "esotericism_tinker:noumenon_crown",
+  "tools": {
+    "tag": "tconstruct:modifiable"
+  }
+}

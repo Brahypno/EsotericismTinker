@@ -1,17 +1,20 @@
 package org.brahypno.esotericismtinker.library.modifiers.modules.transcendence;
 
+import net.minecraft.core.RegistryAccess;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.TooltipFlag;
 import org.brahypno.esotericismtinker.transcendence.appearance.StigmataData;
 import org.brahypno.esotericismtinker.transcendence.appearance.StigmataEntry;
 import org.brahypno.esotericismtinker.transcendence.appearance.StigmataOverloadDegree;
+import slimeknights.mantle.client.ResourceColorManager;
 import slimeknights.mantle.client.TooltipKey;
 import slimeknights.mantle.data.loadable.record.RecordLoadable;
 import slimeknights.tconstruct.library.materials.MaterialRegistry;
 import slimeknights.tconstruct.library.modifiers.ModifierEntry;
 import slimeknights.tconstruct.library.modifiers.ModifierHooks;
 import slimeknights.tconstruct.library.modifiers.hook.build.ModifierTraitHook;
+import slimeknights.tconstruct.library.modifiers.hook.display.DisplayNameModifierHook;
 import slimeknights.tconstruct.library.modifiers.hook.display.TooltipModifierHook;
 import slimeknights.tconstruct.library.modifiers.modules.ModifierModule;
 import slimeknights.tconstruct.library.modifiers.modules.util.ModifierCondition;
@@ -28,9 +31,9 @@ import java.util.List;
  * Adds the material traits selected by the tool's active Stigmata entries.
  */
 public record StigmataModule(ModifierCondition<IToolContext> condition)
-        implements ModifierModule, ConditionalModule<IToolContext>, ModifierTraitHook, TooltipModifierHook {
+        implements ModifierModule, ConditionalModule<IToolContext>, ModifierTraitHook, TooltipModifierHook, DisplayNameModifierHook {
     private static final List<ModuleHook<?>> DEFAULT_HOOKS =
-            HookProvider.<StigmataModule>defaultHooks(ModifierHooks.MODIFIER_TRAITS, ModifierHooks.TOOLTIP);
+            HookProvider.<StigmataModule>defaultHooks(ModifierHooks.MODIFIER_TRAITS, ModifierHooks.TOOLTIP, ModifierHooks.DISPLAY_NAME);
 
     public static final RecordLoadable<StigmataModule> LOADER = RecordLoadable.create(
             ModifierCondition.CONTEXT_FIELD,
@@ -40,8 +43,12 @@ public record StigmataModule(ModifierCondition<IToolContext> condition)
     public static final StigmataModule INSTANCE =
             new StigmataModule(ModifierCondition.ANY_CONTEXT);
 
-    public StigmataModule() {
-        this(ModifierCondition.ANY_CONTEXT);
+    @Override
+    public Component getDisplayName(IToolStackView tool, ModifierEntry entry, Component name, @Nullable RegistryAccess access) {
+        StigmataData data = StigmataData.read(tool);
+        int level = data.hasConsequenceSeed() ? data.stage() : entry.getLevel();
+        String key = entry.getModifier().getTranslationKey();
+        return name.copy().withStyle(style -> style.withColor(ResourceColorManager.getTextColor(key + "." + level)));
     }
 
     @Override

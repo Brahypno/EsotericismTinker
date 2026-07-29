@@ -1,0 +1,26 @@
+{
+  "type": "esotericism_tinker:noumenon_level",
+  "allow_crystal": false,
+  "inputs": [
+    {
+      "item": "minecraft:golden_apple"
+    },
+    {
+      "item": "minecraft:heart_of_the_sea"
+    },
+    {
+      "item": "minecraft:golden_apple"
+    },
+    {
+      "item": "minecraft:respawn_anchor"
+    },
+    {
+      "item": "minecraft:respawn_anchor"
+    }
+  ],
+  "level": 2,
+  "result": "esotericism_tinker:noumenon_crown",
+  "tools": {
+    "tag": "tconstruct:modifiable"
+  }
+}
