@@ -169,7 +169,7 @@
   "modifier.esotericism_tinker.noumenon_crown.2": "本征冠冕",
   "modifier.esotericism_tinker.noumenon_crown.3": "荣光冠冕",
   "modifier.esotericism_tinker.noumenon_crown.4": "擢升冠冕",
-  "modifier.esotericism_tinker.noumenon_crown.flavor": "刻痕铭其形，冠冕定其位。",
+  "modifier.esotericism_tinker.noumenon_crown.flavor": "行过贯通中柱的道途，从形而下到属灵的升格。",
   "modifier.esotericism_tinker.noumenon_crown.description": "火焰与利剑，荆棘与暮光，皆为必行的道路。在超越砧上解锁其功能。",
   "modifier.esotericism_tinker.noumenon_crown.reception_slot": "%1$s %2$s",
   "modifier.esotericism_tinker.noumenon_crown.reception_slot.positive": "+%1$s %2$s",
@@ -216,15 +216,14 @@
   "gui.esotericism_tinker.transcendence_anvil.investiture": "授勋",
 
   "_comment.esotericism_tinker.stigmata": "权现圣痕",
-
   "config.esotericism_tinker.stigmata.material_units_per_slot": "每槽圣痕材料单位",
   "config.esotericism_tinker.stigmata.material_units_per_slot.tooltip": "三个材料槽各自独立需要的最低材料单位数。",
 
   "modifier.esotericism_tinker.stigmata": "显现圣痕",
   "modifier.esotericism_tinker.stigmata.2": "异化圣痕",
   "modifier.esotericism_tinker.stigmata.3": "封缄圣痕",
-  "modifier.esotericism_tinker.stigmata.flavor": "刻痕不显其位，而显其形。",
-  "modifier.esotericism_tinker.stigmata.description": "获得显现、异化与封印阶段所记录材料的特性。",
+  "modifier.esotericism_tinker.stigmata.flavor": "起舞吧，为每个欢笑的往日，与不会到来的明日——无物可使你我分离。",
+  "modifier.esotericism_tinker.stigmata.description": "获得显现、异化与封印阶段所记录材料的特性，必须在超越砧上烙印。",
 
   "modifier.esotericism_tinker.stigmata.overload.slight": "轻微超载",
   "modifier.esotericism_tinker.stigmata.overload.moderate": "明显超载",
