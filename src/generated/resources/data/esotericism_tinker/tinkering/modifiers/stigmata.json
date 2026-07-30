@@ -9,15 +9,18 @@
       "type": "esotericism_tinker:stigmata"
     },
     {
-      "type": "esotericism_tinker:stigmata_tool_consequence",
+      "type": "esotericism_tinker:stigmata_common_consequence"
+    },
+    {
+      "type": "esotericism_tinker:stigmata_offensive_consequence",
       "tool": {
         "type": "mantle:inverted",
         "inverted_type": "mantle:tag",
-        "tag": "tconstruct:modifiable/armor/worn"
+        "tag": "tconstruct:modifiable/armor"
       }
     },
     {
-      "type": "esotericism_tinker:stigmata_armor_consequence",
+      "type": "esotericism_tinker:stigmata_defensive_consequence",
       "tool": {
         "type": "mantle:tag",
         "tag": "tconstruct:modifiable/armor"

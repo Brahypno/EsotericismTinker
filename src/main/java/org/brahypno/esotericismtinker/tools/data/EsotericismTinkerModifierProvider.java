@@ -1,10 +1,11 @@
 package org.brahypno.esotericismtinker.tools.data;
 
 import net.minecraft.data.PackOutput;
+import org.brahypno.esotericismtinker.library.modifiers.modules.transcendence.StigmataCommonConsequenceModule;
+import org.brahypno.esotericismtinker.library.modifiers.modules.transcendence.StigmataDefensiveConsequenceModule;
 import org.brahypno.esotericismtinker.library.modifiers.modules.transcendence.NoumenonModule;
-import org.brahypno.esotericismtinker.library.modifiers.modules.transcendence.StigmataArmorConsequenceModule;
 import org.brahypno.esotericismtinker.library.modifiers.modules.transcendence.StigmataModule;
-import org.brahypno.esotericismtinker.library.modifiers.modules.transcendence.StigmataToolConsequenceModule;
+import org.brahypno.esotericismtinker.library.modifiers.modules.transcendence.StigmataOffensiveConsequenceModule;
 import org.brahypno.esotericismtinker.tools.EsotericismTinkerModifiers;
 import org.jetbrains.annotations.NotNull;
 import slimeknights.mantle.data.predicate.item.ItemPredicate;
@@ -27,12 +28,13 @@ public class EsotericismTinkerModifierProvider
         buildModifier(EsotericismTinkerModifiers.STIGMATA)
                 .levelDisplay(new ModifierLevelDisplay.UniqueForLevels(3))
                 .addModule(StigmataModule.INSTANCE)
-                .addModule(StigmataToolConsequenceModule.builder()
-                                                        .toolItem(ItemPredicate.tag(TinkerTags.Items.WORN_ARMOR).inverted())
-                                                        .build())
-                .addModule(StigmataArmorConsequenceModule.builder()
-                                                         .toolItem(ItemPredicate.tag(TinkerTags.Items.ARMOR))
-                                                         .build());
+                .addModule(StigmataCommonConsequenceModule.builder().build())
+                .addModule(StigmataOffensiveConsequenceModule.builder()
+                                                             .toolItem(ItemPredicate.tag(TinkerTags.Items.ARMOR).inverted())
+                                                             .build())
+                .addModule(StigmataDefensiveConsequenceModule.builder()
+                                                             .toolItem(ItemPredicate.tag(TinkerTags.Items.ARMOR))
+                                                             .build());
     }
 
     @Override

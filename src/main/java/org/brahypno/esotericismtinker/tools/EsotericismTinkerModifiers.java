@@ -15,10 +15,11 @@ import org.brahypno.esotericismtinker.library.modifiers.modules.build.AllSlotMod
 import org.brahypno.esotericismtinker.library.modifiers.modules.combat.*;
 import org.brahypno.esotericismtinker.library.modifiers.modules.harvest.BlockLootMultiplierModule;
 import org.brahypno.esotericismtinker.library.modifiers.modules.harvest.EntityLootMultiplierModule;
+import org.brahypno.esotericismtinker.library.modifiers.modules.transcendence.StigmataCommonConsequenceModule;
+import org.brahypno.esotericismtinker.library.modifiers.modules.transcendence.StigmataDefensiveConsequenceModule;
 import org.brahypno.esotericismtinker.library.modifiers.modules.transcendence.NoumenonModule;
-import org.brahypno.esotericismtinker.library.modifiers.modules.transcendence.StigmataArmorConsequenceModule;
 import org.brahypno.esotericismtinker.library.modifiers.modules.transcendence.StigmataModule;
-import org.brahypno.esotericismtinker.library.modifiers.modules.transcendence.StigmataToolConsequenceModule;
+import org.brahypno.esotericismtinker.library.modifiers.modules.transcendence.StigmataOffensiveConsequenceModule;
 import org.brahypno.esotericismtinker.library.modifiers.modules.weapon.SelfDestroyModule;
 import org.brahypno.esotericismtinker.library.modifiers.modules.weapon.SwappableCircleWeaponAttack;
 import org.brahypno.esotericismtinker.tools.modifiers.tools.ritual_blade.SelfSacrifice;
@@ -84,8 +85,9 @@ public final class EsotericismTinkerModifiers extends EsotericismTinkerModule {
             ModifierModule.LOADER.register(EsotericismTinker.getLocation("my_creative_flight_module"), FlightModule.LOADER);
             ModifierModule.LOADER.register(EsotericismTinker.getLocation("noumenon"), NoumenonModule.LOADER);
             ModifierModule.LOADER.register(EsotericismTinker.getLocation("stigmata"), StigmataModule.LOADER);
-            ModifierModule.LOADER.register(EsotericismTinker.getLocation("stigmata_tool_consequence"), StigmataToolConsequenceModule.LOADER);
-            ModifierModule.LOADER.register(EsotericismTinker.getLocation("stigmata_armor_consequence"), StigmataArmorConsequenceModule.LOADER);
+            ModifierModule.LOADER.register(EsotericismTinker.getLocation("stigmata_common_consequence"), StigmataCommonConsequenceModule.LOADER);
+            ModifierModule.LOADER.register(EsotericismTinker.getLocation("stigmata_offensive_consequence"), StigmataOffensiveConsequenceModule.LOADER);
+            ModifierModule.LOADER.register(EsotericismTinker.getLocation("stigmata_defensive_consequence"), StigmataDefensiveConsequenceModule.LOADER);
 
             EntityVariable.LOADER.register(EsotericismTinker.getLocation("horizontal_look_x"), HORIZONTAL_LOOK_X.getLoader());
             EntityVariable.LOADER.register(EsotericismTinker.getLocation("horizontal_look_z"), HORIZONTAL_LOOK_Z.getLoader());
