@@ -1,10 +1,12 @@
 {
   "modifier.esotericism_tinker": {
     "self_sacrifice": "#AA0066",
+    "noumenon_crown": "#F6D675",
     "noumenon_crown.1": "#F6D675",
     "noumenon_crown.2": "#D4AF37",
     "noumenon_crown.3": "#FFB81C",
     "noumenon_crown.4": "#FFF0B3",
+    "stigmata": "#B58AD6",
     "stigmata.1": "#B58AD6",
     "stigmata.2": "#8A3FA0",
     "stigmata.3": "#4B286D"
