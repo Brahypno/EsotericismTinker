@@ -7,6 +7,7 @@ import net.minecraft.world.effect.MobEffects;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.UseAnim;
+import net.minecraftforge.common.util.FakePlayer;
 import net.minecraftforge.fluids.FluidStack;
 import net.minecraftforge.fluids.FluidType;
 import org.brahypno.esotericismtinker.fluids.EsotericismTinkerFluids;
@@ -45,10 +46,10 @@ public class SelfSacrifice extends NoLevelsModifier implements GeneralInteractio
 
     @Override
     public InteractionResult onToolUse(IToolStackView tool, ModifierEntry modifier, Player player, InteractionHand hand, InteractionSource source) {
-        if (isAttackable(player, player)){
+        if (isAttackable(player, player) && !(player instanceof FakePlayer)){
             float damageDealt = tool.getStats().get(ToolStats.ATTACK_DAMAGE);
-            meltTarget(tool, modifier, player, damageDealt);
             if (!player.level().isClientSide){
+                meltTarget(tool, modifier, player, damageDealt);
                 player.addEffect(new MobEffectInstance(MobEffects.DAMAGE_BOOST, (int) (20 * damageDealt * 4 * modifier.getLevel()), modifier.getLevel() + 1));
                 player.addEffect(new MobEffectInstance(MobEffects.DIG_SPEED, (int) (20 * damageDealt * 4 * modifier.getLevel()), modifier.getLevel() + 1));
                 player.addEffect(
