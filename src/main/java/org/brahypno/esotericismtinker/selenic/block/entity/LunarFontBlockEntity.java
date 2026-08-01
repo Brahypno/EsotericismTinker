@@ -36,6 +36,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.function.Consumer;
+import java.util.function.Supplier;
 
 public class LunarFontBlockEntity extends BlockEntity {
     private static final int MAX_ITEM_SLOTS = 8;
@@ -64,11 +65,11 @@ public class LunarFontBlockEntity extends BlockEntity {
     }
 
     public static void serverTick(Level level, BlockPos pos, BlockState state, LunarFontBlockEntity be) {
-        if (level.getGameTime() % 20L == 0L){
+        if (be.activeRecipeId != null){
+            be.tickActiveRecipe();
+        }else if (level.getGameTime() % 20L == 0L){
             be.scanFigureAndTrim();
         }
-
-        be.tickActiveRecipe();
     }
 
     public void tryActivate(@Nullable Player player) {
@@ -97,17 +98,18 @@ public class LunarFontBlockEntity extends BlockEntity {
             return;
         }
 
-        updateCachedFigure(level, figure);
+        SelenicTickSnapshot snapshot = createSnapshot(level, figure, crown);
+        updateCachedFigure(snapshot);
         trimOutputToCurrentCapacity();
 
-        Optional<SelenicAstrolabeRecipe> recipe = findStartableRecipe(level, figure, crown);
+        Optional<SelenicAstrolabeRecipe> recipe = findStartableRecipe(snapshot);
 
         if (recipe.isEmpty()){
             fail(lastFailure, player);
             return;
         }
 
-        startRecipe(level, recipe.get());
+        startRecipe(level, recipe.get(), snapshot);
 
         if (player != null){
             player.displayClientMessage(
@@ -138,15 +140,13 @@ public class LunarFontBlockEntity extends BlockEntity {
     }
 
     private Optional<SelenicAstrolabeRecipe> findStartableRecipe(
-            Level level,
-            SelenicFigure figure,
-            ArmillaryCrownBlockEntity crown) {
+            SelenicTickSnapshot snapshot) {
         boolean itemBlocked = false;
         boolean fluidBlocked = false;
         SelenicFailure bestFailure = SelenicFailure.NONE;
 
-        for (SelenicAstrolabeRecipe recipe : SelenicRecipeCache.getSortedRecipes(level)) {
-            RecipeCheck check = checkRecipe(level, recipe, figure, crown);
+        for (SelenicAstrolabeRecipe recipe : SelenicRecipeCache.getSortedRecipes(snapshot.level())) {
+            RecipeCheck check = checkRecipe(recipe, snapshot);
 
             if (check.isOk()){
                 lastFailure = SelenicFailure.NONE;
@@ -195,7 +195,11 @@ public class LunarFontBlockEntity extends BlockEntity {
         };
     }
 
-    private void startRecipe(Level level, SelenicAstrolabeRecipe recipe) {
+    private void startRecipe(
+            Level level,
+            SelenicAstrolabeRecipe recipe,
+            SelenicTickSnapshot snapshot
+    ) {
         activeRecipeId = recipe.getId();
         progress = 0.0F;
 
@@ -204,14 +208,7 @@ public class LunarFontBlockEntity extends BlockEntity {
         setChangedAndUpdate();
 
         if (recipe.getDuration() <= 0){
-            SelenicFigure figure = SelenicFigureScanner.scan(level, worldPosition);
-            ArmillaryCrownBlockEntity crown = getCrown(level, figure);
-
-            if (figure.valid() && crown != null){
-                completeRecipe(level, recipe, figure, crown);
-            }else {
-                stopInterrupted();
-            }
+            completeRecipe(level, recipe, snapshot);
         }
     }
 
@@ -245,11 +242,18 @@ public class LunarFontBlockEntity extends BlockEntity {
 
         SelenicAstrolabeRecipe active = recipe.get();
 
-        updateCachedFigure(level, figure);
-        setSpinesActiveFromCache(true);
-        trimOutputToCurrentCapacity();
+        SelenicTickSnapshot snapshot = createSnapshot(level, figure, crown);
+        int oldLowerSpines = cachedLowerSpines;
+        int oldUpperSpines = cachedUpperSpines;
+        updateCachedFigure(snapshot);
 
-        if (!active.matches(createContext(level, figure, crown)) || !canPrepareRecipe(level, active, figure, crown)){
+        if (cachedLowerSpines != oldLowerSpines || cachedUpperSpines != oldUpperSpines){
+            setSpinesActiveFromCache(true);
+            trimOutputToCurrentCapacity();
+            crown.trimToCurrentCapacity();
+        }
+
+        if (!active.matches(snapshot.context()) || !checkRecipe(active, snapshot).isOk()){
             stopInterrupted();
             return;
         }
@@ -257,7 +261,7 @@ public class LunarFontBlockEntity extends BlockEntity {
         progress += getProgressStep();
 
         if (progress >= active.getDuration()){
-            completeRecipe(level, active, figure, crown);
+            completeRecipe(level, active, snapshot);
         }
 
         setChanged();
@@ -287,9 +291,8 @@ public class LunarFontBlockEntity extends BlockEntity {
     private void completeRecipe(
             Level level,
             SelenicAstrolabeRecipe recipe,
-            SelenicFigure figure,
-            ArmillaryCrownBlockEntity crown) {
-        SelenicRecipeAccess access = createRecipeAccess(level, figure, crown);
+            SelenicTickSnapshot snapshot) {
+        SelenicRecipeAccess access = createRecipeAccess(snapshot);
         PreparedSelenicRecipe prepared = recipe.prepareRecipe(access, level.random);
 
         if (!prepared.isOk()){
@@ -310,27 +313,17 @@ public class LunarFontBlockEntity extends BlockEntity {
         setChangedAndUpdate();
     }
 
-    private boolean canPrepareRecipe(
-            Level level,
-            SelenicAstrolabeRecipe recipe,
-            SelenicFigure figure,
-            ArmillaryCrownBlockEntity crown) {
-        return checkRecipe(level, recipe, figure, crown).isOk();
-    }
-
     private RecipeCheck checkRecipe(
-            Level level,
             SelenicAstrolabeRecipe recipe,
-            SelenicFigure figure,
-            ArmillaryCrownBlockEntity crown) {
-        SelenicRequirementCheck requirement = recipe.checkRequirements(createContext(level, figure, crown));
+            SelenicTickSnapshot snapshot) {
+        SelenicRequirementCheck requirement = recipe.checkRequirements(snapshot.context());
 
         if (requirement != SelenicRequirementCheck.OK){
             return RecipeCheck.fail(failureOf(requirement));
         }
 
         PreparedSelenicRecipe prepared = recipe.prepareRecipe(
-                createRecipeAccess(level, figure, crown),
+                createRecipeAccess(snapshot),
                 null);
 
         if (!prepared.isOk()){
@@ -351,7 +344,8 @@ public class LunarFontBlockEntity extends BlockEntity {
         int oldLowerSpines = cachedLowerSpines;
 
         if (figure.valid()){
-            updateCachedFigure(level, figure);
+            List<TestimonyStandBlockEntity> witnesses = collectWitnesses(level, figure);
+            updateCachedFigure(figure, witnesses.size());
             trimCrownToCurrentCapacity(level, figure);
         }else {
             cachedLowerSpines = 0;
@@ -374,10 +368,14 @@ public class LunarFontBlockEntity extends BlockEntity {
         }
     }
 
-    private void updateCachedFigure(Level level, SelenicFigure figure) {
+    private void updateCachedFigure(SelenicTickSnapshot snapshot) {
+        updateCachedFigure(snapshot.figure(), snapshot.testimonySources().size());
+    }
+
+    private void updateCachedFigure(SelenicFigure figure, int testimonyCount) {
         cachedLowerSpines = Math.max(0, figure.lowerSpines());
         cachedUpperSpines = Math.max(0, figure.upperSpines());
-        cachedTestimonyCount = collectWitnesses(level, figure).size();
+        cachedTestimonyCount = Math.max(0, testimonyCount);
     }
 
     private void trimOutputToCurrentCapacity() {
@@ -385,32 +383,38 @@ public class LunarFontBlockEntity extends BlockEntity {
         outputTank.capToCapacity();
     }
 
-    private SelenicAstrolabeContext createContext(
+    private SelenicTickSnapshot createSnapshot(
             Level level,
             SelenicFigure figure,
             ArmillaryCrownBlockEntity crown) {
-        return new SelenicAstrolabeContext(
+        List<InputSource> crownSources = collectCrownSources(crown);
+        List<InputSource> testimonySources = collectTestimonySources(collectWitnesses(level, figure));
+        SelenicAstrolabeContext context = new SelenicAstrolabeContext(
                 figure.totalSpines(),
                 MoonPhase.fromVanillaId(level.getMoonPhase()),
                 level.isNight(),
-                crown.copyInputStacks(),
-                copyStacks(collectTestimonySources(level, figure)),
-                crown.getInputFluid());
+                List.copyOf(copyStacks(crownSources)),
+                List.copyOf(copyStacks(testimonySources)),
+                crown.getInputFluid().copy());
+        return new SelenicTickSnapshot(
+                level,
+                figure,
+                crown,
+                List.copyOf(crownSources),
+                List.copyOf(testimonySources),
+                context);
     }
 
-    private SelenicRecipeAccess createRecipeAccess(
-            Level level,
-            SelenicFigure figure,
-            ArmillaryCrownBlockEntity crown) {
-        return new FontRecipeAccess(level, figure, crown);
+    private SelenicRecipeAccess createRecipeAccess(SelenicTickSnapshot snapshot) {
+        return new FontRecipeAccess(snapshot);
     }
 
-    private List<InputSource> collectTestimonySources(Level level, SelenicFigure figure) {
+    private List<InputSource> collectTestimonySources(List<TestimonyStandBlockEntity> witnesses) {
         List<InputSource> sources = new ArrayList<>();
 
-        for (TestimonyStandBlockEntity stand : collectWitnesses(level, figure)) {
+        for (TestimonyStandBlockEntity stand : witnesses) {
             sources.add(new InputSource(
-                    stand.getTestimony(),
+                    stand::getTestimony,
                     stack -> stand.setTestimony(normalize(stack))));
         }
 
@@ -424,7 +428,7 @@ public class LunarFontBlockEntity extends BlockEntity {
             int index = slot;
 
             sources.add(new InputSource(
-                    crown.getInputStack(index),
+                    () -> crown.getInputStack(index),
                     stack -> crown.setInputStack(index, normalize(stack))));
         }
 
@@ -493,6 +497,14 @@ public class LunarFontBlockEntity extends BlockEntity {
             stacks.add(source.stack().copy());
         }
 
+        return stacks;
+    }
+
+    private List<ItemStack> copyItemStacks(List<ItemStack> source) {
+        List<ItemStack> stacks = new ArrayList<>(source.size());
+        for (ItemStack stack : source) {
+            stacks.add(stack.copy());
+        }
         return stacks;
     }
 
@@ -737,34 +749,30 @@ public class LunarFontBlockEntity extends BlockEntity {
     }
 
     private class FontRecipeAccess implements SelenicRecipeAccess {
-        private final Level level;
-        private final SelenicFigure figure;
-        private final ArmillaryCrownBlockEntity crown;
+        private final SelenicTickSnapshot snapshot;
 
-        private FontRecipeAccess(Level level, SelenicFigure figure, ArmillaryCrownBlockEntity crown) {
-            this.level = level;
-            this.figure = figure;
-            this.crown = crown;
+        private FontRecipeAccess(SelenicTickSnapshot snapshot) {
+            this.snapshot = snapshot;
         }
 
         @Override
         public Level level() {
-            return level;
+            return snapshot.level();
         }
 
         @Override
         public List<ItemStack> crownInputs() {
-            return crown.copyInputStacks();
+            return copyItemStacks(snapshot.context().crownInputs());
         }
 
         @Override
         public List<ItemStack> testimonyInputs() {
-            return copyStacks(collectTestimonySources(level, figure));
+            return copyItemStacks(snapshot.context().testimonyInputs());
         }
 
         @Override
         public FluidStack inputMedium() {
-            return crown.getInputFluid();
+            return snapshot.context().medium().copy();
         }
 
         @Override
@@ -785,7 +793,7 @@ public class LunarFontBlockEntity extends BlockEntity {
 
             int count = 0;
 
-            for (ItemStack stack : crown.copyInputStacks()) {
+            for (ItemStack stack : snapshot.context().crownInputs()) {
                 if (!stack.isEmpty() && ingredient.test(stack)){
                     count += stack.getCount();
                 }
@@ -800,7 +808,7 @@ public class LunarFontBlockEntity extends BlockEntity {
                 return;
             }
 
-            List<InputSource> sources = collectCrownSources(crown);
+            List<InputSource> sources = snapshot.crownSources();
             List<ItemStack> working = copyStacks(sources);
 
             if (!IngredientStackUtil.consumeOne(working, ingredient, false)){
@@ -818,7 +826,7 @@ public class LunarFontBlockEntity extends BlockEntity {
                 return;
             }
 
-            List<InputSource> sources = collectCrownSources(crown);
+            List<InputSource> sources = snapshot.crownSources();
             int remaining = amount;
 
             for (InputSource source : sources) {
@@ -847,7 +855,7 @@ public class LunarFontBlockEntity extends BlockEntity {
                 return;
             }
 
-            List<InputSource> sources = collectTestimonySources(level, figure);
+            List<InputSource> sources = snapshot.testimonySources();
             List<ItemStack> working = copyStacks(sources);
 
             if (!IngredientStackUtil.consumeAll(working, testimonies, false)){
@@ -862,7 +870,7 @@ public class LunarFontBlockEntity extends BlockEntity {
         @Override
         public void drainMedium(int amount) {
             if (amount > 0){
-                crown.drainInputFluid(amount);
+                snapshot.crown().drainInputFluid(amount);
             }
         }
 
@@ -881,7 +889,20 @@ public class LunarFontBlockEntity extends BlockEntity {
         }
     }
 
-    private record InputSource(ItemStack stack, Consumer<ItemStack> setter) {
+    private record SelenicTickSnapshot(
+            Level level,
+            SelenicFigure figure,
+            ArmillaryCrownBlockEntity crown,
+            List<InputSource> crownSources,
+            List<InputSource> testimonySources,
+            SelenicAstrolabeContext context
+    ) {}
+
+    private record InputSource(Supplier<ItemStack> getter, Consumer<ItemStack> setter) {
+        private ItemStack stack() {
+            return getter.get();
+        }
+
         private void set(ItemStack stack) {
             setter.accept(stack);
         }

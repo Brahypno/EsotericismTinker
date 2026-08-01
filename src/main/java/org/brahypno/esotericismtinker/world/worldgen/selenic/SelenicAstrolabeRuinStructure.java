@@ -53,8 +53,9 @@ public class SelenicAstrolabeRuinStructure extends Structure {
             return Optional.empty();
         }
 
+        long ruinSeed = context.random().nextLong();
         return Optional.of(new GenerationStub(origin, builder ->
-                builder.addPiece(new SelenicAstrolabeRuinPiece(origin, kind))
+                builder.addPiece(new SelenicAstrolabeRuinPiece(origin, kind, ruinSeed))
         ));
     }
 

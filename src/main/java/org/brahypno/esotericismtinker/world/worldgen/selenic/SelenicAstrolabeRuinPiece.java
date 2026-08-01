@@ -2,6 +2,7 @@ package org.brahypno.esotericismtinker.world.worldgen.selenic;
 
 import net.minecraft.core.BlockPos;
 import net.minecraft.nbt.CompoundTag;
+import net.minecraft.util.Mth;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.level.ChunkPos;
 import net.minecraft.world.level.StructureManager;
@@ -17,13 +18,16 @@ public class SelenicAstrolabeRuinPiece extends StructurePiece {
     private static final String TAG_ORIGIN_Y = "OriginY";
     private static final String TAG_ORIGIN_Z = "OriginZ";
     private static final String TAG_KIND = "Kind";
+    private static final String TAG_RUIN_SEED = "RuinSeed";
 
     private final BlockPos origin;
     private final SelenicAstrolabeRuinKind kind;
+    private final long ruinSeed;
 
     public SelenicAstrolabeRuinPiece(
             BlockPos origin,
-            SelenicAstrolabeRuinKind kind
+            SelenicAstrolabeRuinKind kind,
+            long ruinSeed
     ) {
         super(
                 EsotericismTinkerWorldgenRegistry.SELENIC_ASTROLABE_RUIN_PIECE.get(),
@@ -33,6 +37,7 @@ public class SelenicAstrolabeRuinPiece extends StructurePiece {
 
         this.origin = origin;
         this.kind = kind;
+        this.ruinSeed = ruinSeed;
     }
 
     public SelenicAstrolabeRuinPiece(
@@ -51,6 +56,15 @@ public class SelenicAstrolabeRuinPiece extends StructurePiece {
         );
 
         this.kind = SelenicAstrolabeRuinKind.byName(tag.getString(TAG_KIND));
+        this.ruinSeed = tag.contains(TAG_RUIN_SEED)
+                        ? tag.getLong(TAG_RUIN_SEED)
+                        : Mth.getSeed(origin);
+
+        BoundingBox expected = makeBoundingBox(origin, kind.config());
+        if (boundingBox.getXSpan() > expected.getXSpan()
+            || boundingBox.getZSpan() > expected.getZSpan()){
+            this.boundingBox = expected;
+        }
     }
 
     @Override
@@ -62,6 +76,7 @@ public class SelenicAstrolabeRuinPiece extends StructurePiece {
         tag.putInt(TAG_ORIGIN_Y, origin.getY());
         tag.putInt(TAG_ORIGIN_Z, origin.getZ());
         tag.putString(TAG_KIND, kind.getSerializedName());
+        tag.putLong(TAG_RUIN_SEED, ruinSeed);
     }
 
     @Override
@@ -74,23 +89,25 @@ public class SelenicAstrolabeRuinPiece extends StructurePiece {
             ChunkPos chunkPos,
             BlockPos pivot
     ) {
-        SelenicAstrolabeRuinPlacer.place(level, origin, random, kind.config());
+        SelenicAstrolabeRuinPlacer.place(level, origin, ruinSeed, kind.config(), box);
     }
 
     private static BoundingBox makeBoundingBox(
             BlockPos origin,
             SelenicAstrolabeRuinConfiguration config
     ) {
-        int radius = Math.max(
-                config.placement().reserveRadius() + 8,
-                config.rewards().lootChestRadius() + 2
-        );
+        int foundationRadius = Math.min(config.placement().reserveRadius() + 2, 7);
+        int radius = Math.max(foundationRadius, config.rewards().lootChestRadius());
 
-        int minY = origin.getY() - 4;
+        int minY = Math.min(origin.getY() - 4,
+                            origin.getY() - config.rewards().netheriteSearchDepth());
+        int maxCoreOffset = config.structure().maxSpinesBelow()
+                            + config.structure().maxSpinesAbove()
+                            + 7;
         int maxY = config.placement().maxY()
-                   + config.structure().maxSpinesBelow()
-                   + config.structure().maxSpinesAbove()
-                   + 32;
+                   + maxCoreOffset
+                   + config.placement().reserveHeightExtra()
+                   + 64;
 
         return new BoundingBox(
                 origin.getX() - radius, minY, origin.getZ() - radius,

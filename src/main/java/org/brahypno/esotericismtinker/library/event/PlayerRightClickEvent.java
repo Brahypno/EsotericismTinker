@@ -1,5 +1,6 @@
 package org.brahypno.esotericismtinker.library.event;
 
+import net.minecraft.world.InteractionHand;
 import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
@@ -18,12 +19,17 @@ public class PlayerRightClickEvent {
     public static void onRightEmptyClick(PlayerInteractEvent.RightClickEmpty event) {
         Player player = event.getEntity();
         if (player != null && player.level().isClientSide){
-            ItemStack stack = player.getItemInHand(player.getUsedItemHand());
+            InteractionHand hand = event.getHand();
+            ItemStack stack = player.getItemInHand(hand);
             if (stack.isEmpty()){
                 stack = CuriosCompat.findPreferredModifiable(player);
                 if (stack.getItem() instanceof IModifiable)
-                    RightClickHook.handleRightClick(stack, player, EquipmentSlot.MAINHAND);
+                    RightClickHook.handleRightClick(stack, player, getSlot(hand));
             }
         }
+    }
+
+    private static EquipmentSlot getSlot(InteractionHand hand) {
+        return hand == InteractionHand.MAIN_HAND ? EquipmentSlot.MAINHAND : EquipmentSlot.OFFHAND;
     }
 }

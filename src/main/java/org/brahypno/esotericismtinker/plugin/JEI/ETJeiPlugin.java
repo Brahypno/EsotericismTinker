@@ -17,6 +17,7 @@ import org.brahypno.esotericismtinker.library.recipe.EsotericismTinkerRecipeType
 import org.brahypno.esotericismtinker.library.recipe.selenic.SelenicAstrolabeRecipe;
 import org.brahypno.esotericismtinker.library.recipe.selenic.SelenicTinkerPartRecipe;
 import org.brahypno.esotericismtinker.selenic.EsotericismTinkerSelenic;
+import org.brahypno.esotericismtinker.smeltery.EsotericismTinkerSmeltery;
 import org.brahypno.esotericismtinker.smeltery.recipe.entitymelting.ByproductEntityMeltingRecipe;
 import org.brahypno.esotericismtinker.smeltery.recipe.entitymelting.ByproductEntityMeltingRecipeRegistry;
 import org.brahypno.esotericismtinker.transcendence.appearance.recipe.StigmataRecipeAdapter;
@@ -118,8 +119,8 @@ public class ETJeiPlugin implements IModPlugin {
         );
 
         registration.addRecipeCatalyst(
-                new ItemStack(EsotericismTinkerTranscendenceTable.transcendenceAnvil),
-                StigmataRecipeCategory.TYPE
+                new ItemStack(EsotericismTinkerSmeltery.transmuteController),
+                TransmuteCategory.TYPE
         );
         
         registration.addRecipeCatalyst(

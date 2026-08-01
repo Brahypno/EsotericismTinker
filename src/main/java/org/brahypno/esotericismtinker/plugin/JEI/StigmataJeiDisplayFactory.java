@@ -169,7 +169,13 @@ public final class StigmataJeiDisplayFactory {
     private record MaterialChoice(MaterialId material, ItemStack stack, int tier,
                                   double unitsPerItem, int requiredCount, double overpay) {}
 
-    private record CandidatePool(List<Item> tools, List<PartChoice> parts, Map<Integer, List<ItemStack>> materialsByTier) {
+    private record CandidatePool(
+            List<Item> tools,
+            List<ToolPartItem> parts,
+            Map<ResourceLocation, ToolPartItem> partsById,
+            List<IMaterial> materials,
+            Map<Integer, List<ItemStack>> materialsByTier
+    ) {
 
         static CandidatePool build() {
             List<Item> tools = ForgeRegistries.ITEMS.getValues().stream()
@@ -177,26 +183,22 @@ public final class StigmataJeiDisplayFactory {
                                                     .sorted(Comparator.comparing(item -> Objects.toString(ForgeRegistries.ITEMS.getKey(item))))
                                                     .toList();
 
-            List<PartChoice> parts = new ArrayList<>();
-            if (MaterialRegistry.isFullyLoaded()){
-                for (Item item : ForgeRegistries.ITEMS.getValues()) {
-                    if (!(item instanceof ToolPartItem part)){
-                        continue;
-                    }
-                    ResourceLocation partId = ForgeRegistries.ITEMS.getKey(item);
-                    if (null == partId){
-                        continue;
-                    }
-                    for (IMaterial material : MaterialRegistry.getMaterials()) {
-                        MaterialVariantId variant = material.getIdentifier();
-                        if (!material.isHidden() && part.canUseMaterial(variant.getId())){
-                            ItemStack stack = part.withMaterial(variant);
-                            StigmataMaterialInput resolved = StigmataMaterialResolver.resolvePart(stack);
-                            if (null != resolved){
-                                parts.add(new PartChoice(partId, stack, resolved.tier()));
-                            }
-                        }
-                    }
+            List<IMaterial> visibleMaterials = MaterialRegistry.isFullyLoaded()
+                                               ? MaterialRegistry.getMaterials().stream()
+                                                                 .filter(material -> !material.isHidden())
+                                                                 .toList()
+                                               : List.of();
+            List<ToolPartItem> parts = ForgeRegistries.ITEMS.getValues().stream()
+                                                          .filter(item -> item instanceof ToolPartItem)
+                                                          .map(item -> (ToolPartItem) item)
+                                                          .sorted(Comparator.comparing(part -> Objects.toString(
+                                                                  ForgeRegistries.ITEMS.getKey(part))))
+                                                          .toList();
+            Map<ResourceLocation, ToolPartItem> partsById = new HashMap<>();
+            for (ToolPartItem part : parts) {
+                ResourceLocation id = ForgeRegistries.ITEMS.getKey(part);
+                if (id != null){
+                    partsById.put(id, part);
                 }
             }
 
@@ -229,17 +231,65 @@ public final class StigmataJeiDisplayFactory {
                                   .computeIfAbsent(choice.tier(), ignored -> new ArrayList<>())
                                   .add(choice.stack().copy()));
             materials.replaceAll((tier, stacks) -> List.copyOf(stacks));
-            return new CandidatePool(List.copyOf(tools), List.copyOf(parts), Map.copyOf(materials));
+            return new CandidatePool(
+                    List.copyOf(tools),
+                    List.copyOf(parts),
+                    Map.copyOf(partsById),
+                    List.copyOf(visibleMaterials),
+                    Map.copyOf(materials));
         }
 
         PartChoice choosePart(
                 Set<ResourceLocation> nativeParts, boolean requireNative,
                 ResourceLocation excluded, int seed) {
-            List<PartChoice> matching = parts.stream()
-                                             .filter(choice -> nativeParts.contains(choice.id) == requireNative)
-                                             .filter(choice -> null == excluded || !excluded.equals(choice.id))
-                                             .toList();
-            return matching.isEmpty() ? null : matching.get(Math.floorMod(seed, matching.size()));
+            List<ToolPartItem> candidates;
+            if (requireNative){
+                candidates = nativeParts.stream()
+                                        .sorted(Comparator.comparing(ResourceLocation::toString))
+                                        .filter(id -> excluded == null || !excluded.equals(id))
+                                        .map(partsById::get)
+                                        .filter(Objects::nonNull)
+                                        .toList();
+            }else {
+                candidates = parts.stream()
+                                  .filter(part -> {
+                                      ResourceLocation id = ForgeRegistries.ITEMS.getKey(part);
+                                      return id != null
+                                             && !nativeParts.contains(id)
+                                             && (excluded == null || !excluded.equals(id));
+                                  })
+                                  .toList();
+            }
+
+            if (candidates.isEmpty() || materials.isEmpty()){
+                return null;
+            }
+
+            int partStart = Math.floorMod(seed, candidates.size());
+            for (int partOffset = 0; partOffset < candidates.size(); partOffset++) {
+                ToolPartItem part = candidates.get((partStart + partOffset) % candidates.size());
+                ResourceLocation id = ForgeRegistries.ITEMS.getKey(part);
+                if (id == null){
+                    continue;
+                }
+
+                int materialStart = Math.floorMod(seed * 31 + partOffset, materials.size());
+                for (int materialOffset = 0; materialOffset < materials.size(); materialOffset++) {
+                    IMaterial material = materials.get((materialStart + materialOffset) % materials.size());
+                    MaterialVariantId variant = material.getIdentifier();
+                    if (!part.canUseMaterial(variant.getId())){
+                        continue;
+                    }
+
+                    ItemStack stack = part.withMaterial(variant);
+                    StigmataMaterialInput resolved = StigmataMaterialResolver.resolvePart(stack);
+                    if (resolved != null){
+                        return new PartChoice(id, stack, resolved.tier());
+                    }
+                }
+            }
+
+            return null;
         }
 
         private static MaterialChoice betterMaterialChoice(MaterialChoice first, MaterialChoice second) {

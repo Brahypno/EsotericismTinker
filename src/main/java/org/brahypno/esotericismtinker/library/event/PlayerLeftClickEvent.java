@@ -16,11 +16,12 @@ public class PlayerLeftClickEvent {
     public static void onLeftClick(PlayerInteractEvent.LeftClickEmpty event) {
         Player player = event.getEntity();
         if (player != null && player.level().isClientSide){
-            ItemStack stack = player.getItemInHand(player.getUsedItemHand());
+            InteractionHand hand = event.getHand();
+            ItemStack stack = player.getItemInHand(hand);
             if (stack.isEmpty())
                 stack = CuriosCompat.findPreferredModifiable(player);
             if (stack.getItem() instanceof IModifiable)
-                LeftClickHook.handleLeftClick(stack, player, getSlot(player.getUsedItemHand()));
+                LeftClickHook.handleLeftClick(stack, player, getSlot(hand));
         }
     }
 
@@ -29,22 +30,23 @@ public class PlayerLeftClickEvent {
         BlockPos pos = event.getPos();
         if (player != null){
             BlockState state = player.level().getBlockState(pos);
-            ItemStack stack = player.getItemInHand(player.getUsedItemHand());
+            InteractionHand hand = event.getHand();
+            ItemStack stack = player.getItemInHand(hand);
             if (stack.isEmpty())
                 stack = CuriosCompat.findPreferredModifiable(player);
             if (stack.getItem() instanceof IModifiable)
-                LeftClickHook.handleLeftClickBlock(event, stack, player, getSlot(player.getUsedItemHand()), state, pos);
+                LeftClickHook.handleLeftClickBlock(event, stack, player, getSlot(hand), state, pos);
         }
     }
 
     public static void onLeftClickEntity(AttackEntityEvent event) {
         Player player = event.getEntity();
         if (player != null){
-            ItemStack stack = player.getItemInHand(player.getUsedItemHand());
+            ItemStack stack = player.getMainHandItem();
             if (stack.isEmpty())
                 stack = CuriosCompat.findPreferredModifiable(player);
             if (stack.getItem() instanceof IModifiable)
-                LeftClickHook.handleLeftClickEntity(event, stack, player, getSlot(player.getUsedItemHand()), event.getTarget());
+                LeftClickHook.handleLeftClickEntity(event, stack, player, EquipmentSlot.MAINHAND, event.getTarget());
         }
     }
 

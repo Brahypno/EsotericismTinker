@@ -1,6 +1,7 @@
 package org.brahypno.esotericismtinker.library.modifiers.hook;
 
 import net.minecraft.core.BlockPos;
+import net.minecraft.world.InteractionHand;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.player.Player;
@@ -39,7 +40,9 @@ public interface LeftClickHook {
             entry.getHook(EsotericismTinkerHook.LEFT_CLICK).onLeftClickEmpty(tool, entry, player, level, slot);
         }
         if (level.isClientSide){
-            EsotericismTinkerNetwork.CHANNEL.sendToServer(new LeftClickEmptyPacket());
+            InteractionHand hand = slot == EquipmentSlot.OFFHAND
+                                   ? InteractionHand.OFF_HAND : InteractionHand.MAIN_HAND;
+            EsotericismTinkerNetwork.CHANNEL.sendToServer(new LeftClickEmptyPacket(hand));
         }
     }
 

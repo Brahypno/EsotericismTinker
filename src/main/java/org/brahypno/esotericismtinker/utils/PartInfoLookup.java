@@ -17,13 +17,16 @@ import slimeknights.tconstruct.library.tools.part.ToolPartItem;
 
 import java.util.Comparator;
 import java.util.HashMap;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 public final class PartInfoLookup {
     public static final int DEFAULT_COST = 5;
 
     private static final Map<ToolPartItem, Integer> RUNTIME_COSTS = new HashMap<>();
+    private static final Map<MaterialStatsId, Map<Integer, List<ToolPartItem>>> RUNTIME_PARTS = new HashMap<>();
     private static boolean runtimeBuilt = false;
 
     private PartInfoLookup() {}
@@ -93,6 +96,7 @@ public final class PartInfoLookup {
 
     public static void clearRuntime() {
         RUNTIME_COSTS.clear();
+        RUNTIME_PARTS.clear();
         runtimeBuilt = false;
     }
 
@@ -104,11 +108,24 @@ public final class PartInfoLookup {
 
     private static void rebuildRuntime(RecipeManager recipes, RegistryAccess access) {
         RUNTIME_COSTS.clear();
+        RUNTIME_PARTS.clear();
 
         recipes.getAllRecipesFor(TinkerRecipeTypes.PART_BUILDER.get())
                .stream()
                .sorted(Comparator.comparing(IPartBuilderRecipe::getCost))
                .forEach(recipe -> putRuntimeCost(recipe, access));
+
+        for (Item item : ForgeRegistries.ITEMS.getValues()) {
+            if (item instanceof ToolPartItem part){
+                RUNTIME_PARTS
+                        .computeIfAbsent(part.getStatType(), ignored -> new HashMap<>())
+                        .computeIfAbsent(runtimeCost(part), ignored -> new java.util.ArrayList<>())
+                        .add(part);
+            }
+        }
+
+        RUNTIME_PARTS.values().forEach(byCost ->
+                byCost.replaceAll((cost, parts) -> List.copyOf(parts)));
 
         runtimeBuilt = true;
     }
@@ -136,14 +153,27 @@ public final class PartInfoLookup {
             MaterialVariantId material,
             List<MaterialStatsId> statsIds,
             int cost) {
-        return ForgeRegistries.ITEMS.getValues()
-                                    .stream()
-                                    .filter(item -> item instanceof ToolPartItem)
-                                    .map(item -> (ToolPartItem) item)
-                                    .filter(part -> statsIds.contains(part.getStatType()))
-                                    .filter(part -> part.canUseMaterial(material.getId()))
-                                    .filter(part -> runtimeCost(part) == cost)
-                                    .toList();
+        if (!runtimeBuilt){
+            return ForgeRegistries.ITEMS.getValues()
+                                        .stream()
+                                        .filter(item -> item instanceof ToolPartItem)
+                                        .map(item -> (ToolPartItem) item)
+                                        .filter(part -> statsIds.contains(part.getStatType()))
+                                        .filter(part -> part.canUseMaterial(material.getId()))
+                                        .filter(part -> runtimeCost(part) == cost)
+                                        .toList();
+        }
+
+        Set<ToolPartItem> candidates = new LinkedHashSet<>();
+        for (MaterialStatsId statsId : statsIds) {
+            candidates.addAll(RUNTIME_PARTS
+                                      .getOrDefault(statsId, Map.of())
+                                      .getOrDefault(cost, List.of()));
+        }
+
+        return candidates.stream()
+                         .filter(part -> part.canUseMaterial(material.getId()))
+                         .toList();
     }
 
     public static ToolPartItem exactPart(

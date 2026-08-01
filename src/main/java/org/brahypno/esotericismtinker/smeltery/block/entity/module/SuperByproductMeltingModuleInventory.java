@@ -9,13 +9,13 @@ import org.brahypno.esotericismtinker.Config;
 import org.brahypno.esotericismtinker.smeltery.block.entity.controller.TransmuteBlockEntity;
 import slimeknights.tconstruct.library.recipe.melting.IMeltingContainer;
 import slimeknights.tconstruct.library.recipe.melting.IMeltingRecipe;
-import slimeknights.tconstruct.smeltery.block.entity.controller.HeatingStructureBlockEntity;
 import slimeknights.tconstruct.smeltery.block.entity.module.MeltingModule;
 import slimeknights.tconstruct.smeltery.block.entity.module.MeltingModuleInventory;
-import slimeknights.tconstruct.smeltery.block.entity.tank.SmelteryTank;
 
 import javax.annotation.Nonnull;
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.List;
 import java.util.function.Consumer;
 
 public class SuperByproductMeltingModuleInventory extends MeltingModuleInventory {
@@ -176,15 +176,14 @@ public class SuperByproductMeltingModuleInventory extends MeltingModuleInventory
         if (fluidHandler.fill(main.copy(), IFluidHandler.FluidAction.SIMULATE) != main.getAmount())
             return false;
 
-        SmelteryTank<HeatingStructureBlockEntity> tank = new SmelteryTank<>(parent);
-        tank.setCapacity(Math.max(0, main.getAmount() * 10));
+        ByproductCollector tank = new ByproductCollector();
         while (count < inv.getStack().getCount()) {
             // 4) Let the recipe fill its byproducts into the temporary tank.
             recipe.handleByproducts(inv, tank);
             ++count;
         }
         // 5) Collect the non-empty byproduct fluids and their total amount.
-        java.util.List<FluidStack> bys = collectNonEmptyFluids(tank);
+        List<FluidStack> bys = collectNonEmptyFluids(tank);
 
         long M = main.getAmount();
         long B = 0L;
@@ -259,13 +258,72 @@ public class SuperByproductMeltingModuleInventory extends MeltingModuleInventory
 
     }
 
-    private static java.util.List<FluidStack> collectNonEmptyFluids(IFluidHandler handler) {
-        java.util.ArrayList<FluidStack> list = new java.util.ArrayList<>();
+    private static List<FluidStack> collectNonEmptyFluids(IFluidHandler handler) {
+        List<FluidStack> list = new ArrayList<>();
         for (int i = 0; i < handler.getTanks(); i++) {
             FluidStack fs = handler.getFluidInTank(i);
             if (!fs.isEmpty() && fs.getAmount() > 0)
                 list.add(fs.copy());
         }
         return list;
+    }
+
+    /**
+     * Temporary byproduct sink used only to measure a recipe's complete output.
+     * It deliberately has no fixed capacity: third-party recipes may define a
+     * byproduct ratio far above the main output amount.
+     */
+    private static final class ByproductCollector implements IFluidHandler {
+        private final List<FluidStack> fluids = new ArrayList<>();
+
+        @Override
+        public int getTanks() {
+            return fluids.size();
+        }
+
+        @Override
+        public FluidStack getFluidInTank(int tank) {
+            return tank >= 0 && tank < fluids.size() ? fluids.get(tank).copy() : FluidStack.EMPTY;
+        }
+
+        @Override
+        public int getTankCapacity(int tank) {
+            return Integer.MAX_VALUE;
+        }
+
+        @Override
+        public boolean isFluidValid(int tank, FluidStack stack) {
+            return !stack.isEmpty();
+        }
+
+        @Override
+        public int fill(FluidStack resource, FluidAction action) {
+            if (resource.isEmpty() || resource.getAmount() <= 0){
+                return 0;
+            }
+
+            if (action.execute()){
+                for (FluidStack stored : fluids) {
+                    if (stored.isFluidEqual(resource)){
+                        long combined = (long) stored.getAmount() + resource.getAmount();
+                        stored.setAmount((int) Math.min(Integer.MAX_VALUE, combined));
+                        return resource.getAmount();
+                    }
+                }
+                fluids.add(resource.copy());
+            }
+
+            return resource.getAmount();
+        }
+
+        @Override
+        public FluidStack drain(FluidStack resource, FluidAction action) {
+            return FluidStack.EMPTY;
+        }
+
+        @Override
+        public FluidStack drain(int maxDrain, FluidAction action) {
+            return FluidStack.EMPTY;
+        }
     }
 }

@@ -1,5 +1,6 @@
 package org.brahypno.esotericismtinker.library.modifiers.hook;
 
+import net.minecraft.world.InteractionHand;
 import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
@@ -26,7 +27,9 @@ public interface RightClickHook {
             entry.getHook(EsotericismTinkerHook.RIGHT_CLICK).onRightClickEmpty(tool, entry, player, level, slot);
         }
         if (level.isClientSide){
-            EsotericismTinkerNetwork.CHANNEL.sendToServer(new RightClickEmptyPacket());
+            InteractionHand hand = slot == EquipmentSlot.OFFHAND
+                                   ? InteractionHand.OFF_HAND : InteractionHand.MAIN_HAND;
+            EsotericismTinkerNetwork.CHANNEL.sendToServer(new RightClickEmptyPacket(hand));
         }
     }
 

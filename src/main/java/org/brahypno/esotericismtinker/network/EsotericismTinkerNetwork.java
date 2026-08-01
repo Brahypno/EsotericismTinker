@@ -11,7 +11,7 @@ import java.util.Optional;
 
 @Mod.EventBusSubscriber(modid = EsotericismTinker.MODID)
 public final class EsotericismTinkerNetwork {
-    public static final String PROTOCOL_VERSION = "3";
+    public static final String PROTOCOL_VERSION = "4";
 
     public static final SimpleChannel CHANNEL = NetworkRegistry.newSimpleChannel(
             new ResourceLocation(EsotericismTinker.MODID, "msg"),
@@ -30,14 +30,16 @@ public final class EsotericismTinkerNetwork {
                 LeftClickEmptyPacket.class,
                 LeftClickEmptyPacket::toBytes,
                 LeftClickEmptyPacket::new,
-                LeftClickEmptyPacket::handle
+                LeftClickEmptyPacket::handle,
+                Optional.of(NetworkDirection.PLAY_TO_SERVER)
         );
         CHANNEL.registerMessage(
                 packetId++,
                 RightClickEmptyPacket.class,
                 RightClickEmptyPacket::toBytes,
                 RightClickEmptyPacket::new,
-                RightClickEmptyPacket::handle
+                RightClickEmptyPacket::handle,
+                Optional.of(NetworkDirection.PLAY_TO_SERVER)
         );
         CHANNEL.registerMessage(
                 packetId++,

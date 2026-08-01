@@ -5,7 +5,9 @@ import net.minecraft.core.Direction;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.tags.BlockTags;
 import net.minecraft.tags.FluidTags;
+import net.minecraft.util.Mth;
 import net.minecraft.util.RandomSource;
+import net.minecraft.world.level.ChunkPos;
 import net.minecraft.world.level.NoiseColumn;
 import net.minecraft.world.level.WorldGenLevel;
 import net.minecraft.world.level.block.Block;
@@ -16,6 +18,7 @@ import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.properties.DoubleBlockHalf;
 import net.minecraft.world.level.levelgen.Heightmap;
 import net.minecraft.world.level.levelgen.structure.Structure;
+import net.minecraft.world.level.levelgen.structure.BoundingBox;
 import net.minecraftforge.common.Tags;
 import org.brahypno.esotericismtinker.common.data.loot.ETSelenicChestLoot;
 import org.brahypno.esotericismtinker.selenic.EsotericismTinkerSelenic;
@@ -23,6 +26,8 @@ import org.brahypno.esotericismtinker.selenic.block.component.SelenicBlockStates
 import org.brahypno.esotericismtinker.selenic.block.component.TestimonyStandBlock;
 
 import javax.annotation.Nullable;
+import java.util.ArrayList;
+import java.util.List;
 
 public final class SelenicAstrolabeRuinPlacer {
     private SelenicAstrolabeRuinPlacer() {}
@@ -30,16 +35,15 @@ public final class SelenicAstrolabeRuinPlacer {
     public static boolean place(
             WorldGenLevel level,
             BlockPos origin,
-            RandomSource random,
-            SelenicAstrolabeRuinConfiguration config
+            long ruinSeed,
+            SelenicAstrolabeRuinConfiguration config,
+            BoundingBox box
     ) {
         if (!isInHeightRange(origin, config)){
             return false;
         }
 
-        if (!hasOrRepairGroundSupport(level, origin, random)){
-            return false;
-        }
+        RandomSource structureRandom = RandomSource.create(ruinSeed ^ 0x53E1E71CL);
 
         float completenessNoise = SelenicRuinNoise.value2D(origin, 1103, 192.0D);
         float heightNoise = SelenicRuinNoise.value2D(origin, 2207, 128.0D);
@@ -69,22 +73,22 @@ public final class SelenicAstrolabeRuinPlacer {
                 config.variant().noiseInfluence()
         );
 
-        boolean complete = random.nextFloat() < completeChance;
+        boolean complete = structureRandom.nextFloat() < completeChance;
 
         int lowerSpines = randomBetween(
-                random,
+                structureRandom,
                 config.structure().minSpinesBelow(),
                 config.structure().maxSpinesBelow()
         );
 
         int upperSpines = randomBetween(
-                random,
+                structureRandom,
                 config.structure().minSpinesAbove(),
                 config.structure().maxSpinesAbove()
         );
 
-        lowerSpines = adjustLowerSpines(lowerSpines, config, heightNoise, random);
-        upperSpines = adjustUpperSpines(upperSpines, config, heightNoise, random);
+        lowerSpines = adjustLowerSpines(lowerSpines, config, heightNoise, structureRandom);
+        upperSpines = adjustUpperSpines(upperSpines, config, heightNoise, structureRandom);
 
         if (complete && lowerSpines + upperSpines <= 0){
             upperSpines = 1;
@@ -94,46 +98,42 @@ public final class SelenicAstrolabeRuinPlacer {
         BlockPos fontPos = basePos.above(lowerSpines);
         BlockPos crownPos = fontPos.above(upperSpines + 2);
 
-        if (!canReplaceCoreColumn(level, basePos, crownPos)){
-            return false;
+        if (containsColumn(box, basePos)){
+            int openSkyY = findCarvableOpenSkyY(level, crownPos.above());
+            if (openSkyY >= 0){
+                carveOpenShaft(level, basePos, crownPos, config, openSkyY, box);
+            }
         }
+        prepareFoundation(level, basePos, config, ruinSeed, box);
 
-        int openSkyY = findCarvableOpenSkyY(level, crownPos.above());
-        if (openSkyY < 0){
-            return false;
-        }
+        boolean placeFont = complete || structureRandom.nextFloat() < fontChance;
+        boolean placeCrown = complete || structureRandom.nextFloat() < crownChance;
 
-        carveOpenShaft(level, basePos, crownPos, config, openSkyY);
-        prepareFoundation(level, basePos, config, random);
-
-        boolean placeFont = complete || random.nextFloat() < fontChance;
-        boolean placeCrown = complete || random.nextFloat() < crownChance;
-
-        placeSpines(level, basePos, fontPos, lowerSpines, upperSpines, complete, random);
+        placeSpines(level, basePos, fontPos, lowerSpines, upperSpines, complete, structureRandom, box);
 
         if (placeFont){
-            placeLunarFont(level, fontPos);
+            placeLunarFont(level, fontPos, box);
         }
 
         if (placeCrown){
-            placeArmillaryCrown(level, crownPos);
+            placeArmillaryCrown(level, crownPos, box);
         }
 
         int stands = randomBetween(
-                random,
+                structureRandom,
                 config.structure().minStands(),
                 config.structure().maxStands()
         );
 
-        stands = adjustStands(stands, config, testimonyNoise, random);
+        stands = adjustStands(stands, config, testimonyNoise, structureRandom);
 
         if (complete){
             stands = Math.max(stands, Math.min(3, config.structure().maxStands()));
         }
 
-        placeTestimonyStands(level, fontPos, random, stands, upperSpines, testimonyChance);
-        placeLootChests(level, fontPos, random, config);
-        tryPlaceBuriedNetheriteBlock(level, fontPos, random, config);
+        placeTestimonyStands(level, fontPos, structureRandom, stands, upperSpines, testimonyChance, box);
+        placeLootChests(level, fontPos, ruinSeed, config, box);
+        tryPlaceBuriedNetheriteBlock(level, fontPos, ruinSeed, config, box);
 
         return true;
     }
@@ -224,7 +224,7 @@ public final class SelenicAstrolabeRuinPlacer {
             BlockState state = column.getBlock(y);
 
             if (state.isAir() || state.canBeReplaced()){
-                return true;
+                continue;
             }
 
             if (!isCarvableRoofBlock(state)){
@@ -232,31 +232,6 @@ public final class SelenicAstrolabeRuinPlacer {
             }
         }
 
-        return true;
-    }
-
-    private static boolean hasOrRepairGroundSupport(
-            WorldGenLevel level,
-            BlockPos origin,
-            RandomSource random
-    ) {
-        BlockPos floor = origin.below();
-        BlockState floorState = level.getBlockState(floor);
-        BlockState surfaceState = level.getBlockState(origin);
-
-        if (floorState.isFaceSturdy(level, floor, Direction.UP)){
-            return isValidNaturalAnchorFloor(floorState);
-        }
-
-        if (!isRepairableWeakSurfaceFloor(floorState)){
-            return false;
-        }
-
-        if (!isValidSurfaceGap(surfaceState)){
-            return false;
-        }
-
-        level.setBlock(floor, randomFoundationBlock(random), Block.UPDATE_CLIENTS);
         return true;
     }
 
@@ -282,22 +257,6 @@ public final class SelenicAstrolabeRuinPlacer {
                || state.is(Blocks.BLUE_ICE);
     }
 
-    private static boolean isRepairableWeakSurfaceFloor(BlockState state) {
-        if (!isValidNaturalAnchorFloor(state)){
-            return false;
-        }
-
-        return state.is(Blocks.SNOW)
-               || state.is(Blocks.POWDER_SNOW)
-               || state.is(Blocks.ICE)
-               || state.is(Blocks.PACKED_ICE)
-               || state.is(Blocks.BLUE_ICE)
-               || state.is(BlockTags.SAND)
-               || state.is(Blocks.GRAVEL)
-               || state.is(BlockTags.DIRT)
-               || state.is(BlockTags.BASE_STONE_OVERWORLD);
-    }
-
     private static boolean isValidSurfaceGap(BlockState state) {
         if (state.getFluidState().is(FluidTags.WATER)){
             return false;
@@ -307,24 +266,6 @@ public final class SelenicAstrolabeRuinPlacer {
         }
 
         return state.isAir() || state.canBeReplaced();
-    }
-
-    private static boolean canReplaceCoreColumn(
-            WorldGenLevel level,
-            BlockPos basePos,
-            BlockPos crownPos
-    ) {
-        for (BlockPos pos : BlockPos.betweenClosed(basePos, crownPos.above())) {
-            BlockState state = level.getBlockState(pos);
-
-            if (state.isAir() || state.canBeReplaced() || isCarvableRoofBlock(state)){
-                continue;
-            }
-
-            return false;
-        }
-
-        return true;
     }
 
     private static int findCarvableOpenSkyY(WorldGenLevel level, BlockPos pos) {
@@ -348,7 +289,7 @@ public final class SelenicAstrolabeRuinPlacer {
         return maxY;
     }
 
-    private static void carveOpenShaft(WorldGenLevel level, BlockPos basePos, BlockPos crownPos, SelenicAstrolabeRuinConfiguration config, int openSkyY) {
+    private static void carveOpenShaft(WorldGenLevel level, BlockPos basePos, BlockPos crownPos, SelenicAstrolabeRuinConfiguration config, int openSkyY, BoundingBox box) {
         int radius = Math.min(config.placement().reserveRadius(), 2);
 
         BlockPos min = basePos.offset(-1, 0, -1);
@@ -362,18 +303,19 @@ public final class SelenicAstrolabeRuinPlacer {
             }
 
             if (state.canBeReplaced() || isCarvableRoofBlock(state)){
-                level.setBlock(pos, Blocks.AIR.defaultBlockState(), Block.UPDATE_CLIENTS);
+                setBlock(level, box, pos, Blocks.AIR.defaultBlockState());
             }
         }
 
-        carveTopOpening(level, crownPos, radius, Math.max(0, openSkyY - crownPos.getY()));
+        carveTopOpening(level, crownPos, radius, Math.max(0, openSkyY - crownPos.getY()), box);
     }
 
     private static void carveTopOpening(
             WorldGenLevel level,
             BlockPos crownPos,
             int radius,
-            int height
+            int height,
+            BoundingBox box
     ) {
         BlockPos start = crownPos.above();
 
@@ -394,7 +336,7 @@ public final class SelenicAstrolabeRuinPlacer {
                     }
 
                     if (isCarvableRoofBlock(state)){
-                        level.setBlock(pos, Blocks.AIR.defaultBlockState(), Block.UPDATE_CLIENTS);
+                        setBlock(level, box, pos, Blocks.AIR.defaultBlockState());
                     }
                 }
             }
@@ -420,12 +362,18 @@ public final class SelenicAstrolabeRuinPlacer {
             WorldGenLevel level,
             BlockPos basePos,
             SelenicAstrolabeRuinConfiguration config,
-            RandomSource random
+            long ruinSeed,
+            BoundingBox box
     ) {
         int radius = Math.min(config.placement().reserveRadius() + 2, 7);
 
         for (int dx = -radius; dx <= radius; dx++) {
             for (int dz = -radius; dz <= radius; dz++) {
+                BlockPos column = basePos.offset(dx, 0, dz);
+                if (!containsColumn(box, column)){
+                    continue;
+                }
+                RandomSource random = randomAt(ruinSeed, column, 0xF0A1D4710L);
                 int distance = Math.abs(dx) + Math.abs(dz);
 
                 if (distance > radius + 1){
@@ -436,7 +384,7 @@ public final class SelenicAstrolabeRuinPlacer {
                     continue;
                 }
 
-                BlockPos surface = findSurface(level, basePos.offset(dx, 0, dz));
+                BlockPos surface = findSurface(level, column);
 
                 if (surface == null){
                     continue;
@@ -446,7 +394,7 @@ public final class SelenicAstrolabeRuinPlacer {
                     continue;
                 }
 
-                placeFoundationPatchBlock(level, surface, distance, random);
+                placeFoundationPatchBlock(level, surface, distance, random, box);
             }
         }
     }
@@ -455,7 +403,8 @@ public final class SelenicAstrolabeRuinPlacer {
             WorldGenLevel level,
             BlockPos surface,
             int distance,
-            RandomSource random
+            RandomSource random,
+            BoundingBox box
     ) {
         BlockPos floor = surface.below();
 
@@ -463,7 +412,7 @@ public final class SelenicAstrolabeRuinPlacer {
             return;
         }
 
-        level.setBlock(floor, randomFoundationBlock(random), Block.UPDATE_CLIENTS);
+        setBlock(level, box, floor, randomFoundationBlock(random));
 
         if (distance <= 2){
             return;
@@ -477,7 +426,7 @@ public final class SelenicAstrolabeRuinPlacer {
             return;
         }
 
-        level.setBlock(surface, randomFoundationBlock(random), Block.UPDATE_CLIENTS);
+        setBlock(level, box, surface, randomFoundationBlock(random));
     }
 
     private static boolean canBecomeRuinFloor(WorldGenLevel level, BlockPos pos) {
@@ -597,24 +546,25 @@ public final class SelenicAstrolabeRuinPlacer {
             int lowerSpines,
             int upperSpines,
             boolean complete,
-            RandomSource random
+            RandomSource random,
+            BoundingBox box
     ) {
         BlockState spine = EsotericismTinkerSelenic.astrolabeSpine.get().defaultBlockState();
 
         for (int i = 0; i < lowerSpines; i++) {
             if (complete || random.nextFloat() < 0.85F){
-                level.setBlock(basePos.above(i), spine, Block.UPDATE_CLIENTS);
+                setBlock(level, box, basePos.above(i), spine);
             }
         }
 
         for (int i = 1; i <= upperSpines; i++) {
             if (complete || random.nextFloat() < 0.85F){
-                level.setBlock(fontPos.above(i + 1), spine, Block.UPDATE_CLIENTS);
+                setBlock(level, box, fontPos.above(i + 1), spine);
             }
         }
     }
 
-    private static void placeLunarFont(WorldGenLevel level, BlockPos lowerPos) {
+    private static void placeLunarFont(WorldGenLevel level, BlockPos lowerPos, BoundingBox box) {
         BlockState lower = EsotericismTinkerSelenic.lunarFont.get()
                                                              .defaultBlockState()
                                                              .setValue(SelenicBlockStates.HALF, DoubleBlockHalf.LOWER)
@@ -623,11 +573,11 @@ public final class SelenicAstrolabeRuinPlacer {
 
         BlockState upper = lower.setValue(SelenicBlockStates.HALF, DoubleBlockHalf.UPPER);
 
-        level.setBlock(lowerPos, lower, Block.UPDATE_CLIENTS);
-        level.setBlock(lowerPos.above(), upper, Block.UPDATE_CLIENTS);
+        setBlock(level, box, lowerPos, lower);
+        setBlock(level, box, lowerPos.above(), upper);
     }
 
-    private static void placeArmillaryCrown(WorldGenLevel level, BlockPos lowerPos) {
+    private static void placeArmillaryCrown(WorldGenLevel level, BlockPos lowerPos, BoundingBox box) {
         BlockState lower = EsotericismTinkerSelenic.armillaryCrown.get()
                                                                   .defaultBlockState()
                                                                   .setValue(SelenicBlockStates.HALF, DoubleBlockHalf.LOWER)
@@ -635,8 +585,8 @@ public final class SelenicAstrolabeRuinPlacer {
 
         BlockState upper = lower.setValue(SelenicBlockStates.HALF, DoubleBlockHalf.UPPER);
 
-        level.setBlock(lowerPos, lower, Block.UPDATE_CLIENTS);
-        level.setBlock(lowerPos.above(), upper, Block.UPDATE_CLIENTS);
+        setBlock(level, box, lowerPos, lower);
+        setBlock(level, box, lowerPos.above(), upper);
     }
 
     private static void placeTestimonyStands(
@@ -645,7 +595,8 @@ public final class SelenicAstrolabeRuinPlacer {
             RandomSource random,
             int count,
             int upperSpines,
-            float testimonyChance
+            float testimonyChance,
+            BoundingBox box
     ) {
         int placed = 0;
 
@@ -672,7 +623,7 @@ public final class SelenicAstrolabeRuinPlacer {
                                                                       .defaultBlockState()
                                                                       .setValue(TestimonyStandBlock.FLOATING, floating);
 
-            level.setBlock(pos, stand, Block.UPDATE_CLIENTS);
+            setBlock(level, box, pos, stand);
             placed++;
         }
     }
@@ -680,11 +631,13 @@ public final class SelenicAstrolabeRuinPlacer {
     private static void placeLootChests(
             WorldGenLevel level,
             BlockPos center,
-            RandomSource random,
-            SelenicAstrolabeRuinConfiguration config
+            long ruinSeed,
+            SelenicAstrolabeRuinConfiguration config,
+            BoundingBox box
     ) {
+        RandomSource countRandom = RandomSource.create(ruinSeed ^ 0x10C7C4E57L);
         int candidateCount = randomBetween(
-                random,
+                countRandom,
                 config.rewards().minLootChests(),
                 config.rewards().maxLootChests()
         );
@@ -697,11 +650,12 @@ public final class SelenicAstrolabeRuinPlacer {
         int placementAttemptsPerChest = 8;
 
         for (int i = 0; i < candidateCount; i++) {
+            RandomSource random = RandomSource.create(ruinSeed ^ 0x10C7C4E57L ^ (long) i * 0x9E3779B97F4A7C15L);
             if (random.nextFloat() > config.rewards().lootChestChance()){
                 continue;
             }
 
-            tryPlaceLootChest(level, center, random, radius, placementAttemptsPerChest);
+            tryPlaceLootChest(level, center, random, radius, placementAttemptsPerChest, box);
         }
     }
 
@@ -710,8 +664,10 @@ public final class SelenicAstrolabeRuinPlacer {
             BlockPos center,
             RandomSource random,
             int radius,
-            int attempts
+            int attempts,
+            BoundingBox box
     ) {
+        List<BlockPos> candidates = new ArrayList<>(attempts);
         for (int i = 0; i < attempts; i++) {
             int dx = randomOffset(random, radius);
             int dz = randomOffset(random, radius);
@@ -720,7 +676,26 @@ public final class SelenicAstrolabeRuinPlacer {
                 continue;
             }
 
-            BlockPos surface = findSurface(level, center.offset(dx, 0, dz));
+            candidates.add(center.offset(dx, 0, dz));
+        }
+
+        if (candidates.isEmpty()){
+            return;
+        }
+
+        BlockPos owner = candidates.get(0);
+        if (!containsColumn(box, owner)){
+            return;
+        }
+
+        long ownerChunk = ChunkPos.asLong(owner.getX() >> 4, owner.getZ() >> 4);
+        for (BlockPos column : candidates) {
+            long candidateChunk = ChunkPos.asLong(column.getX() >> 4, column.getZ() >> 4);
+            if (candidateChunk != ownerChunk){
+                continue;
+            }
+
+            BlockPos surface = findSurface(level, column);
 
             if (surface == null || !canPlaceLootChest(level, surface)){
                 continue;
@@ -729,7 +704,9 @@ public final class SelenicAstrolabeRuinPlacer {
             BlockState chestState = Blocks.CHEST.defaultBlockState()
                                                 .setValue(ChestBlock.FACING, randomHorizontal(random));
 
-            level.setBlock(surface, chestState, Block.UPDATE_CLIENTS);
+            if (!setBlock(level, box, surface, chestState)){
+                return;
+            }
 
             ResourceLocation lootTable = ETSelenicChestLoot.TRAIL_RUINS_CHEST;
             RandomizableContainerBlockEntity.setLootTable(level, random, surface, lootTable);
@@ -769,9 +746,14 @@ public final class SelenicAstrolabeRuinPlacer {
     private static void tryPlaceBuriedNetheriteBlock(
             WorldGenLevel level,
             BlockPos origin,
-            RandomSource random,
-            SelenicAstrolabeRuinConfiguration config
+            long ruinSeed,
+            SelenicAstrolabeRuinConfiguration config,
+            BoundingBox box
     ) {
+        if (!containsColumn(box, origin)){
+            return;
+        }
+        RandomSource random = RandomSource.create(ruinSeed ^ 0x0E7AE217EL);
         if (random.nextFloat() > config.rewards().netheriteBlockChance()){
             return;
         }
@@ -783,7 +765,7 @@ public final class SelenicAstrolabeRuinPlacer {
         );
 
         if (target != null){
-            level.setBlock(target, Blocks.NETHERITE_BLOCK.defaultBlockState(), Block.UPDATE_CLIENTS);
+            setBlock(level, box, target, Blocks.NETHERITE_BLOCK.defaultBlockState());
         }
     }
 
@@ -870,5 +852,23 @@ public final class SelenicAstrolabeRuinPlacer {
 
     private static int clamp(int value, int min, int max) {
         return Math.max(min, Math.min(max, value));
+    }
+
+    private static boolean containsColumn(BoundingBox box, BlockPos pos) {
+        return pos.getX() >= box.minX() && pos.getX() <= box.maxX()
+               && pos.getZ() >= box.minZ() && pos.getZ() <= box.maxZ();
+    }
+
+    private static boolean setBlock(
+            WorldGenLevel level,
+            BoundingBox box,
+            BlockPos pos,
+            BlockState state
+    ) {
+        return box.isInside(pos) && level.setBlock(pos, state, Block.UPDATE_CLIENTS);
+    }
+
+    private static RandomSource randomAt(long ruinSeed, BlockPos pos, long salt) {
+        return RandomSource.create(ruinSeed ^ Mth.getSeed(pos) ^ salt);
     }
 }
