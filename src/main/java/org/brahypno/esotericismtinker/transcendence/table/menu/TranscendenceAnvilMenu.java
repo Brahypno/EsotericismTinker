@@ -45,6 +45,7 @@ public final class TranscendenceAnvilMenu extends TabbedContainerMenu<Transcende
     private int syncedInitialTuning;
     private int syncedPendingTuning;
     private int syncedPendingInvestitureIndex = -1;
+    private boolean syncedHasPendingGuiChanges;
 
     public TranscendenceAnvilMenu(int id, Inventory inventory, @Nullable TranscendenceAnvilBlockEntity station) {
         super(EsotericismTinkerTranscendenceTable.transcendenceAnvilMenu.get(), id, inventory, station);
@@ -151,6 +152,18 @@ public final class TranscendenceAnvilMenu extends TabbedContainerMenu<Transcende
             }
         });
 
+        addDataSlot(new DataSlot() {
+            @Override
+            public int get() {
+                return station != null && station.hasPendingGuiChanges() ? 1 : 0;
+            }
+
+            @Override
+            public void set(int value) {
+                syncedHasPendingGuiChanges = value != 0;
+            }
+        });
+
         if (station != null && inventory.player instanceof ServerPlayer serverPlayer) {
             station.syncRecipe(serverPlayer);
         }
@@ -180,7 +193,8 @@ public final class TranscendenceAnvilMenu extends TabbedContainerMenu<Transcende
                 return true;
             }
         }
-        return getPendingTuning() != getInitialTuning()
+        return syncedHasPendingGuiChanges
+               || getPendingTuning() != getInitialTuning()
                || syncedPendingInvestitureIndex >= 0;
     }
 

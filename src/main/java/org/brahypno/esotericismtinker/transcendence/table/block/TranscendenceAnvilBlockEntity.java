@@ -4,6 +4,7 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.Tag;
 import net.minecraft.network.chat.Component;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.player.Inventory;
@@ -24,6 +25,7 @@ import org.brahypno.esotericismtinker.transcendence.appearance.recipe.StigmataRe
 import org.brahypno.esotericismtinker.transcendence.intrinsic.NoumenonAllocationLogic;
 import org.brahypno.esotericismtinker.transcendence.intrinsic.NoumenonData;
 import org.brahypno.esotericismtinker.transcendence.intrinsic.NoumenonInvestitureLogic;
+import org.brahypno.esotericismtinker.transcendence.intrinsic.NoumenonSublimationLogic;
 import org.brahypno.esotericismtinker.transcendence.table.EsotericismTinkerTranscendenceTable;
 import org.brahypno.esotericismtinker.transcendence.table.menu.TranscendenceAnvilMenu;
 import org.jetbrains.annotations.NotNull;
@@ -58,6 +60,8 @@ public final class TranscendenceAnvilBlockEntity extends RetexturedTableBlockEnt
     private final TranscendenceStationContainer wrapper = new TranscendenceStationContainer(this);
     private final Map<String, Integer> initialReception = new LinkedHashMap<>();
     private final Map<String, Integer> pendingReception = new LinkedHashMap<>();
+    private final Map<ResourceLocation, Integer> initialSublimations = new LinkedHashMap<>();
+    private final Map<ResourceLocation, Integer> pendingSublimations = new LinkedHashMap<>();
     private int initialTuning;
     private int pendingTuning;
     private ItemStack pendingInvestitureSource = ItemStack.EMPTY;
@@ -108,6 +112,7 @@ public final class TranscendenceAnvilBlockEntity extends RetexturedTableBlockEnt
 
     public boolean hasPendingGuiChanges() {
         return !pendingReception.equals(initialReception)
+               || !pendingSublimations.equals(initialSublimations)
                || pendingTuning != initialTuning
                || pendingInvestitureIndex >= 0;
     }
@@ -115,6 +120,7 @@ public final class TranscendenceAnvilBlockEntity extends RetexturedTableBlockEnt
     private void clearPendingForNewTool(ItemStack current) {
         pendingBaseTool = current.copy();
         resetReceptionBaseline();
+        resetSublimationBaseline();
         pendingInvestitureSource = ItemStack.EMPTY;
         pendingInvestitureIndex = -1;
         lastRecipe = null;
@@ -182,6 +188,56 @@ public final class TranscendenceAnvilBlockEntity extends RetexturedTableBlockEnt
         craftingResult.clearContent();
         craftingResult.getResult();
 
+        setChanged();
+        return true;
+    }
+
+    public boolean adjustSublimation(ResourceLocation pathId, int delta) {
+        if (level == null || level.isClientSide || (delta != 1 && delta != -1)
+            || getItem(0).isEmpty()) {
+            return false;
+        }
+
+        ToolStack raw = ToolStack.from(getItem(0).copy());
+        NoumenonData baseline = NoumenonData.read(raw);
+        baseline.sublimations.clear();
+        baseline.sublimations.putAll(initialSublimations);
+
+        ToolStack probe = raw.copy();
+        NoumenonData probeData = NoumenonData.read(probe);
+        probeData.receptionSlots.clear();
+        probeData.receptionSlots.putAll(pendingReception);
+        probeData.tuning = pendingTuning;
+        probeData.sublimations.clear();
+        probeData.sublimations.putAll(pendingSublimations);
+
+        Component mutationError = NoumenonSublimationLogic.mutateSelection(
+                probe, baseline, probeData, pathId, delta);
+        if (mutationError != null) {
+            currentError = mutationError;
+            return false;
+        }
+
+        Map<ResourceLocation, Integer> candidate =
+                new LinkedHashMap<>(probeData.sublimations);
+        Component error = NoumenonAllocationLogic.validateAndApply(raw, data -> {
+            data.receptionSlots.clear();
+            data.receptionSlots.putAll(pendingReception);
+            data.tuning = pendingTuning;
+            data.sublimations.clear();
+            data.sublimations.putAll(candidate);
+        });
+        if (error != null) {
+            currentError = error;
+            craftingResult.clearContent();
+            return false;
+        }
+
+        pendingSublimations.clear();
+        pendingSublimations.putAll(candidate);
+        currentError = null;
+        craftingResult.clearContent();
+        craftingResult.getResult();
         setChanged();
         return true;
     }
@@ -308,12 +364,25 @@ public final class TranscendenceAnvilBlockEntity extends RetexturedTableBlockEnt
         pendingTuning = data.tuning;
     }
 
+    private void resetSublimationBaseline() {
+        initialSublimations.clear();
+        pendingSublimations.clear();
+
+        LazyToolStack tool = getTool();
+        if (tool == null || tool.getStack().isEmpty()) return;
+        NoumenonData data = NoumenonData.read(tool.getTool());
+        initialSublimations.putAll(data.sublimations);
+        pendingSublimations.putAll(data.sublimations);
+    }
+
     @Nullable
     private Component applyPendingGuiChanges(ToolStack preview) {
         Component receptionError = NoumenonAllocationLogic.validateAndApply(preview, data -> {
             data.receptionSlots.clear();
             data.receptionSlots.putAll(pendingReception);
             data.tuning = pendingTuning;
+            data.sublimations.clear();
+            data.sublimations.putAll(pendingSublimations);
         });
         if (receptionError != null){
             return receptionError;

@@ -5,9 +5,6 @@ import slimeknights.tconstruct.library.tools.nbt.ToolStack;
 
 import javax.annotation.Nullable;
 
-/**
- * Applies Noumenon allocations transactionally after simulating a full TConstruct rebuild.
- */
 public final class NoumenonAllocationLogic {
     private NoumenonAllocationLogic() {}
 
@@ -16,9 +13,6 @@ public final class NoumenonAllocationLogic {
         void apply(NoumenonData data);
     }
 
-    /**
-     * Returns an error without touching {@code target}, or commits the tested mutation and returns null.
-     */
     @Nullable
     public static Component validateAndApply(ToolStack target, Mutation mutation) {
         ToolStack simulated = target.copy();
@@ -26,17 +20,26 @@ public final class NoumenonAllocationLogic {
         mutation.apply(simulatedData);
         simulatedData.write(simulated.getPersistentData());
 
-        if (simulatedData.remainingSubstratePoints() < 0){
-            return Component.translatable("command.esotericism_tinker.noumenon_test.not_enough_substrate_after_allocation", simulatedData.remainingSubstratePoints());
+        if (simulatedData.remainingSubstratePoints() < 0) {
+            return Component.translatable(
+                    "command.esotericism_tinker.noumenon_test.not_enough_substrate_after_allocation",
+                    simulatedData.remainingSubstratePoints());
         }
-        if (simulatedData.remainingElevationPoints() < 0){
-            return Component.translatable("command.esotericism_tinker.noumenon_test.not_enough_elevation_after_allocation", simulatedData.remainingElevationPoints());
+        if (simulatedData.remainingElevationPoints() < 0) {
+            return Component.translatable(
+                    "command.esotericism_tinker.noumenon_test.not_enough_elevation_after_allocation",
+                    simulatedData.remainingElevationPoints());
         }
+
+        Component grouped = NoumenonSublimationLogic.validateSelections(simulated, simulatedData);
+        if (grouped != null) return grouped;
 
         simulated.rebuildStats();
         Component validation = simulated.tryValidate();
-        if (validation != null){
-            return Component.translatable("command.esotericism_tinker.noumenon_test.tconstruct_validation_failed", validation);
+        if (validation != null) {
+            return Component.translatable(
+                    "command.esotericism_tinker.noumenon_test.tconstruct_validation_failed",
+                    validation);
         }
 
         NoumenonData targetData = NoumenonData.read(target);

@@ -5,7 +5,6 @@
   "itemGroup.esotericism_tinker.item": "秘传工匠 | 道具",
   "itemGroup.esotericism_tinker.tool": "秘传工匠 | 工具",
   "itemGroup.esotericism_tinker.selenic": "秘传工匠 | 月相",
-
   "_comment.esotericism_tinker.fluids": "======流体======",
   "fluid_type.esotericism_tinker.molten_ender_ash": "熔融末地灰",
   "fluid.esotericism_tinker.molten_ender_ash": "熔融末地灰",
@@ -16,16 +15,13 @@
   "fluid.esotericism_tinker.blood_soul.fluid_effect": "活魂血会带来瞬间治疗效果",
   "block.esotericism_tinker.blood_soul_fluid": "活魂血",
   "item.esotericism_tinker.blood_soul_bucket": "活魂血桶",
-
   "_comment.esotericism_tinker.tools": "======工具======",
   "item.esotericism_tinker.ritual_blade": "仪式匕首",
   "item.esotericism_tinker.ritual_blade.description": "犹如秘密婚仪\n适合用来获取实体熔炼产物的工具\n右键点击对自己造成伤害，并获得急迫，力量，抗性提升和活魂血这种液体。",
-
   "_comment.esotericism_tinker.modifiers": "======强化======",
   "modifier.esotericism_tinker.self_sacrifice": "自我献祭",
   "modifier.esotericism_tinker.self_sacrifice.flavor": "灵与血",
   "modifier.esotericism_tinker.self_sacrifice.description": "对自己造成伤害并获得活魂血，类似熔炼。并获得伤害抗性，力量和急迫",
-
   "_comment.esotericism_tinker.item": "======物品======",
   "item.esotericism_tinker.hypnagogic_transmute": "梦幻嬗变术",
   "item.esotericism_tinker.hypnagogic_transmute.tooltip": "奇诡奥妙的异界技艺\nBrahypno著",
@@ -87,20 +83,16 @@
   "structure.esotericism_tinker.transmute_ruin_complete": "完整嬗变遗迹",
   "structure.esotericism_tinker.transmute_ruin_broken": "残破嬗变遗迹",
   "structure.esotericism_tinker.transmute_ruin_ruined": "破败嬗变遗迹",
-
   "jei.esotericism_tinker.transmute.title": "嬗变",
-
   "item.tconstruct.creative_slot.delusions": "创造妄见槽",
   "stat.tconstruct.slot.prefix.delusions": "妄见槽：",
   "stat.tconstruct.slot.display.delusions": "妄见",
-
   "_comment.esotericism_tinker.ars_nouveau": "======Ars Nouveau Compact======",
   "jei.esotericism_tinker.modifiable_enchantment": "魔源工具强化",
   "recipe.esotericism_tinker.modifiable_enchantment.not_valid_tool": "该工具不能接受此仪式",
   "recipe.esotericism_tinker.modifiable_enchantment.not_modifiable": "中心物品不是可改造的匠魂工具",
   "recipe.esotericism_tinker.modifiable_enchantment.min_level": "该仪式至少需要 %s 级",
   "recipe.esotericism_tinker.modifiable_enchantment.max_level": "该仪式不能超过 %s 级",
-
   "_comment.esotericism_tinker.selenic": "======Selenic Related======",
   "block.esotericism_tinker.lunar_font": "月泉",
   "block.esotericism_tinker.astrolabe_spine": "星盘轴",
@@ -126,7 +118,6 @@
   "structure.esotericism_tinker.selenic_astrolabe_ruin_broken": "残破月相星仪遗迹",
   "structure.esotericism_tinker.selenic_astrolabe_ruin_complete": "完整月相星仪遗迹",
   "structure.esotericism_tinker.selenic_astrolabe_ruin_tower": "高塔月相星仪遗迹",
-
   "_comment.esotericism_tinker.selenic_jei": "======Selenic JEI Related======",
   "jei.esotericism_tinker.selenic_astrolabe": "月相星仪",
   "jei.esotericism_tinker.selenic_astrolabe.priority": "优先级：%s",
@@ -142,7 +133,6 @@
   "jei.esotericism_tinker.selenic_tinker_part.output_cost": "部件成本：%s。",
   "jei.esotericism_tinker.selenic_tinker_part.random_one": "若有多个候选部件，完成时随机生成其中 1 个。",
   "jei.esotericism_tinker.selenic_tinker_part.short_rule": "输入数 = 部件成本",
-
   "moon_phase.esotericism_tinker.full_moon": "满月",
   "moon_phase.esotericism_tinker.waning_gibbous": "亏凸月",
   "moon_phase.esotericism_tinker.last_quarter": "下弦月",
@@ -151,7 +141,6 @@
   "moon_phase.esotericism_tinker.waxing_crescent": "娥眉月",
   "moon_phase.esotericism_tinker.first_quarter": "上弦月",
   "moon_phase.esotericism_tinker.waxing_gibbous": "盈凸月",
-
   "_comment.esotericism_tinker.noumenon": "阳性术语",
   "noumenon.esotericism_tinker.substrate": "基质",
   "noumenon.esotericism_tinker.substrate.desc": "用于提升容受与调律的共享点数池。",
@@ -177,7 +166,6 @@
   "modifier.esotericism_tinker.noumenon_core.invalid_slot": "容受包含未知的匠魂槽位类型：%s",
   "modifier.esotericism_tinker.noumenon_core.invalid_investiture_trait": "授勋包含未知词条：%s",
   "modifier.esotericism_tinker.noumenon_core.cannot_remove": "冠冕非可佩戴，乃可承受。",
-
   "_comment.esotericism_tinker.noumenon_test": "阳性调试指令",
   "command.esotericism_tinker.noumenon_test.dump.points": "等级：%1$s | 基质：%2$s（基础 %3$s，调试 %4$s，供给 %5$s，容受消耗 %6$s，调律消耗 %7$s）| 升格：%8$s（基础 %9$s，调试 %10$s，供给 %11$s，升华消耗 %12$s，授勋消耗 %13$s）",
   "command.esotericism_tinker.noumenon_test.dump.reception": "容受：%s",
@@ -198,7 +186,6 @@
   "command.esotericism_tinker.noumenon_test.not_enough_substrate_after_allocation": "分配被拒绝：基质将变为 %1$s",
   "command.esotericism_tinker.noumenon_test.not_enough_elevation_after_allocation": "分配被拒绝：升格将变为 %1$s",
   "command.esotericism_tinker.noumenon_test.tconstruct_validation_failed": "工具整体验证拒绝了本次分配：%1$s",
-
   "_comment.esotericism_tinker.transcendence_anvil": "超越砧",
   "block.esotericism_tinker.transcendence_anvil": "超越砧",
   "container.esotericism_tinker.transcendence_anvil": "超越砧",
@@ -214,24 +201,20 @@
   "gui.esotericism_tinker.transcendence_anvil.tuning.committed": "无法在此降低已经固化的调律",
   "gui.esotericism_tinker.transcendence_anvil.tuning.no_preview": "当前没有可用的制作预览",
   "gui.esotericism_tinker.transcendence_anvil.investiture": "授勋",
-
   "_comment.esotericism_tinker.stigmata": "权现圣痕",
   "config.esotericism_tinker.stigmata.material_units_per_slot": "每槽圣痕材料单位",
   "config.esotericism_tinker.stigmata.material_units_per_slot.tooltip": "三个材料槽各自独立需要的最低材料单位数。",
-
   "modifier.esotericism_tinker.stigmata": "显现圣痕",
   "modifier.esotericism_tinker.stigmata.2": "异化圣痕",
   "modifier.esotericism_tinker.stigmata.3": "封缄圣痕",
   "modifier.esotericism_tinker.stigmata.flavor": "起舞吧，为每个欢笑的往日，与不会到来的明日——无物可使你我分离。",
   "modifier.esotericism_tinker.stigmata.description": "获得显现、异化与封印阶段所记录材料的特性，必须在超越砧上烙印。",
-
   "modifier.esotericism_tinker.stigmata.overload.slight": "轻微超载",
   "modifier.esotericism_tinker.stigmata.overload.moderate": "明显超载",
   "modifier.esotericism_tinker.stigmata.overload.severe": "严重超载",
   "modifier.esotericism_tinker.stigmata.overload.critical": "极度超载",
   "modifier.esotericism_tinker.stigmata.overload.tooltip": "%s：%s",
   "modifier.esotericism_tinker.stigmata.overload.tooltip_1": "%s",
-
   "stigmata_consequence.esotericism_tinker.exaltation.name": "举扬",
   "stigmata_consequence.esotericism_tinker.exaltation.manifestation": "它开始举起触及之物；无人知晓下一位会是谁。",
   "stigmata_consequence.esotericism_tinker.exaltation.alienation": "它渐渐遗忘轻重之别；敌人与持有者同受举扬。",
@@ -239,7 +222,6 @@
   "stigmata_consequence.esotericism_tinker.exaltation.armor.manifestation": "它自你的身躯升起，举扬周遭的一切。",
   "stigmata_consequence.esotericism_tinker.exaltation.armor.alienation": "它不再记得谁应当被留下。",
   "stigmata_consequence.esotericism_tinker.exaltation.armor.sealing": "它终将把你也献给天空。",
-
   "stigmata_consequence.esotericism_tinker.malediction.name": "咒降",
   "stigmata_consequence.esotericism_tinker.malediction.manifestation": "它留下污秽；停留者自会承受代价。",
   "stigmata_consequence.esotericism_tinker.malediction.alienation": "它拒绝让污秽消散；生者皆难幸免。",
@@ -247,7 +229,6 @@
   "stigmata_consequence.esotericism_tinker.malediction.armor.manifestation": "它从你的伤口逸散，侵染靠近者。",
   "stigmata_consequence.esotericism_tinker.malediction.armor.alienation": "它不再分辨谁曾流血。",
   "stigmata_consequence.esotericism_tinker.malediction.armor.sealing": "它让你的立足之地化作疫土。",
-
   "stigmata_consequence.esotericism_tinker.judgement.name": "天谴",
   "stigmata_consequence.esotericism_tinker.judgement.manifestation": "雷霆开始回应你的攻击，却从不保证落在应许之地。",
   "stigmata_consequence.esotericism_tinker.judgement.alienation": "雷霆渐渐遗忘最初的目标；旁观者与你，都可能成为它的见证。",
@@ -255,7 +236,6 @@
   "stigmata_consequence.esotericism_tinker.judgement.armor.manifestation": "雷霆开始环绕你的身侧，等待降临。",
   "stigmata_consequence.esotericism_tinker.judgement.armor.alienation": "雷霆渐渐忘记自己为何而来，只记得你曾呼唤过它。",
   "stigmata_consequence.esotericism_tinker.judgement.armor.sealing": "你已不再引来雷霆；你只是它选择降临的地方。",
-
   "stigmata_consequence.esotericism_tinker.obsession.name": "附执",
   "stigmata_consequence.esotericism_tinker.obsession.manifestation": "它唤来怨灵；执念尚知归处。",
   "stigmata_consequence.esotericism_tinker.obsession.alienation": "怨灵渐渐遗忘主人。",
@@ -263,7 +243,6 @@
   "stigmata_consequence.esotericism_tinker.obsession.armor.manifestation": "你的伤痛吸引徘徊之灵。",
   "stigmata_consequence.esotericism_tinker.obsession.armor.alienation": "它们已分不清仇敌。",
   "stigmata_consequence.esotericism_tinker.obsession.armor.sealing": "它们终究只忠于自己的怨恨。",
-
   "stigmata_consequence.esotericism_tinker.incubation.name": "孕生",
   "stigmata_consequence.esotericism_tinker.incubation.manifestation": "它孕育弱小之物，并静候收获。",
   "stigmata_consequence.esotericism_tinker.incubation.alienation": "它开始偏爱成长中的猎物。",
@@ -271,7 +250,6 @@
   "stigmata_consequence.esotericism_tinker.incubation.armor.manifestation": "你的伤痛催生新的生命。",
   "stigmata_consequence.esotericism_tinker.incubation.armor.alienation": "它们因流血而诞生。",
   "stigmata_consequence.esotericism_tinker.incubation.armor.sealing": "它们终会反过来寻找新的养料。",
-
   "stigmata_consequence.esotericism_tinker.defilement.name": "渎秽",
   "stigmata_consequence.esotericism_tinker.defilement.manifestation": "大地开始记住你的足迹。",
   "stigmata_consequence.esotericism_tinker.defilement.alienation": "大地渐渐忘记自己原本的模样。",
@@ -279,7 +257,6 @@
   "stigmata_consequence.esotericism_tinker.defilement.armor.manifestation": "大地开始回应你的驻足。",
   "stigmata_consequence.esotericism_tinker.defilement.armor.alienation": "你所立之处，渐渐脱离了原本的模样。",
   "stigmata_consequence.esotericism_tinker.defilement.armor.sealing": "后来者只会以为，大地本该如此。",
-
   "stigmata_consequence.esotericism_tinker.devouring.name": "吞灭",
   "stigmata_consequence.esotericism_tinker.devouring.manifestation": "它开始索取你的饥饿。",
   "stigmata_consequence.esotericism_tinker.devouring.alienation": "它渐渐忘记了何谓满足。",
@@ -287,7 +264,6 @@
   "stigmata_consequence.esotericism_tinker.devouring.armor.manifestation": "每一道创伤都使它更加饥渴。",
   "stigmata_consequence.esotericism_tinker.devouring.armor.alienation": "它渐渐以饥饿丈量痛苦。",
   "stigmata_consequence.esotericism_tinker.devouring.armor.sealing": "它终究会吞下每一次受击。",
-
   "stigmata_consequence.esotericism_tinker.sacrament.name": "圣餐",
   "stigmata_consequence.esotericism_tinker.sacrament.manifestation": "它接受你的灵知，作为暂时的圣餐。",
   "stigmata_consequence.esotericism_tinker.sacrament.alienation": "它渐渐偏爱灵知，而非食粮。",
@@ -295,7 +271,6 @@
   "stigmata_consequence.esotericism_tinker.sacrament.armor.manifestation": "每一次创伤都献上些许灵知。",
   "stigmata_consequence.esotericism_tinker.sacrament.armor.alienation": "它开始期待下一次献礼。",
   "stigmata_consequence.esotericism_tinker.sacrament.armor.sealing": "它终于学会从痛苦中进食。",
-
   "stigmata_consequence.esotericism_tinker.offering.name": "献祭",
   "stigmata_consequence.esotericism_tinker.offering.manifestation": "它愿饮一滴鲜血，以免自身磨损。",
   "stigmata_consequence.esotericism_tinker.offering.alienation": "它渐渐忘记了铁与血的区别。",
@@ -303,7 +278,6 @@
   "stigmata_consequence.esotericism_tinker.offering.armor.manifestation": "它愿以鲜血偿还每一道裂痕。",
   "stigmata_consequence.esotericism_tinker.offering.armor.alienation": "它开始偏爱流血，而非破损。",
   "stigmata_consequence.esotericism_tinker.offering.armor.sealing": "它终将要求每一道伤痕都以鲜血偿还。",
-
   "stigmata_consequence.esotericism_tinker.immolation.name": "焚献",
   "stigmata_consequence.esotericism_tinker.immolation.manifestation": "火焰开始停留在你的身后。",
   "stigmata_consequence.esotericism_tinker.immolation.alienation": "火焰渐渐忘记了自己的祭坛。",
@@ -311,7 +285,6 @@
   "stigmata_consequence.esotericism_tinker.immolation.armor.manifestation": "火焰开始回应你的创伤。",
   "stigmata_consequence.esotericism_tinker.immolation.armor.alienation": "火焰渐渐忘记应当焚烧谁。",
   "stigmata_consequence.esotericism_tinker.immolation.armor.sealing": "火焰终究不会留下任何旁观者。",
-
   "stigmata_consequence.esotericism_tinker.penance.name": "苦修",
   "stigmata_consequence.esotericism_tinker.penance.manifestation": "它赐下重负，也赐下力量。",
   "stigmata_consequence.esotericism_tinker.penance.alienation": "它渐渐以沉重塑造你的身躯。",
@@ -319,7 +292,6 @@
   "stigmata_consequence.esotericism_tinker.penance.armor.manifestation": "每一次创伤都使重负更加真实。",
   "stigmata_consequence.esotericism_tinker.penance.armor.alienation": "你的脚步开始学会忍耐。",
   "stigmata_consequence.esotericism_tinker.penance.armor.sealing": "最终，连站立本身都是修行。",
-
   "stigmata_consequence.esotericism_tinker.dominion.name": "御权",
   "stigmata_consequence.esotericism_tinker.dominion.manifestation": "它承认驾驭者。",
   "stigmata_consequence.esotericism_tinker.dominion.alienation": "它渐渐遗忘徒步之人。",
@@ -327,7 +299,6 @@
   "stigmata_consequence.esotericism_tinker.dominion.armor.manifestation": "它接受御者的庇护。",
   "stigmata_consequence.esotericism_tinker.dominion.armor.alienation": "它开始轻视徒步者。",
   "stigmata_consequence.esotericism_tinker.dominion.armor.sealing": "离开坐骑者，再无庇护可言。",
-
   "stigmata_consequence.esotericism_tinker.nocturne.name": "月相",
   "stigmata_consequence.esotericism_tinker.nocturne.manifestation": "满月开始回应你的圣痕。",
   "stigmata_consequence.esotericism_tinker.nocturne.alienation": "月光渐渐遗忘白昼。",
@@ -335,7 +306,6 @@
   "stigmata_consequence.esotericism_tinker.nocturne.armor.manifestation": "月光开始停留在你的身侧。",
   "stigmata_consequence.esotericism_tinker.nocturne.armor.alienation": "白昼渐渐失去它的庇护。",
   "stigmata_consequence.esotericism_tinker.nocturne.armor.sealing": "唯有月光仍愿承认你。",
-
   "stigmata_consequence.esotericism_tinker.zenith.name": "天极",
   "stigmata_consequence.esotericism_tinker.zenith.manifestation": "高天开始俯视你。",
   "stigmata_consequence.esotericism_tinker.zenith.alienation": "苍穹渐渐遗忘低地。",
@@ -343,7 +313,6 @@
   "stigmata_consequence.esotericism_tinker.zenith.armor.manifestation": "苍穹赐予你片刻庇护。",
   "stigmata_consequence.esotericism_tinker.zenith.armor.alienation": "低地渐渐失去恩典。",
   "stigmata_consequence.esotericism_tinker.zenith.armor.sealing": "离开苍穹者，再无庇护可寻。",
-
   "stigmata_consequence.esotericism_tinker.abyss.name": "幽渊",
   "stigmata_consequence.esotericism_tinker.abyss.manifestation": "深渊开始回应你的脚步。",
   "stigmata_consequence.esotericism_tinker.abyss.alienation": "深渊渐渐遗忘地表。",
@@ -351,7 +320,6 @@
   "stigmata_consequence.esotericism_tinker.abyss.armor.manifestation": "深处开始接纳你的存在。",
   "stigmata_consequence.esotericism_tinker.abyss.armor.alienation": "地表渐渐遗弃了你。",
   "stigmata_consequence.esotericism_tinker.abyss.armor.sealing": "终有一日，你将属于深渊。",
-
   "stigmata_consequence.esotericism_tinker.beatitude.name": "圣福",
   "stigmata_consequence.esotericism_tinker.beatitude.manifestation": "祝福开始承认你的名字。",
   "stigmata_consequence.esotericism_tinker.beatitude.alienation": "祝福渐渐遗忘凡人。",
@@ -359,7 +327,6 @@
   "stigmata_consequence.esotericism_tinker.beatitude.armor.manifestation": "恩典开始停留在你身旁。",
   "stigmata_consequence.esotericism_tinker.beatitude.armor.alienation": "恩典渐渐远离众人。",
   "stigmata_consequence.esotericism_tinker.beatitude.armor.sealing": "失去蒙选者之名，便失去一切庇护。",
-
   "stigmata_consequence.esotericism_tinker.anathema.name": "圣绝",
   "stigmata_consequence.esotericism_tinker.anathema.manifestation": "诅咒开始承认你的名字。",
   "stigmata_consequence.esotericism_tinker.anathema.alienation": "诅咒渐渐遗忘洁净。",
@@ -367,11 +334,9 @@
   "stigmata_consequence.esotericism_tinker.anathema.armor.manifestation": "灾厄开始与你同行。",
   "stigmata_consequence.esotericism_tinker.anathema.armor.alienation": "洁净渐渐远离你的身影。",
   "stigmata_consequence.esotericism_tinker.anathema.armor.sealing": "当诅咒离去时，庇护也将一并离去。",
-
   "stigmata.esotericism_tinker.manifestation": "显现圣痕",
   "stigmata.esotericism_tinker.alienation": "异化圣痕",
   "stigmata.esotericism_tinker.sealing": "封缄圣痕",
-
   "message.esotericism_tinker.stigmata.invalid_jump": "圣痕不能从第 %1$s 阶段直接跃迁至第 %2$s 阶段",
   "message.esotericism_tinker.stigmata.not_tool_part": "圣痕仪式需要有效的匠魂工具部件",
   "message.esotericism_tinker.stigmata.invalid_input_count": "圣痕仪式槽位结构无效：应为 5 个输入槽，实际为 %s 个",
@@ -406,5 +371,64 @@
   "jei.esotericism_tinker.stigmata": "三重圣痕",
   "jei.esotericism_tinker.stigmata.stage": "阶段 %s",
   "book.esotericism_tinker.stigmata.stage": "阶段 %s",
-  "book.esotericism_tinker.stigmata.no_recipe": "未发现可用的刻痕配方。"
+  "book.esotericism_tinker.stigmata.no_recipe": "未发现可用的刻痕配方。",
+  "noumenon.esotericism_tinker.group.melee": "近战",
+  "noumenon.esotericism_tinker.group.ranged": "远程",
+  "noumenon.esotericism_tinker.group.bow": "弓弩",
+  "noumenon.esotericism_tinker.group.shield": "盾牌",
+  "noumenon.esotericism_tinker.group.armor": "护甲",
+  "noumenon.esotericism_tinker.group.harvest": "采掘",
+  "noumenon.esotericism_tinker.group.sword": "剑",
+  "noumenon.esotericism_tinker.group.scythe": "镰刀",
+  "noumenon.esotericism_tinker.group.axe": "斧",
+  "noumenon.esotericism_tinker.group.hammer": "锤",
+  "noumenon.esotericism_tinker.melee_damage": "强袭",
+  "noumenon.esotericism_tinker.melee_speed": "迅击",
+  "noumenon.esotericism_tinker.ranged_draw_speed": "蓄势",
+  "noumenon.esotericism_tinker.ranged_ballistics": "弹道",
+  "noumenon.esotericism_tinker.bow_multishot": "分裂",
+  "noumenon.esotericism_tinker.bow_piercing": "贯穿",
+  "noumenon.esotericism_tinker.shield_guard": "壁垒",
+  "noumenon.esotericism_tinker.shield_counter": "反击",
+  "noumenon.esotericism_tinker.armor_toughness": "韧化",
+  "noumenon.esotericism_tinker.armor_stability": "稳固",
+  "noumenon.esotericism_tinker.armor_threshold": "不侵",
+  "noumenon.esotericism_tinker.harvest_speed": "效率",
+  "noumenon.esotericism_tinker.harvest_endurance": "节制",
+  "noumenon.esotericism_tinker.sword_range": "扩张",
+  "noumenon.esotericism_tinker.sword_sweep_damage": "杀伐",
+  "noumenon.esotericism_tinker.scythe_reap": "收割",
+  "noumenon.esotericism_tinker.scythe_sustain": "汲取",
+  "noumenon.esotericism_tinker.axe_execute": "斩杀",
+  "noumenon.esotericism_tinker.axe_heavy": "重斩",
+  "noumenon.esotericism_tinker.hammer_knockback": "震击",
+  "noumenon.esotericism_tinker.hammer_crush": "粉碎",
+  "gui.esotericism_tinker.transcendence_anvil.sublimation.group_conflict": "每个升格组只能选择一条升格路径。",
+  "gui.esotericism_tinker.transcendence_anvil.sublimation.committed_group": "该组已有固化的升格路径，无法替换。",
+  "gui.esotericism_tinker.transcendence_anvil.sublimation.invalid_level": "无效的升格等级。",
+  "gui.esotericism_tinker.transcendence_anvil.sublimation.unknown": "未知升格路径：%s",
+  "gui.esotericism_tinker.transcendence_anvil.sublimation.unavailable": "当前工具无法使用此升格：%s",
+  "gui.esotericism_tinker.transcendence_anvil.sublimation.max_level": "%s 不能超过 %s 级。",
+  "gui.esotericism_tinker.transcendence_anvil.sublimation.allocation": "等级 %1$s/%2$s · 每级消耗 %3$s 点升格",
+  "noumenon.esotericism_tinker.melee_damage.desc": "每级提高6%攻击伤害，最高提高30%。",
+  "noumenon.esotericism_tinker.melee_speed.desc": "每级提高5%攻击速度，最高提高25%。",
+  "noumenon.esotericism_tinker.ranged_draw_speed.desc": "每级提高6%拉弓速度，最高提高30%。",
+  "noumenon.esotericism_tinker.ranged_ballistics.desc": "每级提高5%弹射物速度，最高提高25%。",
+  "noumenon.esotericism_tinker.bow_multishot.desc": "每两级提高一级多重射击，依次发射3/3/5/5/7枚弹射物。",
+  "noumenon.esotericism_tinker.bow_piercing.desc": "每两级提高一级箭矢贯穿，依次额外贯穿1/1/2/2/3个目标。",
+  "noumenon.esotericism_tinker.shield_guard.desc": "每级提高50%基础格挡量；5级达到基础值的350%。",
+  "noumenon.esotericism_tinker.shield_counter.desc": "格挡直接伤害时，每级对攻击者造成2点反击伤害，最高10点。",
+  "noumenon.esotericism_tinker.armor_toughness.desc": "每级增加2护甲韧性，最高增加10。",
+  "noumenon.esotericism_tinker.armor_stability.desc": "每级增加10%击退抗性，最高增加50%。",
+  "noumenon.esotericism_tinker.armor_threshold.desc": "完全格挡低于1加每级0.75点的伤害；5级格挡低于4.75点的伤害。",
+  "noumenon.esotericism_tinker.harvest_speed.desc": "每级提高8%挖掘速度，最高提高40%。",
+  "noumenon.esotericism_tinker.harvest_endurance.desc": "采掘时每级减少10%的期望耐久消耗，最高减少50%。",
+  "noumenon.esotericism_tinker.sword_range.desc": "每级增加1格横扫范围，最高增加5格。",
+  "noumenon.esotericism_tinker.sword_sweep_damage.desc": "每级提高一级横扫之刃；次要目标伤害每级增加主目标伤害的25%再加1点，且不超过主目标伤害。",
+  "noumenon.esotericism_tinker.scythe_reap.desc": "每级提高10%对额外目标的伤害，最高提高50%。",
+  "noumenon.esotericism_tinker.scythe_sustain.desc": "每级按对额外目标实际伤害的1.5%治疗，最高为7.5%。",
+  "noumenon.esotericism_tinker.axe_execute.desc": "目标生命不高于30%时，每级提高10%伤害，最高提高50%。",
+  "noumenon.esotericism_tinker.axe_heavy.desc": "每级提高7%完全蓄力攻击伤害，最高提高35%。",
+  "noumenon.esotericism_tinker.hammer_knockback.desc": "每级增加0.3击退强度，最高增加1.5。",
+  "noumenon.esotericism_tinker.hammer_crush.desc": "每级追加目标护甲值5%的普通伤害，最高追加25%。"
 }

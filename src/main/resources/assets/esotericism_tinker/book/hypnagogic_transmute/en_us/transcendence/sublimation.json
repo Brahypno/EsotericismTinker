@@ -1,0 +1,12 @@
+{
+  "title": "Sublimation Paths",
+  "text": [
+    {
+      "text": "Sublimation grants abilities derived from the tool's own definition. Each level costs 1 Elevation, each path has 5 levels, and only one path may be chosen in a group. Sword, scythe, axe, and hammer groups replace Melee; Bow replaces Ranged. Harvest is never replaced."
+    },
+    {
+      "text": "The Sublimation page lists only paths available to the current tool. Hover either adjustment button to see the exact effect, current level, level cap, and cost per level.",
+      "paragraph": true
+    }
+  ]
+}

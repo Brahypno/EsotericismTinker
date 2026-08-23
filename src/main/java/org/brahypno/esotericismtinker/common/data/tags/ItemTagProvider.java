@@ -16,8 +16,10 @@ import org.brahypno.esotericismtinker.common.EsotericismTinkerTagKeys.Blocks;
 import org.brahypno.esotericismtinker.common.EsotericismTinkerTagKeys.Items;
 import org.brahypno.esotericismtinker.smeltery.EsotericismTinkerSmeltery;
 import org.brahypno.esotericismtinker.tools.EsotericismTinkerTools;
+import org.brahypno.esotericismtinker.transcendence.intrinsic.NoumenonEntries;
 import org.jetbrains.annotations.NotNull;
 import slimeknights.tconstruct.common.TinkerTags;
+import slimeknights.tconstruct.tools.TinkerTools;
 
 import java.util.concurrent.CompletableFuture;
 
@@ -50,6 +52,12 @@ public class ItemTagProvider extends ItemTagsProvider {
                      EsotericismTinkerSmeltery.ashenTintedGlass.asItem());
         addItemsTags(EsotericismTinkerTools.ritual_blade, MULTIPART_TOOL, DURABILITY, HARVEST, MELEE_PRIMARY, INTERACTABLE_RIGHT, SMALL_TOOLS, BONUS_SLOTS,
                      ItemTags.SWORDS, Items.EsotericismTinkerTools);
+
+        tag(NoumenonEntries.ELEVATION_AXES)
+                .add(TinkerTools.handAxe.get(), TinkerTools.broadAxe.get())
+                .addOptional(TinkerTools.minotaurAxe.getId());
+        tag(NoumenonEntries.ELEVATION_HAMMERS)
+                .add(TinkerTools.sledgeHammer.get(), TinkerTools.veinHammer.get());
     }
 
     @SafeVarargs

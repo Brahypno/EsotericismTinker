@@ -15,6 +15,11 @@
     "data": "transcendence/crowning.json"
   },
   {
+    "name": "sublimation",
+    "type": "mantle:text",
+    "data": "transcendence/sublimation.json"
+  },
+  {
     "name": "stigmata",
     "type": "esotericism_tinker:stigmata",
     "data": "transcendence/stigmata.json"

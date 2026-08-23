@@ -7,6 +7,8 @@ import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.AbstractWidget;
 import net.minecraft.client.gui.components.Button;
 import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.MutableComponent;
+import net.minecraft.client.gui.components.Tooltip;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.inventory.Slot;
@@ -14,11 +16,15 @@ import net.minecraft.world.item.ItemStack;
 import org.brahypno.esotericismtinker.network.EsotericismTinkerNetwork;
 import org.brahypno.esotericismtinker.network.TranscendenceInvestiturePacket;
 import org.brahypno.esotericismtinker.network.TranscendenceReceptionPacket;
+import org.brahypno.esotericismtinker.network.TranscendenceSublimationPacket;
 import org.brahypno.esotericismtinker.network.TranscendenceTuningPacket;
 import org.brahypno.esotericismtinker.transcendence.intrinsic.NoumenonAllocationLogic;
 import org.brahypno.esotericismtinker.transcendence.intrinsic.NoumenonData;
 import org.brahypno.esotericismtinker.transcendence.intrinsic.NoumenonDatabase;
 import org.brahypno.esotericismtinker.transcendence.intrinsic.NoumenonInvestitureLogic;
+import org.brahypno.esotericismtinker.transcendence.intrinsic.NoumenonSublimationEntry;
+import org.brahypno.esotericismtinker.transcendence.intrinsic.NoumenonSublimationGroup;
+import org.brahypno.esotericismtinker.transcendence.intrinsic.NoumenonSublimationLogic;
 import org.brahypno.esotericismtinker.transcendence.table.block.TranscendenceAnvilBlockEntity;
 import org.brahypno.esotericismtinker.transcendence.table.menu.TranscendenceAnvilMenu;
 import org.jetbrains.annotations.NotNull;
@@ -100,7 +106,10 @@ public final class TranscendenceAnvilScreen
 
     private TranscendenceLeftPage leftPage = TranscendenceLeftPage.ROOT;
     private int receptionScroll;
+    private int sublimationScroll;
     private int investitureScroll;
+    private final List<NoumenonSublimationRow> sublimationRows = new ArrayList<>();
+    private ItemStack lastSublimationPreview = ItemStack.EMPTY;
     private ItemStack lastInvestitureSource = ItemStack.EMPTY;
     private ResourceLocation lastSelectedInvestiture;
     private boolean positiveAspectDisplayed;
@@ -214,6 +223,8 @@ public final class TranscendenceAnvilScreen
 
         if (leftPage == TranscendenceLeftPage.RECEPTION){
             rebuildReceptionWidgets();
+        }else if (leftPage == TranscendenceLeftPage.SUBLIMATION){
+            rebuildSublimationWidgets();
         }else if (leftPage == TranscendenceLeftPage.TUNING){
             rebuildTuningWidgets();
         }else if (leftPage == TranscendenceLeftPage.INVESTITURE){
@@ -225,6 +236,9 @@ public final class TranscendenceAnvilScreen
         leftPage = page;
         if (page != TranscendenceLeftPage.RECEPTION){
             receptionScroll = 0;
+        }
+        if (page != TranscendenceLeftPage.SUBLIMATION){
+            sublimationScroll = 0;
         }
         if (page != TranscendenceLeftPage.INVESTITURE){
             investitureScroll = 0;
@@ -274,6 +288,74 @@ public final class TranscendenceAnvilScreen
             buttons.plus().active = validateReceptionChange(slotType, 1) == null;
         }
         refreshTuningButtons();
+    }
+
+    private void rebuildSublimationWidgets() {
+        sublimationRows.clear();
+        LazyToolStack shown = getShownTool();
+        if (shown == null || shown.getStack().isEmpty()) {
+            lastSublimationPreview = ItemStack.EMPTY;
+            return;
+        }
+        lastSublimationPreview = shown.getStack().copy();
+
+        NoumenonData data = NoumenonData.read(shown.getTool());
+        for (NoumenonSublimationGroup group :
+                NoumenonSublimationLogic.resolveGroups(shown.getTool(), data)) {
+            for (NoumenonSublimationEntry entry :
+                    NoumenonDatabase.visibleSublimationsInGroup(
+                            group.id(), shown.getTool(), data)) {
+                sublimationRows.add(new NoumenonSublimationRow(group, entry));
+            }
+        }
+
+        clampSublimationScroll();
+        int end = Math.min(sublimationRows.size(),
+                sublimationScroll + leftLayout.visibleReceptionRows());
+        for (int index = sublimationScroll; index < end; index++) {
+            NoumenonSublimationRow view = sublimationRows.get(index);
+            int visibleIndex = index - sublimationScroll;
+            var row = leftLayout.receptionRow(visibleIndex);
+
+            int current = data.sublimations.getOrDefault(view.entry().id(), 0);
+            Button minus = addLeftButton(Component.literal("-"),
+                    row.minusButton().x(), row.minusButton().y(),
+                    row.minusButton().width(), row.minusButton().height(),
+                    button -> changeSublimation(view.entry().id(), -1));
+            Button plus = addLeftButton(Component.literal("+"),
+                    row.plusButton().x(), row.plusButton().y(),
+                    row.plusButton().width(), row.plusButton().height(),
+                    button -> changeSublimation(view.entry().id(), 1));
+            minus.active = current > 0;
+            plus.active = current < view.entry().maxLevel()
+                          && data.remainingElevationPoints() >= view.entry().costPerLevel();
+            Component tooltip = sublimationTooltip(view.entry(), current);
+            minus.setTooltip(Tooltip.create(tooltip));
+            plus.setTooltip(Tooltip.create(tooltip));
+        }
+    }
+
+    private static Component sublimationTooltip(NoumenonSublimationEntry entry, int current) {
+        MutableComponent tooltip = entry.display().name().copy().withStyle(ChatFormatting.GOLD);
+        for (Component description : entry.display().description()) {
+            tooltip.append("\n").append(description.copy().withStyle(ChatFormatting.GRAY));
+        }
+        tooltip.append("\n").append(Component.translatable(
+                "gui.esotericism_tinker.transcendence_anvil.sublimation.allocation",
+                current, entry.maxLevel(), entry.costPerLevel()
+        ).withStyle(ChatFormatting.DARK_GRAY));
+        return tooltip;
+    }
+
+    private void changeSublimation(ResourceLocation pathId, int delta) {
+        EsotericismTinkerNetwork.CHANNEL.sendToServer(
+                new TranscendenceSublimationPacket(menu.containerId, pathId, delta));
+    }
+
+    private void clampSublimationScroll() {
+        int maximum = Math.max(0,
+                sublimationRows.size() - leftLayout.visibleReceptionRows());
+        sublimationScroll = Math.max(0, Math.min(sublimationScroll, maximum));
     }
 
     private void rebuildTuningWidgets() {
@@ -392,6 +474,18 @@ public final class TranscendenceAnvilScreen
             }
             return true;
         }
+        if (leftPage == TranscendenceLeftPage.SUBLIMATION
+            && leftLayout.contains(mouseX, mouseY)
+            && sublimationRows.size() > leftLayout.visibleReceptionRows()){
+            int old = sublimationScroll;
+            sublimationScroll -= (int) Math.signum(delta);
+            clampSublimationScroll();
+            if (old != sublimationScroll){
+                rebuildLeftWidgets();
+                refreshLeftPanel();
+            }
+            return true;
+        }
         if (leftPage == TranscendenceLeftPage.INVESTITURE
             && leftLayout.contains(mouseX, mouseY)
             && investitureTraits.size() > leftLayout.visibleReceptionRows()){
@@ -460,6 +554,7 @@ public final class TranscendenceAnvilScreen
         positiveAspectDisplayed = positive;
         leftPage = TranscendenceLeftPage.ROOT;
         receptionScroll = 0;
+        sublimationScroll = 0;
         investitureScroll = 0;
         rebuildLeftWidgets();
     }
@@ -528,9 +623,7 @@ public final class TranscendenceAnvilScreen
         if (leftPage == TranscendenceLeftPage.INVESTITURE){
             LazyToolStack source = menu.getOffhandTool();
             if (source == null || source.getStack().isEmpty()){
-                leftInfo.setText(Component.translatable(
-                        "gui.esotericism_tinker.transcendence_anvil.investiture.offhand"
-                ).withStyle(ChatFormatting.DARK_GRAY));
+                leftInfo.setText(Component.empty());
             }else if (investitureTraits.isEmpty()){
                 leftInfo.setText(Component.translatable(
                         "gui.esotericism_tinker.transcendence_anvil.investiture.invalid"
@@ -646,25 +739,47 @@ public final class TranscendenceAnvilScreen
         super.renderBg(graphics, partialTick, mouseX, mouseY);
 
         renderReceptionContents(graphics);
-        renderReadOnlyPageContents(graphics);
+        renderSublimationContents(graphics);
+        renderInvestitureOffhandHint(graphics);
         renderReceptionScrollbar(graphics);
         renderArmorStand(graphics);
     }
 
-    private void renderReadOnlyPageContents(GuiGraphics graphics) {
-        if (leftPage != TranscendenceLeftPage.SUBLIMATION){
-            return;
-        }
+    private void renderSublimationContents(GuiGraphics graphics) {
+        if (leftPage != TranscendenceLeftPage.SUBLIMATION) return;
+        LazyToolStack shown = getShownTool();
+        if (shown == null || shown.getStack().isEmpty()) return;
 
-        var content = leftLayout.content();
-        int textY = content.y();
-        Component message = Component.translatable(
-                "gui.esotericism_tinker.transcendence_anvil.page.read_only"
-        ).withStyle(ChatFormatting.DARK_GRAY);
-        for (var line : font.split(message, content.width())) {
-            graphics.drawString(font, line, content.x(), textY, 0xFF555555, false);
-            textY += font.lineHeight;
+        NoumenonData data = NoumenonData.read(shown.getTool());
+        int end = Math.min(sublimationRows.size(),
+                sublimationScroll + leftLayout.visibleReceptionRows());
+        for (int index = sublimationScroll; index < end; index++) {
+            NoumenonSublimationRow view = sublimationRows.get(index);
+            int visibleIndex = index - sublimationScroll;
+            var row = leftLayout.receptionRow(visibleIndex);
+            int textY = row.label().y()
+                    + Math.max(1, (row.label().height() - font.lineHeight) / 2);
+            int level = data.sublimations.getOrDefault(view.entry().id(), 0);
+            Component line = Component.literal("[")
+                    .append(view.group().display().name())
+                    .append("] ")
+                    .append(view.entry().display().name())
+                    .append(" " + level + "/" + view.entry().maxLevel());
+            graphics.drawString(font, line, row.label().x(), textY, 0xFFFFFFFF, false);
         }
+    }
+
+    private void renderInvestitureOffhandHint(GuiGraphics graphics) {
+        if (leftPage != TranscendenceLeftPage.INVESTITURE) return;
+        LazyToolStack source = menu.getOffhandTool();
+        if (source != null && !source.getStack().isEmpty()) return;
+
+        var row = leftLayout.receptionRow(0).row();
+        int textY = row.y() + Math.max(1, (row.height() - font.lineHeight) / 2);
+        Component message = Component.translatable(
+                "gui.esotericism_tinker.transcendence_anvil.investiture.offhand"
+        ).withStyle(ChatFormatting.DARK_GRAY);
+        graphics.drawString(font, message, row.x(), textY, 0xFF555555, false);
     }
 
     private void renderReceptionContents(GuiGraphics graphics) {
@@ -706,6 +821,9 @@ public final class TranscendenceAnvilScreen
         graphics.drawString(font, substrate, substrateBounds.x(), substrateY, 0xFFD7A900, false);
 
         if (leftPage != TranscendenceLeftPage.RECEPTION){
+            if (leftPage == TranscendenceLeftPage.SUBLIMATION){
+                return;
+            }
             if (leftPage == TranscendenceLeftPage.TUNING){
                 var row = leftLayout.receptionRow(0);
                 int textY = row.label().y()
@@ -866,7 +984,18 @@ public final class TranscendenceAnvilScreen
          * DataSlot/recipe synchronization can change button validity without changing pages.
          */
         refreshReceptionButtons();
+        syncSublimationWidgets();
         syncInvestitureWidgets();
+    }
+
+    private void syncSublimationWidgets() {
+        if (leftPage != TranscendenceLeftPage.SUBLIMATION) return;
+        LazyToolStack shown = getShownTool();
+        ItemStack shownStack = shown == null ? ItemStack.EMPTY : shown.getStack();
+        if (!ItemStack.isSameItemSameTags(shownStack, lastSublimationPreview)) {
+            rebuildLeftWidgets();
+            refreshLeftPanel();
+        }
     }
 
     private void syncInvestitureWidgets() {
@@ -885,5 +1014,8 @@ public final class TranscendenceAnvilScreen
         }
     }
 
+    private record NoumenonSublimationRow(
+            NoumenonSublimationGroup group,
+            NoumenonSublimationEntry entry) {}
     private record ReceptionButtons(SlotType type, Button minus, Button plus) {}
 }

@@ -53,6 +53,7 @@ import org.brahypno.esotericismtinker.tools.EsotericismTinkerModifiers;
 import org.brahypno.esotericismtinker.tools.EsotericismTinkerTools;
 import org.brahypno.esotericismtinker.tools.data.EsotericismTinkerFluidEffectProvider;
 import org.brahypno.esotericismtinker.tools.data.EsotericismTinkerModifierProvider;
+import org.brahypno.esotericismtinker.transcendence.intrinsic.NoumenonEntries;
 import org.brahypno.esotericismtinker.transcendence.appearance.config.StigmataConfig;
 import org.brahypno.esotericismtinker.transcendence.intrinsic.data.NoumenonCostDataProvider;
 import org.brahypno.esotericismtinker.transcendence.table.EsotericismTinkerTranscendenceTable;
@@ -108,6 +109,7 @@ public class EsotericismTinker {
 
     private void commonSetup(final FMLCommonSetupEvent event) {
         event.enqueueWork(() -> {
+            NoumenonEntries.register();
         });
     }
 

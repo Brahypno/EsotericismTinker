@@ -5,7 +5,6 @@
   "itemGroup.esotericism_tinker.item": "Esotericism Tinker | Item",
   "itemGroup.esotericism_tinker.tool": "Esotericism Tinker | Tool",
   "itemGroup.esotericism_tinker.selenic": "Esotericism Tinker | Selenic",
-
   "_comment.esotericism_tinker.fluids": "======Fluids======",
   "fluid_type.esotericism_tinker.molten_ender_ash": "Molten Ender Ash",
   "fluid.esotericism_tinker.molten_ender_ash": "Molten Ender Ash",
@@ -16,11 +15,9 @@
   "fluid.esotericism_tinker.blood_soul.fluid_effect": "Instantly heals targets;",
   "block.esotericism_tinker.blood_soul_fluid": "Blood Soul",
   "item.esotericism_tinker.blood_soul_bucket": "Blood Soul Bucket",
-
   "_comment.esotericism_tinker.tools": "======Tools======",
   "item.esotericism_tinker.ritual_blade": "Ritual Blade",
   "item.esotericism_tinker.ritual_blade.description": "Like Alchemical Wedding",
-
   "_comment.esotericism_tinker.modifiers": "======Modifiers======",
   "modifier.esotericism_tinker.self_sacrifice": "Self Sacrifice",
   "modifier.esotericism_tinker.self_sacrifice.flavor": "Soul and blood",
@@ -29,7 +26,6 @@
   "item.esotericism_tinker.hypnagogic_transmute.tooltip": "Book about the most mystery other side arts.\n by Brahypno",
   "item.esotericism_tinker.ashen_brick": "Ashen Brick",
   "block.esotericism_tinker.ender_mortar": "Ender Mortar",
-
   "_comment.esotericism_tinker.item": "======物品======",
   "block.esotericism_tinker.ashen_stone": "Ashen Stone",
   "block.esotericism_tinker.ashen_stone.tooltip": "Part of Transmute",
@@ -87,20 +83,16 @@
   "structure.esotericism_tinker.transmute_ruin_complete": "Complete Transmutation Ruin",
   "structure.esotericism_tinker.transmute_ruin_broken": "Broken Transmutation Ruin",
   "structure.esotericism_tinker.transmute_ruin_ruined": "Ruined Transmutation Ruin",
-
   "jei.esotericism_tinker.transmute.title": "Transmute",
-
   "item.tconstruct.creative_slot.delusions": "Creative Delusion Slot",
   "stat.tconstruct.slot.prefix.delusions": "Delusion Slots: ",
   "stat.tconstruct.slot.display.delusions": "delusion",
-
   "_comment.esotericism_tinker.ars_nouveau": "======Ars Nouveau Compact======",
   "jei.esotericism_tinker.modifiable_enchantment": "Mana Modifier",
   "recipe.esotericism_tinker.modifiable_enchantment.not_valid_tool": "This tool cannot receive this infusion",
   "recipe.esotericism_tinker.modifiable_enchantment.not_modifiable": "The central item is not a modifiable Tinkers' tool",
   "recipe.esotericism_tinker.modifiable_enchantment.min_level": "This infusion requires at least level %s",
   "recipe.esotericism_tinker.modifiable_enchantment.max_level": "This infusion cannot exceed level %s",
-
   "_comment.esotericism_tinker.selenic": "======Selenic Related======",
   "block.esotericism_tinker.lunar_font": "Lunar Font",
   "block.esotericism_tinker.astrolabe_spine": "Astrolabe Spine",
@@ -126,7 +118,6 @@
   "structure.esotericism_tinker.selenic_astrolabe_ruin_broken": "Broken Selenic Astrolabe Ruin",
   "structure.esotericism_tinker.selenic_astrolabe_ruin_complete": "Complete Selenic Astrolabe Ruin",
   "structure.esotericism_tinker.selenic_astrolabe_ruin_tower": "Towering Selenic Astrolabe Ruin",
-
   "_comment.esotericism_tinker.selenic_jei": "======Selenic Related======",
   "jei.esotericism_tinker.selenic_astrolabe": "Selenic Astrolabe",
   "jei.esotericism_tinker.selenic_astrolabe.priority": "Priority: %s",
@@ -142,7 +133,6 @@
   "jei.esotericism_tinker.selenic_tinker_part.output_cost": "Part cost: %s.",
   "jei.esotericism_tinker.selenic_tinker_part.random_one": "If multiple candidate parts are shown, one is chosen randomly when completed.",
   "jei.esotericism_tinker.selenic_tinker_part.short_rule": "Input count = part cost",
-
   "moon_phase.esotericism_tinker.full_moon": "Full Moon",
   "moon_phase.esotericism_tinker.waning_gibbous": "Waning Gibbous",
   "moon_phase.esotericism_tinker.last_quarter": "Last Quarter",
@@ -151,7 +141,6 @@
   "moon_phase.esotericism_tinker.waxing_crescent": "Waxing Crescent",
   "moon_phase.esotericism_tinker.first_quarter": "First Quarter",
   "moon_phase.esotericism_tinker.waxing_gibbous": "Waxing Gibbous",
-
   "_comment.esotericism_tinker.noumenon": "Noumenon terminology",
   "noumenon.esotericism_tinker.substrate": "Substrate",
   "noumenon.esotericism_tinker.substrate.desc": "The shared point pool used to improve Reception and Tuning.",
@@ -177,7 +166,6 @@
   "modifier.esotericism_tinker.noumenon_core.invalid_slot": "Reception contains an unknown TConstruct slot type: %s",
   "modifier.esotericism_tinker.noumenon_core.invalid_investiture_trait": "Investiture contains an unknown trait: %s",
   "modifier.esotericism_tinker.noumenon_core.cannot_remove": "The Crown is not donned—it is borne.",
-
   "_comment.esotericism_tinker.noumenon_test": "Noumenon debug command",
   "command.esotericism_tinker.noumenon_test.dump.points": "Level: %1$s | Substrate: %2$s (base %3$s, debug %4$s, supply %5$s, Reception cost %6$s, Tuning cost %7$s) | Elevation: %8$s (base %9$s, debug %10$s, supply %11$s, Sublimation cost %12$s, Investiture cost %13$s)",
   "command.esotericism_tinker.noumenon_test.dump.reception": "Reception: %s",
@@ -198,7 +186,6 @@
   "command.esotericism_tinker.noumenon_test.not_enough_substrate_after_allocation": "Allocation rejected: remaining Substrate would be %1$s",
   "command.esotericism_tinker.noumenon_test.not_enough_elevation_after_allocation": "Allocation rejected: remaining Elevation would be %1$s",
   "command.esotericism_tinker.noumenon_test.tconstruct_validation_failed": "Allocation rejected by tool validation: %1$s",
-
   "_comment.esotericism_tinker.transcendence_anvil": "Transcendence Anvil",
   "block.esotericism_tinker.transcendence_anvil": "Transcendence Anvil",
   "container.esotericism_tinker.transcendence_anvil": "Transcendence Anvil",
@@ -214,25 +201,20 @@
   "gui.esotericism_tinker.transcendence_anvil.tuning.committed": "Committed Tuning cannot be reduced here",
   "gui.esotericism_tinker.transcendence_anvil.tuning.no_preview": "No crafting preview is available",
   "gui.esotericism_tinker.transcendence_anvil.investiture": "Investiture",
-
   "_comment.esotericism_tinker.stigmata": "Appearance Stigmata",
-
   "config.esotericism_tinker.stigmata.material_units_per_slot": "Stigmata Material Units per Slot",
   "config.esotericism_tinker.stigmata.material_units_per_slot.tooltip": "Minimum material units required independently in each of the three material slots.",
-
   "modifier.esotericism_tinker.stigmata": "Manifestation Stigmata",
   "modifier.esotericism_tinker.stigmata.2": "Alienation Stigmata",
   "modifier.esotericism_tinker.stigmata.3": "Sealing Stigmata",
   "modifier.esotericism_tinker.stigmata.flavor": "Dance, for every joyous yesterday and every tomorrow that shall never come—nothing can set you and me apart.",
   "modifier.esotericism_tinker.stigmata.description": "Gain the traits of materials recorded through the stages of Manifestation, Alteration, and Sealing. Stigmata must be branded at the Transcendence Anvil.",
-
   "modifier.esotericism_tinker.stigmata.overload.slight": "Slight Overload",
   "modifier.esotericism_tinker.stigmata.overload.moderate": "Moderate Overload",
   "modifier.esotericism_tinker.stigmata.overload.severe": "Severe Overload",
   "modifier.esotericism_tinker.stigmata.overload.critical": "Critical Overload",
   "modifier.esotericism_tinker.stigmata.overload.tooltip": "%s: %s",
   "modifier.esotericism_tinker.stigmata.overload.tooltip_1": "%s",
-
   "stigmata_consequence.esotericism_tinker.exaltation.name": "Exaltation",
   "stigmata_consequence.esotericism_tinker.exaltation.manifestation": "It begins to lift all that it touches; none know who shall rise next.",
   "stigmata_consequence.esotericism_tinker.exaltation.alienation": "It forgets the difference between burden and bearer; foe and wielder alike are raised.",
@@ -240,7 +222,6 @@
   "stigmata_consequence.esotericism_tinker.exaltation.armor.manifestation": "It rises from your flesh, lifting all around you.",
   "stigmata_consequence.esotericism_tinker.exaltation.armor.alienation": "It no longer remembers who should remain below.",
   "stigmata_consequence.esotericism_tinker.exaltation.armor.sealing": "In time, it shall offer even you to the sky.",
-
   "stigmata_consequence.esotericism_tinker.malediction.name": "Malediction",
   "stigmata_consequence.esotericism_tinker.malediction.manifestation": "It leaves corruption behind; those who linger shall bear its price.",
   "stigmata_consequence.esotericism_tinker.malediction.alienation": "It refuses to let corruption fade; none who breathe are spared.",
@@ -248,7 +229,6 @@
   "stigmata_consequence.esotericism_tinker.malediction.armor.manifestation": "It escapes through your wounds, tainting those nearby.",
   "stigmata_consequence.esotericism_tinker.malediction.armor.alienation": "It no longer remembers who first bled.",
   "stigmata_consequence.esotericism_tinker.malediction.armor.sealing": "Where you stand becomes pestilent ground.",
-
   "stigmata_consequence.esotericism_tinker.judgement.name": "Judgement",
   "stigmata_consequence.esotericism_tinker.judgement.manifestation": "Lightning begins to answer your strikes, though never where it was expected.",
   "stigmata_consequence.esotericism_tinker.judgement.alienation": "Lightning slowly forgets its first target; bystanders and even you may bear its verdict.",
@@ -256,7 +236,6 @@
   "stigmata_consequence.esotericism_tinker.judgement.armor.manifestation": "Lightning gathers around you, waiting to descend.",
   "stigmata_consequence.esotericism_tinker.judgement.armor.alienation": "Lightning forgets why it was called, remembering only that you once beckoned it.",
   "stigmata_consequence.esotericism_tinker.judgement.armor.sealing": "You no longer call the lightning; you have become the place where it chooses to fall.",
-
   "stigmata_consequence.esotericism_tinker.obsession.name": "Obsession",
   "stigmata_consequence.esotericism_tinker.obsession.manifestation": "It calls wandering spirits; their obsession still knows its quarry.",
   "stigmata_consequence.esotericism_tinker.obsession.alienation": "The spirits slowly forget their master.",
@@ -264,7 +243,6 @@
   "stigmata_consequence.esotericism_tinker.obsession.armor.manifestation": "Your wounds beckon restless spirits.",
   "stigmata_consequence.esotericism_tinker.obsession.armor.alienation": "They no longer know friend from foe.",
   "stigmata_consequence.esotericism_tinker.obsession.armor.sealing": "Their hatred answers only itself.",
-
   "stigmata_consequence.esotericism_tinker.incubation.name": "Incubation",
   "stigmata_consequence.esotericism_tinker.incubation.manifestation": "It nurtures frail life, awaiting its harvest.",
   "stigmata_consequence.esotericism_tinker.incubation.alienation": "It begins to favor prey that has yet to mature.",
@@ -272,7 +250,6 @@
   "stigmata_consequence.esotericism_tinker.incubation.armor.manifestation": "Your wounds give birth to new life.",
   "stigmata_consequence.esotericism_tinker.incubation.armor.alienation": "They are born wherever blood is spilled.",
   "stigmata_consequence.esotericism_tinker.incubation.armor.sealing": "Soon they seek fresh nourishment of their own.",
-
   "stigmata_consequence.esotericism_tinker.defilement.name": "Defilement",
   "stigmata_consequence.esotericism_tinker.defilement.manifestation": "The earth begins to remember your passing.",
   "stigmata_consequence.esotericism_tinker.defilement.alienation": "Those who follow no longer tread upon the same ground.",
@@ -280,7 +257,6 @@
   "stigmata_consequence.esotericism_tinker.defilement.armor.manifestation": "The earth begins to answer your footsteps.",
   "stigmata_consequence.esotericism_tinker.defilement.armor.alienation": "Where you stand slowly ceases to resemble what it once was.",
   "stigmata_consequence.esotericism_tinker.defilement.armor.sealing": "Those who come after will believe the earth was always this way.",
-
   "stigmata_consequence.esotericism_tinker.devouring.name": "Devouring",
   "stigmata_consequence.esotericism_tinker.devouring.manifestation": "It begins to demand your hunger.",
   "stigmata_consequence.esotericism_tinker.devouring.alienation": "It gradually forgets what satisfaction means.",
@@ -288,7 +264,6 @@
   "stigmata_consequence.esotericism_tinker.devouring.armor.manifestation": "Every wound sharpens its hunger.",
   "stigmata_consequence.esotericism_tinker.devouring.armor.alienation": "It gradually learns to measure pain in hunger.",
   "stigmata_consequence.esotericism_tinker.devouring.armor.sealing": "In time, it shall devour every blow you suffer.",
-
   "stigmata_consequence.esotericism_tinker.sacrament.name": "Sacrament",
   "stigmata_consequence.esotericism_tinker.sacrament.manifestation": "It accepts your knowledge as a temporary sacrament.",
   "stigmata_consequence.esotericism_tinker.sacrament.alienation": "It gradually comes to prefer knowledge over sustenance.",
@@ -296,7 +271,6 @@
   "stigmata_consequence.esotericism_tinker.sacrament.armor.manifestation": "Every wound offers up a measure of knowledge.",
   "stigmata_consequence.esotericism_tinker.sacrament.armor.alienation": "It begins to await the next offering.",
   "stigmata_consequence.esotericism_tinker.sacrament.armor.sealing": "At last, it learns to feed upon suffering.",
-
   "stigmata_consequence.esotericism_tinker.offering.name": "Offering",
   "stigmata_consequence.esotericism_tinker.offering.manifestation": "It will drink a drop of blood rather than suffer wear.",
   "stigmata_consequence.esotericism_tinker.offering.alienation": "It gradually forgets the difference between iron and blood.",
@@ -304,7 +278,6 @@
   "stigmata_consequence.esotericism_tinker.offering.armor.manifestation": "It will repay every fracture with blood.",
   "stigmata_consequence.esotericism_tinker.offering.armor.alienation": "It begins to prefer bleeding over breaking.",
   "stigmata_consequence.esotericism_tinker.offering.armor.sealing": "In time, it shall demand blood for every scar.",
-
   "stigmata_consequence.esotericism_tinker.immolation.name": "Immolation",
   "stigmata_consequence.esotericism_tinker.immolation.manifestation": "Flame begins to linger in your wake.",
   "stigmata_consequence.esotericism_tinker.immolation.alienation": "Flame gradually forgets the bounds of its altar.",
@@ -312,7 +285,6 @@
   "stigmata_consequence.esotericism_tinker.immolation.armor.manifestation": "Flame begins to answer your wounds.",
   "stigmata_consequence.esotericism_tinker.immolation.armor.alienation": "Flame gradually forgets whom it was meant to burn.",
   "stigmata_consequence.esotericism_tinker.immolation.armor.sealing": "In the end, flame leaves no mere witness untouched.",
-
   "stigmata_consequence.esotericism_tinker.penance.name": "Penance",
   "stigmata_consequence.esotericism_tinker.penance.manifestation": "It grants burden, and with burden, strength.",
   "stigmata_consequence.esotericism_tinker.penance.alienation": "Its weight gradually reshapes your body.",
@@ -320,7 +292,6 @@
   "stigmata_consequence.esotericism_tinker.penance.armor.manifestation": "Every wound makes the burden more real.",
   "stigmata_consequence.esotericism_tinker.penance.armor.alienation": "Your steps begin to learn endurance.",
   "stigmata_consequence.esotericism_tinker.penance.armor.sealing": "In the end, even standing becomes an ordeal.",
-
   "stigmata_consequence.esotericism_tinker.dominion.name": "Dominion",
   "stigmata_consequence.esotericism_tinker.dominion.manifestation": "It acknowledges the rider.",
   "stigmata_consequence.esotericism_tinker.dominion.alienation": "It gradually forgets those who walk.",
@@ -328,7 +299,6 @@
   "stigmata_consequence.esotericism_tinker.dominion.armor.manifestation": "It extends its shelter to the rider.",
   "stigmata_consequence.esotericism_tinker.dominion.armor.alienation": "It begins to scorn those who travel on foot.",
   "stigmata_consequence.esotericism_tinker.dominion.armor.sealing": "Those who dismount shall find no shelter left.",
-
   "stigmata_consequence.esotericism_tinker.nocturne.name": "Nocturne",
   "stigmata_consequence.esotericism_tinker.nocturne.manifestation": "The full moon begins to answer your Stigmata.",
   "stigmata_consequence.esotericism_tinker.nocturne.alienation": "Moonlight gradually forgets the day.",
@@ -336,7 +306,6 @@
   "stigmata_consequence.esotericism_tinker.nocturne.armor.manifestation": "Moonlight begins to linger at your side.",
   "stigmata_consequence.esotericism_tinker.nocturne.armor.alienation": "Daylight gradually loses its shelter.",
   "stigmata_consequence.esotericism_tinker.nocturne.armor.sealing": "Only moonlight remains willing to acknowledge you.",
-
   "stigmata_consequence.esotericism_tinker.zenith.name": "Zenith",
   "stigmata_consequence.esotericism_tinker.zenith.manifestation": "The high heavens begin to look down upon you.",
   "stigmata_consequence.esotericism_tinker.zenith.alienation": "The firmament gradually forgets the lowlands.",
@@ -344,7 +313,6 @@
   "stigmata_consequence.esotericism_tinker.zenith.armor.manifestation": "The firmament grants you a moment of shelter.",
   "stigmata_consequence.esotericism_tinker.zenith.armor.alienation": "The lowlands gradually fall beyond grace.",
   "stigmata_consequence.esotericism_tinker.zenith.armor.sealing": "Those who leave the heavens shall find no shelter below.",
-
   "stigmata_consequence.esotericism_tinker.abyss.name": "Abyss",
   "stigmata_consequence.esotericism_tinker.abyss.manifestation": "The abyss begins to answer your footsteps.",
   "stigmata_consequence.esotericism_tinker.abyss.alienation": "The abyss gradually forgets the surface.",
@@ -352,7 +320,6 @@
   "stigmata_consequence.esotericism_tinker.abyss.armor.manifestation": "The depths begin to accept your presence.",
   "stigmata_consequence.esotericism_tinker.abyss.armor.alienation": "The surface gradually abandons you.",
   "stigmata_consequence.esotericism_tinker.abyss.armor.sealing": "In time, you shall belong to the abyss.",
-
   "stigmata_consequence.esotericism_tinker.beatitude.name": "Beatitude",
   "stigmata_consequence.esotericism_tinker.beatitude.manifestation": "Blessing begins to acknowledge your name.",
   "stigmata_consequence.esotericism_tinker.beatitude.alienation": "Blessing gradually forgets the common multitude.",
@@ -360,7 +327,6 @@
   "stigmata_consequence.esotericism_tinker.beatitude.armor.manifestation": "Grace begins to linger at your side.",
   "stigmata_consequence.esotericism_tinker.beatitude.armor.alienation": "Grace gradually withdraws from the many.",
   "stigmata_consequence.esotericism_tinker.beatitude.armor.sealing": "Lose the name of the chosen, and all shelter is lost.",
-
   "stigmata_consequence.esotericism_tinker.anathema.name": "Anathema",
   "stigmata_consequence.esotericism_tinker.anathema.manifestation": "The curse begins to acknowledge your name.",
   "stigmata_consequence.esotericism_tinker.anathema.alienation": "The curse gradually forgets purity.",
@@ -368,11 +334,9 @@
   "stigmata_consequence.esotericism_tinker.anathema.armor.manifestation": "Calamity begins to walk beside you.",
   "stigmata_consequence.esotericism_tinker.anathema.armor.alienation": "Purity gradually withdraws from your shadow.",
   "stigmata_consequence.esotericism_tinker.anathema.armor.sealing": "When the curse departs, its shelter departs with it.",
-
   "stigmata.esotericism_tinker.manifestation": "Manifestation Stigmata",
   "stigmata.esotericism_tinker.alienation": "Alienation Stigmata",
   "stigmata.esotericism_tinker.sealing": "Sealing Stigmata",
-
   "message.esotericism_tinker.stigmata.invalid_jump": "Stigmata cannot jump directly from stage %1$s to stage %2$s",
   "message.esotericism_tinker.stigmata.not_tool_part": "The Stigmata rite requires a valid Tinkers' Construct tool part",
   "message.esotericism_tinker.stigmata.invalid_input_count": "Invalid Stigmata input layout: expected 5 input slots, found %s",
@@ -407,5 +371,64 @@
   "jei.esotericism_tinker.stigmata": "Trinity Stigmata",
   "jei.esotericism_tinker.stigmata.stage": "Stage %s",
   "book.esotericism_tinker.stigmata.stage": "Stage %s",
-  "book.esotericism_tinker.stigmata.no_recipe": "No available Stigmata recipe was found."
+  "book.esotericism_tinker.stigmata.no_recipe": "No available Stigmata recipe was found.",
+  "noumenon.esotericism_tinker.group.melee": "Melee",
+  "noumenon.esotericism_tinker.group.ranged": "Ranged",
+  "noumenon.esotericism_tinker.group.bow": "Bow",
+  "noumenon.esotericism_tinker.group.shield": "Shield",
+  "noumenon.esotericism_tinker.group.armor": "Armor",
+  "noumenon.esotericism_tinker.group.harvest": "Harvest",
+  "noumenon.esotericism_tinker.group.sword": "Sword",
+  "noumenon.esotericism_tinker.group.scythe": "Scythe",
+  "noumenon.esotericism_tinker.group.axe": "Axe",
+  "noumenon.esotericism_tinker.group.hammer": "Hammer",
+  "noumenon.esotericism_tinker.melee_damage": "Force",
+  "noumenon.esotericism_tinker.melee_speed": "Tempo",
+  "noumenon.esotericism_tinker.ranged_draw_speed": "Readiness",
+  "noumenon.esotericism_tinker.ranged_ballistics": "Ballistics",
+  "noumenon.esotericism_tinker.bow_multishot": "Division",
+  "noumenon.esotericism_tinker.bow_piercing": "Piercing",
+  "noumenon.esotericism_tinker.shield_guard": "Bulwark",
+  "noumenon.esotericism_tinker.shield_counter": "Retaliation",
+  "noumenon.esotericism_tinker.armor_toughness": "Tempering",
+  "noumenon.esotericism_tinker.armor_stability": "Stability",
+  "noumenon.esotericism_tinker.armor_threshold": "Impervious",
+  "noumenon.esotericism_tinker.harvest_speed": "Efficiency",
+  "noumenon.esotericism_tinker.harvest_endurance": "Conservation",
+  "noumenon.esotericism_tinker.sword_range": "Expansion",
+  "noumenon.esotericism_tinker.sword_sweep_damage": "Slaughter",
+  "noumenon.esotericism_tinker.scythe_reap": "Reaping",
+  "noumenon.esotericism_tinker.scythe_sustain": "Sustenance",
+  "noumenon.esotericism_tinker.axe_execute": "Execution",
+  "noumenon.esotericism_tinker.axe_heavy": "Heavy Stroke",
+  "noumenon.esotericism_tinker.hammer_knockback": "Shock",
+  "noumenon.esotericism_tinker.hammer_crush": "Crushing",
+  "gui.esotericism_tinker.transcendence_anvil.sublimation.group_conflict": "Only one elevation path may be selected in each group.",
+  "gui.esotericism_tinker.transcendence_anvil.sublimation.committed_group": "A committed elevation path in this group cannot be replaced.",
+  "gui.esotericism_tinker.transcendence_anvil.sublimation.invalid_level": "Invalid elevation level.",
+  "gui.esotericism_tinker.transcendence_anvil.sublimation.unknown": "Unknown elevation path: %s",
+  "gui.esotericism_tinker.transcendence_anvil.sublimation.unavailable": "This elevation path is unavailable: %s",
+  "gui.esotericism_tinker.transcendence_anvil.sublimation.max_level": "%s cannot exceed level %s.",
+  "gui.esotericism_tinker.transcendence_anvil.sublimation.allocation": "Level %1$s/%2$s · %3$s Elevation per level",
+  "noumenon.esotericism_tinker.melee_damage.desc": "Increases attack damage by 6% per level, up to 30%.",
+  "noumenon.esotericism_tinker.melee_speed.desc": "Increases attack speed by 5% per level, up to 25%.",
+  "noumenon.esotericism_tinker.ranged_draw_speed.desc": "Increases draw speed by 6% per level, up to 30%.",
+  "noumenon.esotericism_tinker.ranged_ballistics.desc": "Increases projectile velocity by 5% per level, up to 25%.",
+  "noumenon.esotericism_tinker.bow_multishot.desc": "Raises Multishot every two levels, firing 3/3/5/5/7 projectiles.",
+  "noumenon.esotericism_tinker.bow_piercing.desc": "Raises arrow piercing every two levels, piercing 1/1/2/2/3 additional targets.",
+  "noumenon.esotericism_tinker.shield_guard.desc": "Increases base block amount by 50% per level; level 5 reaches 350% of base.",
+  "noumenon.esotericism_tinker.shield_counter.desc": "While blocking direct damage, retaliates for 2 damage per level, up to 10.",
+  "noumenon.esotericism_tinker.armor_toughness.desc": "Adds 2 armor toughness per level, up to 10.",
+  "noumenon.esotericism_tinker.armor_stability.desc": "Adds 10% knockback resistance per level, up to 50%.",
+  "noumenon.esotericism_tinker.armor_threshold.desc": "Completely blocks hits below 1 + 0.75 per level; level 5 blocks hits below 4.75.",
+  "noumenon.esotericism_tinker.harvest_speed.desc": "Increases mining speed by 8% per level, up to 40%.",
+  "noumenon.esotericism_tinker.harvest_endurance.desc": "Reduces expected durability loss while harvesting by 10% per level, up to 50%.",
+  "noumenon.esotericism_tinker.sword_range.desc": "Adds 1 block of sweep range per level, up to 5 blocks.",
+  "noumenon.esotericism_tinker.sword_sweep_damage.desc": "Raises Sweeping Edge each level; secondary damage gains 25% of the main hit per level, plus 1, capped at the main hit.",
+  "noumenon.esotericism_tinker.scythe_reap.desc": "Increases damage to extra targets by 10% per level, up to 50%.",
+  "noumenon.esotericism_tinker.scythe_sustain.desc": "Heals for 1.5% of damage dealt to extra targets per level, up to 7.5%.",
+  "noumenon.esotericism_tinker.axe_execute.desc": "Against targets at or below 30% health, increases damage by 10% per level, up to 50%.",
+  "noumenon.esotericism_tinker.axe_heavy.desc": "Increases fully charged attack damage by 7% per level, up to 35%.",
+  "noumenon.esotericism_tinker.hammer_knockback.desc": "Adds 0.3 knockback per level, up to 1.5.",
+  "noumenon.esotericism_tinker.hammer_crush.desc": "Adds normal damage equal to 5% of the target's armor per level, up to 25%."
 }
