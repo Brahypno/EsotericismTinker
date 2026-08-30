@@ -13,6 +13,8 @@
   },
   {
     "name": "group_damage",
+    "type": "mantle:text",
+    "data": "delusions/damage.json",
     "extraData": { "tconstruct:load_modifiers": { "tag": "esotericism_tinker:delusions/damage", "path": "delusions/damage", "prefix": "damage" }}
   },
   {

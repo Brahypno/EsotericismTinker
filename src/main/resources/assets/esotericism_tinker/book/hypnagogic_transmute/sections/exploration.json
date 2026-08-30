@@ -1,5 +1,10 @@
 [
   {
+    "name": "index",
+    "type": "mantle:text",
+    "data": "exploration/index.json"
+  },
+  {
     "name": "group_ores",
     "type": "mantle:text",
     "data": "exploration/ores.json",
