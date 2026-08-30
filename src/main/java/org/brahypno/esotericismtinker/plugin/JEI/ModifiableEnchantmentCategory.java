@@ -301,7 +301,7 @@ public class ModifiableEnchantmentCategory implements IRecipeCategory<Modifiable
                 continue;
             }
 
-            ItemStack stack = IModifiableDisplay.getDisplayStack(input);
+            ItemStack stack = IModifiableDisplay.getDisplayStack(input).copy();
             if (!(stack.getItem() instanceof IModifiable)){
                 continue;
             }

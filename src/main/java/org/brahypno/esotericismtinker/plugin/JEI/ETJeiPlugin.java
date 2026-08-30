@@ -132,5 +132,8 @@ public class ETJeiPlugin implements IModPlugin {
     @Override
     public void onRuntimeAvailable(IJeiRuntime jeiRuntime) {
         jeiRuntime.getIngredientManager().addIngredientsAtRuntime(TConstructJEIConstants.MODIFIER_TYPE, List.of(new ModifierEntry(EsotericismTinkerModifiers.STIGMATA, 1), new ModifierEntry(EsotericismTinkerModifiers.STIGMATA, 2), new ModifierEntry(EsotericismTinkerModifiers.STIGMATA, 3)));
+        if (ModList.get().isLoaded("ars_nouveau")){
+            ArsJeiCompat.registerModifierIngredients(jeiRuntime);
+        }
     }
 }
