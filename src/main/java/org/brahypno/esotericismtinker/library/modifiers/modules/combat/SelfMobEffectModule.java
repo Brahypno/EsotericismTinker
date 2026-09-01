@@ -108,8 +108,8 @@ public record SelfMobEffectModule(IJsonPredicate<LivingEntity> target, @Nullable
             return;
         }
 
-        List<Holder<MobEffect>> candidates = opt.get().stream().toList();
-        if (candidates.isEmpty()){
+        HolderSet.Named<MobEffect> candidates = opt.get();
+        if (candidates.size() == 0){
             return;
         }
 

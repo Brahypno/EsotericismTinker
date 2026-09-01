@@ -1,6 +1,7 @@
 package org.brahypno.esotericismtinker.selenic.block.entity;
 
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.Direction;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.state.BlockState;
 import org.brahypno.esotericismtinker.library.recipe.selenic.SelenicFailure;
@@ -32,7 +33,7 @@ public final class SelenicFigureScanner {
 
     private static int countLowerSpines(Level level, BlockPos fontPos) {
         int count = 0;
-        BlockPos cursor = fontPos.below();
+        BlockPos.MutableBlockPos cursor = fontPos.mutable().move(Direction.DOWN);
 
         while (level.getBlockState(cursor).is(EsotericismTinkerSelenic.astrolabeSpine.get())) {
             count++;
@@ -41,7 +42,7 @@ public final class SelenicFigureScanner {
                 return MAX_SPINES;
             }
 
-            cursor = cursor.below();
+            cursor.move(Direction.DOWN);
         }
 
         return count;
@@ -49,7 +50,7 @@ public final class SelenicFigureScanner {
 
     private static UpperAxis scanUpperAxis(Level level, BlockPos fontPos) {
         int spines = 0;
-        BlockPos cursor = fontPos.above(2);
+        BlockPos.MutableBlockPos cursor = fontPos.mutable().move(Direction.UP, 2);
 
         while (level.getBlockState(cursor).is(EsotericismTinkerSelenic.astrolabeSpine.get())) {
             spines++;
@@ -58,13 +59,13 @@ public final class SelenicFigureScanner {
                 return UpperAxis.invalid(SelenicFailure.AXIS_BLOCKED);
             }
 
-            cursor = cursor.above();
+            cursor.move(Direction.UP);
         }
 
         BlockState terminal = level.getBlockState(cursor);
 
         if (terminal.is(EsotericismTinkerSelenic.armillaryCrown.get())){
-            return new UpperAxis(true, SelenicFailure.NONE, cursor, spines);
+            return new UpperAxis(true, SelenicFailure.NONE, cursor.immutable(), spines);
         }
 
         if (terminal.isAir()){

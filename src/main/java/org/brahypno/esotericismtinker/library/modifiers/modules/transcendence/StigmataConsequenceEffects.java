@@ -29,6 +29,8 @@ import net.minecraftforge.event.TickEvent;
 import net.minecraftforge.event.entity.living.LivingDeathEvent;
 import net.minecraftforge.event.entity.player.AttackEntityEvent;
 import net.minecraftforge.event.entity.player.PlayerInteractEvent;
+import net.minecraftforge.event.level.LevelEvent;
+import net.minecraftforge.event.server.ServerStoppedEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
 import org.brahypno.esotericismtinker.EsotericismTinker;
@@ -400,6 +402,20 @@ public final class StigmataConsequenceEffects {
             spreader.updateCursors(level, origin, level.random, true);
             return new PendingSculk(spreader, origin, ticksLeft - 1);
         }
+    }
+
+    @SubscribeEvent
+    public static void onLevelUnload(LevelEvent.Unload event) {
+        if (event.getLevel() instanceof ServerLevel level){
+            PENDING_LIGHTNING.remove(level);
+            PENDING_SCULK.remove(level);
+        }
+    }
+
+    @SubscribeEvent
+    public static void onServerStopped(ServerStoppedEvent event) {
+        PENDING_LIGHTNING.clear();
+        PENDING_SCULK.clear();
     }
 
     @SubscribeEvent

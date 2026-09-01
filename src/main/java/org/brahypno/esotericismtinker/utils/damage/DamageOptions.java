@@ -35,6 +35,11 @@ public record DamageOptions(ScanLevel scanLevel, FinalKillPolicy killPolicy, boo
         return new DamageOptions(scanLevel, killPolicy, debug, maxRetry, maxAbsoluteFieldTries, maxAbsoluteDataTries, enabled, setHealthFallbackMode);
     }
 
+    public DamageOptions withDebug(boolean enabled) {
+        return new DamageOptions(scanLevel, killPolicy, enabled, maxRetry, maxAbsoluteFieldTries, maxAbsoluteDataTries, mediumActuallyHurtFallback,
+                                 setHealthFallbackMode);
+    }
+
     public DamageOptions withSetHealthFallbackMode(SetHealthFallbackMode mode) {
         return new DamageOptions(scanLevel, killPolicy, debug, maxRetry, maxAbsoluteFieldTries, maxAbsoluteDataTries, mediumActuallyHurtFallback, mode);
     }

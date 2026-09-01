@@ -1,6 +1,7 @@
 package org.brahypno.esotericismtinker.selenic.block.entity;
 
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.Direction;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.Connection;
 import net.minecraft.network.protocol.game.ClientboundBlockEntityDataPacket;
@@ -102,9 +103,10 @@ public class ArmillaryCrownBlockEntity extends BlockEntity {
     }
 
     public List<ItemStack> copyInputStacks() {
-        List<ItemStack> stacks = new ArrayList<>();
+        int slotCount = getActiveInputSlots();
+        List<ItemStack> stacks = new ArrayList<>(slotCount);
 
-        for (int i = 0; i < getActiveInputSlots(); i++) {
+        for (int i = 0; i < slotCount; i++) {
             stacks.add(items.getStackInSlot(i).copy());
         }
 
@@ -164,7 +166,7 @@ public class ArmillaryCrownBlockEntity extends BlockEntity {
         }
 
         int spines = 0;
-        BlockPos cursor = worldPosition.below();
+        BlockPos.MutableBlockPos cursor = worldPosition.mutable().move(Direction.DOWN);
 
         while (level.getBlockState(cursor).is(EsotericismTinkerSelenic.astrolabeSpine.get())) {
             spines++;
@@ -173,7 +175,7 @@ public class ArmillaryCrownBlockEntity extends BlockEntity {
                 return MAX_SPINES;
             }
 
-            cursor = cursor.below();
+            cursor.move(Direction.DOWN);
         }
 
         return level.getBlockState(cursor).is(EsotericismTinkerSelenic.lunarFont.get()) ? spines : 0;

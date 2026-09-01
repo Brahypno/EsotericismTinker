@@ -10,7 +10,8 @@ import java.util.List;
 
 public final class DamageProbeResult {
   private final DamageContext context;
-  private final List<String> lines = new ArrayList<>();
+  private final boolean debugEnabled;
+  private final List<String> lines;
   private boolean success;
   private boolean serverDead;
   private boolean deathHandled;
@@ -26,11 +27,15 @@ public final class DamageProbeResult {
 
   public DamageProbeResult(DamageContext context) {
     this.context = context;
-    add("created: forceLevel=" + context.forceLevel()
-        + ", entity=" + describeEntity(context.entity())
-        + ", victim=" + describeEntity(context.victim())
-        + ", amount=" + context.amount()
-        + ", initialHealth=" + context.initialHealth());
+    this.debugEnabled = context.options().debug();
+    this.lines = debugEnabled ? new ArrayList<>() : List.of();
+    if (debugEnabled) {
+      lines.add("created: forceLevel=" + context.forceLevel()
+          + ", entity=" + describeEntity(context.entity())
+          + ", victim=" + describeEntity(context.victim())
+          + ", amount=" + context.amount()
+          + ", initialHealth=" + context.initialHealth());
+    }
   }
 
   public DamageContext context() {
@@ -38,67 +43,71 @@ public final class DamageProbeResult {
   }
 
   public void addHeader(String name) {
-    add("========== " + name + " ==========");
+    if (debugEnabled) lines.add("========== " + name + " ==========");
   }
 
   public void add(String line) {
-    lines.add(line);
+    if (debugEnabled) lines.add(line);
+  }
+
+  public boolean debugEnabled() {
+    return debugEnabled;
   }
 
   public DamageProbeResult success(String strategy) {
     this.success = true;
     this.strategy = strategy;
-    add("success: " + strategy);
+    if (debugEnabled) lines.add("success: " + strategy);
     return this;
   }
 
   public void clearSuccess(String reason) {
-    if (success) add("clear_success: " + reason + ", previousStrategy=" + strategy);
+    if (debugEnabled && success) lines.add("clear_success: " + reason + ", previousStrategy=" + strategy);
     this.success = false;
     this.strategy = "none";
   }
 
   public DamageProbeResult fail(String reason) {
-    add("failed: " + reason);
+    if (debugEnabled) lines.add("failed: " + reason);
     return this;
   }
 
   public DamageProbeResult serverDead(String reason) {
     this.serverDead = true;
-    add("server_dead: " + reason);
+    if (debugEnabled) lines.add("server_dead: " + reason);
     return this;
   }
 
   public void markDeathHandled(String reason) {
     this.deathHandled = true;
-    add("death_handled: " + reason);
+    if (debugEnabled) lines.add("death_handled: " + reason);
   }
 
   public void markFinalRequested(boolean lethalRequested) {
     this.finalRequested = true;
     this.lethalRequested = lethalRequested;
-    add("final_requested: lethal=" + lethalRequested);
+    if (debugEnabled) lines.add("final_requested: lethal=" + lethalRequested);
   }
 
   public void markPipelineEntered(String reason) {
     this.pipelineEntered = true;
-    add("pipeline_entered: " + reason);
+    if (debugEnabled) lines.add("pipeline_entered: " + reason);
   }
 
   public void markDamageStateChanged(String reason) {
     this.damageStateChanged = true;
-    add("damage_state_changed: " + reason);
+    if (debugEnabled) lines.add("damage_state_changed: " + reason);
   }
 
   public void markSupportChanged(String reason) {
     this.supportChanged = true;
-    add("support_changed: " + reason);
+    if (debugEnabled) lines.add("support_changed: " + reason);
   }
 
   public void markKillPath(KillPathKind kind, String reason) {
     if (kind == null || kind == KillPathKind.NONE) return;
     this.killPathKind = kind;
-    add("kill_path: " + kind + ", reason=" + reason);
+    if (debugEnabled) lines.add("kill_path: " + kind + ", reason=" + reason);
   }
 
   public KillPathKind killPathKind() {
@@ -107,7 +116,7 @@ public final class DamageProbeResult {
 
   public void markDeathFinalized(String reason) {
     this.deathFinalized = true;
-    add("death_finalized: " + reason);
+    if (debugEnabled) lines.add("death_finalized: " + reason);
   }
 
   public boolean deathFinalized() {
@@ -118,19 +127,22 @@ public final class DamageProbeResult {
     if (before.health() > after.health()) {
       float dealt = before.health() - after.health();
       totalDealt += dealt;
-      markDamageStateChanged("health changed " + before.health() + " -> " + after.health() + ", dealt=" + dealt);
+      damageStateChanged = true;
+      if (debugEnabled) lines.add("damage_state_changed: health changed " + before.health() + " -> " + after.health() + ", dealt=" + dealt);
     }
     if (before.absorption() > after.absorption()) {
       float dealt = before.absorption() - after.absorption();
       totalDealt += dealt;
-      markDamageStateChanged("absorption changed " + before.absorption() + " -> " + after.absorption() + ", dealt=" + dealt);
+      damageStateChanged = true;
+      if (debugEnabled) lines.add("damage_state_changed: absorption changed " + before.absorption() + " -> " + after.absorption() + ", dealt=" + dealt);
     }
   }
 
   public void recordSyntheticDamage(float amount, String reason) {
     if (amount <= 0.0F) return;
     totalDealt += amount;
-    markDamageStateChanged("synthetic damage=" + amount + ", reason=" + reason);
+    damageStateChanged = true;
+    if (debugEnabled) lines.add("damage_state_changed: synthetic damage=" + amount + ", reason=" + reason);
   }
 
   public boolean reachedExpectedDamage() {

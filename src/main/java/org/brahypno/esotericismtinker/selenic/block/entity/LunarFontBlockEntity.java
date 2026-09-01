@@ -35,14 +35,22 @@ import javax.annotation.Nullable;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
-import java.util.function.Consumer;
-import java.util.function.Supplier;
 
 public class LunarFontBlockEntity extends BlockEntity {
     private static final int MAX_ITEM_SLOTS = 8;
     private static final int BASE_FLUID_CAPACITY = 1000;
     private static final int FLUID_CAPACITY_PER_SPINE = 1000;
     private static final int SUCCESS_SIGNAL_TICKS = 6;
+    private static final ClassValue<Boolean> USES_DEFAULT_RECIPE_MATCHES = new ClassValue<>() {
+        @Override
+        protected Boolean computeValue(Class<?> type) {
+            try {
+                return type.getMethod("matches", SelenicAstrolabeContext.class).getDeclaringClass() == SelenicAstrolabeRecipe.class;
+            } catch (NoSuchMethodException ignored) {
+                return false;
+            }
+        }
+    };
 
     private final OutputItemHandler outputItems = new OutputItemHandler(this);
     private final OutputFluidTank outputTank = new OutputFluidTank(this);
@@ -130,8 +138,10 @@ public class LunarFontBlockEntity extends BlockEntity {
             tryActivate(null);
         }
 
-        wasPowered = powered;
-        setChanged();
+        if (wasPowered != powered){
+            wasPowered = powered;
+            setChanged();
+        }
     }
 
     private boolean isSuccessSignaling() {
@@ -253,7 +263,7 @@ public class LunarFontBlockEntity extends BlockEntity {
             crown.trimToCurrentCapacity();
         }
 
-        if (!active.matches(snapshot.context()) || !checkRecipe(active, snapshot).isOk()){
+        if (!canContinueRecipe(active, snapshot)){
             stopInterrupted();
             return;
         }
@@ -268,10 +278,7 @@ public class LunarFontBlockEntity extends BlockEntity {
     }
 
     private Optional<SelenicAstrolabeRecipe> getActiveRecipe(Level level) {
-        return SelenicRecipeCache.getSortedRecipes(level)
-                                 .stream()
-                                 .filter(candidate -> candidate.getId().equals(activeRecipeId))
-                                 .findFirst();
+        return SelenicRecipeCache.getById(level, activeRecipeId);
     }
 
     private float getProgressStep() {
@@ -322,6 +329,12 @@ public class LunarFontBlockEntity extends BlockEntity {
             return RecipeCheck.fail(failureOf(requirement));
         }
 
+        return checkPreparedRecipe(recipe, snapshot);
+    }
+
+    private RecipeCheck checkPreparedRecipe(
+            SelenicAstrolabeRecipe recipe,
+            SelenicTickSnapshot snapshot) {
         PreparedSelenicRecipe prepared = recipe.prepareRecipe(
                 createRecipeAccess(snapshot),
                 null);
@@ -333,6 +346,18 @@ public class LunarFontBlockEntity extends BlockEntity {
         return RecipeCheck.ok();
     }
 
+    private boolean canContinueRecipe(
+            SelenicAstrolabeRecipe recipe,
+            SelenicTickSnapshot snapshot) {
+        if (!recipe.matches(snapshot.context())) {
+            return false;
+        }
+        RecipeCheck check = USES_DEFAULT_RECIPE_MATCHES.get(recipe.getClass())
+                            ? checkPreparedRecipe(recipe, snapshot)
+                            : checkRecipe(recipe, snapshot);
+        return check.isOk();
+    }
+
     public void scanFigureAndTrim() {
         Level level = this.level;
 
@@ -342,6 +367,8 @@ public class LunarFontBlockEntity extends BlockEntity {
 
         SelenicFigure figure = SelenicFigureScanner.scan(level, worldPosition);
         int oldLowerSpines = cachedLowerSpines;
+        int oldUpperSpines = cachedUpperSpines;
+        int oldTestimonyCount = cachedTestimonyCount;
 
         if (figure.valid()){
             List<TestimonyStandBlockEntity> witnesses = collectWitnesses(level, figure);
@@ -357,7 +384,10 @@ public class LunarFontBlockEntity extends BlockEntity {
             trimOutputToCurrentCapacity();
         }
 
-        setChanged();
+        if (cachedLowerSpines != oldLowerSpines || cachedUpperSpines != oldUpperSpines
+            || cachedTestimonyCount != oldTestimonyCount){
+            setChanged();
+        }
     }
 
     private void trimCrownToCurrentCapacity(Level level, SelenicFigure figure) {
@@ -369,7 +399,7 @@ public class LunarFontBlockEntity extends BlockEntity {
     }
 
     private void updateCachedFigure(SelenicTickSnapshot snapshot) {
-        updateCachedFigure(snapshot.figure(), snapshot.testimonySources().size());
+        updateCachedFigure(snapshot.figure(), snapshot.witnesses().size());
     }
 
     private void updateCachedFigure(SelenicFigure figure, int testimonyCount) {
@@ -387,52 +417,28 @@ public class LunarFontBlockEntity extends BlockEntity {
             Level level,
             SelenicFigure figure,
             ArmillaryCrownBlockEntity crown) {
-        List<InputSource> crownSources = collectCrownSources(crown);
-        List<InputSource> testimonySources = collectTestimonySources(collectWitnesses(level, figure));
+        List<TestimonyStandBlockEntity> witnesses = collectWitnesses(level, figure);
+        List<ItemStack> testimonyInputs = new ArrayList<>(witnesses.size());
+        for (TestimonyStandBlockEntity witness : witnesses) {
+            testimonyInputs.add(witness.getTestimony().copy());
+        }
         SelenicAstrolabeContext context = new SelenicAstrolabeContext(
                 figure.totalSpines(),
                 MoonPhase.fromVanillaId(level.getMoonPhase()),
                 level.isNight(),
-                List.copyOf(copyStacks(crownSources)),
-                List.copyOf(copyStacks(testimonySources)),
-                crown.getInputFluid().copy());
+                List.copyOf(crown.copyInputStacks()),
+                List.copyOf(testimonyInputs),
+                crown.getInputFluid());
         return new SelenicTickSnapshot(
                 level,
                 figure,
                 crown,
-                List.copyOf(crownSources),
-                List.copyOf(testimonySources),
+                List.copyOf(witnesses),
                 context);
     }
 
     private SelenicRecipeAccess createRecipeAccess(SelenicTickSnapshot snapshot) {
         return new FontRecipeAccess(snapshot);
-    }
-
-    private List<InputSource> collectTestimonySources(List<TestimonyStandBlockEntity> witnesses) {
-        List<InputSource> sources = new ArrayList<>();
-
-        for (TestimonyStandBlockEntity stand : witnesses) {
-            sources.add(new InputSource(
-                    stand::getTestimony,
-                    stack -> stand.setTestimony(normalize(stack))));
-        }
-
-        return sources;
-    }
-
-    private List<InputSource> collectCrownSources(ArmillaryCrownBlockEntity crown) {
-        List<InputSource> sources = new ArrayList<>();
-
-        for (int slot = 0; slot < crown.getInputSlotCount(); slot++) {
-            int index = slot;
-
-            sources.add(new InputSource(
-                    () -> crown.getInputStack(index),
-                    stack -> crown.setInputStack(index, normalize(stack))));
-        }
-
-        return sources;
     }
 
     private List<TestimonyStandBlockEntity> collectWitnesses(Level level, SelenicFigure figure) {
@@ -469,8 +475,10 @@ public class LunarFontBlockEntity extends BlockEntity {
             int dz,
             int topY,
             int bottomY) {
+        BlockPos.MutableBlockPos pos = new BlockPos.MutableBlockPos(
+                worldPosition.getX() + dx, topY, worldPosition.getZ() + dz);
         for (int y = topY; y >= bottomY; y--) {
-            BlockPos pos = new BlockPos(worldPosition.getX() + dx, y, worldPosition.getZ() + dz);
+            pos.setY(y);
 
             if (level.getBlockEntity(pos) instanceof TestimonyStandBlockEntity stand && !stand.getTestimony().isEmpty()){
                 return stand;
@@ -488,16 +496,6 @@ public class LunarFontBlockEntity extends BlockEntity {
 
         BlockEntity be = level.getBlockEntity(figure.crownPos());
         return be instanceof ArmillaryCrownBlockEntity crown ? crown : null;
-    }
-
-    private List<ItemStack> copyStacks(List<InputSource> sources) {
-        List<ItemStack> stacks = new ArrayList<>();
-
-        for (InputSource source : sources) {
-            stacks.add(source.stack().copy());
-        }
-
-        return stacks;
     }
 
     private List<ItemStack> copyItemStacks(List<ItemStack> source) {
@@ -808,15 +806,14 @@ public class LunarFontBlockEntity extends BlockEntity {
                 return;
             }
 
-            List<InputSource> sources = snapshot.crownSources();
-            List<ItemStack> working = copyStacks(sources);
+            List<ItemStack> working = copyItemStacks(snapshot.context().crownInputs());
 
             if (!IngredientStackUtil.consumeOne(working, ingredient, false)){
                 return;
             }
 
-            for (int i = 0; i < sources.size(); i++) {
-                sources.get(i).set(normalize(working.get(i)));
+            for (int i = 0; i < working.size(); i++) {
+                snapshot.crown().setInputStack(i, normalize(working.get(i)));
             }
         }
 
@@ -826,26 +823,25 @@ public class LunarFontBlockEntity extends BlockEntity {
                 return;
             }
 
-            List<InputSource> sources = snapshot.crownSources();
+            List<ItemStack> working = copyItemStacks(snapshot.context().crownInputs());
             int remaining = amount;
 
-            for (InputSource source : sources) {
+            for (int i = 0; i < working.size(); i++) {
                 if (remaining <= 0){
                     break;
                 }
 
-                ItemStack stack = source.stack();
+                ItemStack stack = working.get(i);
 
                 if (stack.isEmpty() || !ingredient.test(stack)){
                     continue;
                 }
 
-                ItemStack copy = stack.copy();
-                int consumed = Math.min(copy.getCount(), remaining);
+                int consumed = Math.min(stack.getCount(), remaining);
 
-                copy.shrink(consumed);
+                stack.shrink(consumed);
                 remaining -= consumed;
-                source.set(normalize(copy));
+                snapshot.crown().setInputStack(i, normalize(stack));
             }
         }
 
@@ -855,15 +851,14 @@ public class LunarFontBlockEntity extends BlockEntity {
                 return;
             }
 
-            List<InputSource> sources = snapshot.testimonySources();
-            List<ItemStack> working = copyStacks(sources);
+            List<ItemStack> working = copyItemStacks(snapshot.context().testimonyInputs());
 
             if (!IngredientStackUtil.consumeAll(working, testimonies, false)){
                 return;
             }
 
-            for (int i = 0; i < sources.size(); i++) {
-                sources.get(i).set(normalize(working.get(i)));
+            for (int i = 0; i < working.size(); i++) {
+                snapshot.witnesses().get(i).setTestimony(normalize(working.get(i)));
             }
         }
 
@@ -893,20 +888,9 @@ public class LunarFontBlockEntity extends BlockEntity {
             Level level,
             SelenicFigure figure,
             ArmillaryCrownBlockEntity crown,
-            List<InputSource> crownSources,
-            List<InputSource> testimonySources,
+            List<TestimonyStandBlockEntity> witnesses,
             SelenicAstrolabeContext context
     ) {}
-
-    private record InputSource(Supplier<ItemStack> getter, Consumer<ItemStack> setter) {
-        private ItemStack stack() {
-            return getter.get();
-        }
-
-        private void set(ItemStack stack) {
-            setter.accept(stack);
-        }
-    }
 
     private record RecipeCheck(SelenicFailure failure) {
         private static RecipeCheck ok() {

@@ -28,6 +28,7 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Objects;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 /**
  * Correlated NBT group probe.
@@ -42,8 +43,27 @@ public final class NbtMutationProbe {
   private static final int MAX_GROUPS = 16;
   private static final float MATCH_TOLERANCE = 0.75F;
   private static final Map<String, CorrelatedGroup> GROUPS = new LinkedHashMap<>();
+  private static final ClassValue<AtomicBoolean> OBSERVED_RUNTIME_CLASSES = new ClassValue<>() {
+    @Override
+    protected AtomicBoolean computeValue(Class<?> type) {
+      return new AtomicBoolean();
+    }
+  };
 
   private NbtMutationProbe() {}
+
+  /**
+   * Full entity NBT snapshots are only needed once per runtime class to learn
+   * correlated health storage. Explicit diagnostics continue to capture every hit.
+   */
+  public static boolean claimDamageObservation(LivingEntity victim, boolean diagnostics) {
+    AtomicBoolean observed = OBSERVED_RUNTIME_CLASSES.get(victim.getClass());
+    if (diagnostics) {
+      observed.set(true);
+      return true;
+    }
+    return observed.compareAndSet(false, true);
+  }
 
   public static void observeDamageDiff(String prefix, NbtStateDiff.Snapshot before, NbtStateDiff.Snapshot after, float actualDealt, DamageProbeResult result) {
     if (before == null || after == null || actualDealt <= DamageConstants.DAMAGE_EPS) return;
@@ -82,6 +102,10 @@ public final class NbtMutationProbe {
   public static StepResult tryNbtMutation(DamageContext context, DamageProbeResult result, String prefix) {
     LivingEntity victim = context.victim();
     if (victim == null) return StepResult.noProgress();
+    if (GROUPS.isEmpty()) {
+      result.add(prefix + " skipped: no learned correlated NBT group");
+      return StepResult.noProgress();
+    }
 
     DamageSnapshot before = DamageSnapshot.of(victim);
     CompoundTag source = new CompoundTag();

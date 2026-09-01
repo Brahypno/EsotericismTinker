@@ -46,6 +46,7 @@ public final class TranscendenceAnvilMenu extends TabbedContainerMenu<Transcende
     private int syncedPendingTuning;
     private int syncedPendingInvestitureIndex = -1;
     private boolean syncedHasPendingGuiChanges;
+    private int allocationStateVersion;
 
     public TranscendenceAnvilMenu(int id, Inventory inventory, @Nullable TranscendenceAnvilBlockEntity station) {
         super(EsotericismTinkerTranscendenceTable.transcendenceAnvilMenu.get(), id, inventory, station);
@@ -97,7 +98,10 @@ public final class TranscendenceAnvilMenu extends TabbedContainerMenu<Transcende
 
                 @Override
                 public void set(int value) {
-                    syncedInitialReception.put(slotType, value);
+                    Integer previous = syncedInitialReception.put(slotType, value);
+                    if (previous == null || previous != value) {
+                        allocationStateVersion++;
+                    }
                 }
             });
             addDataSlot(new DataSlot() {
@@ -110,7 +114,10 @@ public final class TranscendenceAnvilMenu extends TabbedContainerMenu<Transcende
 
                 @Override
                 public void set(int value) {
-                    syncedPendingReception.put(slotType, value);
+                    Integer previous = syncedPendingReception.put(slotType, value);
+                    if (previous == null || previous != value) {
+                        allocationStateVersion++;
+                    }
                 }
             });
         }
@@ -123,7 +130,10 @@ public final class TranscendenceAnvilMenu extends TabbedContainerMenu<Transcende
 
             @Override
             public void set(int value) {
-                syncedInitialTuning = value;
+                if (syncedInitialTuning != value) {
+                    syncedInitialTuning = value;
+                    allocationStateVersion++;
+                }
             }
         });
         addDataSlot(new DataSlot() {
@@ -134,7 +144,10 @@ public final class TranscendenceAnvilMenu extends TabbedContainerMenu<Transcende
 
             @Override
             public void set(int value) {
-                syncedPendingTuning = value;
+                if (syncedPendingTuning != value) {
+                    syncedPendingTuning = value;
+                    allocationStateVersion++;
+                }
             }
         });
 
@@ -208,6 +221,10 @@ public final class TranscendenceAnvilMenu extends TabbedContainerMenu<Transcende
 
     public int getPendingTuning() {
         return syncedPendingTuning;
+    }
+
+    public int getAllocationStateVersion() {
+        return allocationStateVersion;
     }
 
     @Nullable

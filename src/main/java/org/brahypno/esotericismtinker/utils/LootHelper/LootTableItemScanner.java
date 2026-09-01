@@ -8,16 +8,13 @@ import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerLevel;
-import net.minecraft.server.packs.resources.Resource;
 import net.minecraft.tags.TagKey;
-import net.minecraft.util.GsonHelper;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 
 import javax.annotation.Nullable;
-import java.io.Reader;
 import java.util.*;
 import java.util.function.Function;
 
@@ -349,17 +346,7 @@ public final class LootTableItemScanner {
                 "loot_tables/" + lootTableId.getPath() + ".json"
         );
 
-        Optional<Resource> resource = level.getServer().getResourceManager().getResource(jsonId);
-        if (resource.isEmpty()){
-            return null;
-        }
-
-        try (Reader reader = resource.get().openAsReader()) {
-            return GsonHelper.parse(reader);
-        }
-        catch (Exception e) {
-            return null;
-        }
+        return LootResourceCache.getJson(level.getServer().getResourceManager(), jsonId);
     }
 
     private static double effectiveEntryWeight(ServerLevel level, JsonObject entry) {

@@ -8,10 +8,8 @@ import net.minecraft.core.registries.Registries;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerLevel;
-import net.minecraft.server.packs.resources.Resource;
 import net.minecraft.server.packs.resources.ResourceManager;
 import net.minecraft.tags.TagKey;
-import net.minecraft.util.GsonHelper;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.LivingEntity;
@@ -19,7 +17,6 @@ import net.minecraft.world.item.ItemStack;
 import org.brahypno.esotericismtinker.EsotericismTinker;
 
 import javax.annotation.Nullable;
-import java.io.Reader;
 import java.util.*;
 
 import static org.brahypno.esotericismtinker.utils.LootHelper.LootScanCommon.*;
@@ -45,15 +42,18 @@ public final class GlobalLootModifierItemScanner {
     }
 
     private static void logGetAllCandidates(LivingEntity target, Options options, List<LootCandidate> candidates) {
+        if (!EsotericismTinker.LOGGER.isDebugEnabled()){
+            return;
+        }
         ResourceLocation targetId = BuiltInRegistries.ENTITY_TYPE.getKey(target.getType());
-        EsotericismTinker.LOGGER.info(
+        EsotericismTinker.LOGGER.debug(
                 "[GLM Scanner] getAllScannedLootStacksMinOne target={} candidates={} rejectEntityMismatch={} scanFuzzyItemFields={}",
                 targetId, candidates.size(), options.rejectEntityMismatch(), options.scanFuzzyItemFields()
         );
 
         for (int i = 0; i < candidates.size(); i++) {
             LootCandidate c = candidates.get(i);
-            EsotericismTinker.LOGGER.info(
+            EsotericismTinker.LOGGER.debug(
                     "[GLM Scanner] candidate[{}] sourceType={} glm={} item={} rarity={} path={} selectRate={} conditionRate={} estimatedRate={} dropRateRarity={} countRange=[min={}, max={}, expected={}, nonEmpty={}] conditions={} functions={} reason={} stackTag={}",
                     i,
                     c.sourceType(),
@@ -201,16 +201,15 @@ public final class GlobalLootModifierItemScanner {
     public static List<LootCandidate> collect(MinecraftServer server, LivingEntity target, Options options) {
         List<LootCandidate> out = new ArrayList<>();
         ResourceManager rm = server.getResourceManager();
-        Set<ResourceLocation> enabled = loadEnabledGLMIds(rm);
+        List<ResourceLocation> enabled = LootResourceCache.getGlobalModifierIds(rm);
 
         for (ResourceLocation glmId : enabled) {
             ResourceLocation fileId = new ResourceLocation(glmId.getNamespace(), "loot_modifiers/" + glmId.getPath() + ".json");
-            Optional<Resource> res = rm.getResource(fileId);
-            if (res.isEmpty())
+            JsonObject json = LootResourceCache.getJson(rm, fileId);
+            if (json == null)
                 continue;
 
-            try (Reader reader = res.get().openAsReader()) {
-                JsonObject json = GsonHelper.parse(reader);
+            try {
                 out.addAll(parseModifier(glmId, json, target, options));
             }
             catch (Throwable ignored) {}
@@ -296,31 +295,6 @@ public final class GlobalLootModifierItemScanner {
     private static String buildReason(String glmType, EntityAnalysis analysis) {
         return "glmType=" + glmType + "; entityMatch=" + analysis.match() + "; unknownConditions=" + analysis.unknownConditionIds().size() + "; constraints=" +
                analysis.entityConstraints().size();
-    }
-
-    private static Set<ResourceLocation> loadEnabledGLMIds(ResourceManager rm) {
-        Set<ResourceLocation> out = new LinkedHashSet<>();
-        ResourceLocation indexId = new ResourceLocation("forge", "loot_modifiers/global_loot_modifiers.json");
-        List<Resource> stack = rm.getResourceStack(indexId);
-
-        for (Resource res : stack) {
-            try (Reader reader = res.openAsReader()) {
-                JsonObject json = GsonHelper.parse(reader);
-                if (getBoolean(json, "replace", false))
-                    out.clear();
-                JsonArray entries = json.has("entries") && json.get("entries").isJsonArray() ? json.getAsJsonArray("entries") : new JsonArray();
-                for (JsonElement e : entries) {
-                    if (!e.isJsonPrimitive())
-                        continue;
-                    ResourceLocation id = ResourceLocation.tryParse(e.getAsString());
-                    if (id != null)
-                        out.add(id);
-                }
-            }
-            catch (Throwable ignored) {}
-        }
-
-        return out;
     }
 
     private static EntityAnalysis analyzeEntityMatch(JsonObject json, LivingEntity target) {

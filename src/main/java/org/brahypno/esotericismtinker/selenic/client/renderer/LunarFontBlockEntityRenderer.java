@@ -40,6 +40,7 @@ public class LunarFontBlockEntityRenderer implements BlockEntityRenderer<LunarFo
     private static final float HALO_INNER_RADIUS = 0.18F;
     private static final float HALO_THICKNESS = 0.017F;
     private static final int HALO_SEGMENTS = 48;
+    private static final RingAngles HALO_ANGLES = new RingAngles(HALO_SEGMENTS);
 
     public LunarFontBlockEntityRenderer(BlockEntityRendererProvider.Context context) {}
 
@@ -111,13 +112,13 @@ public class LunarFontBlockEntityRenderer implements BlockEntityRenderer<LunarFo
         pose.translate(0.5D, HALO_BASE_Y + bob, 0.5D);
         pose.mulPose(Axis.YP.rotationDegrees(rotation));
 
-        renderHaloRing(pose, consumer, HALO_OUTER_RADIUS, HALO_INNER_RADIUS, HALO_THICKNESS, HALO_SEGMENTS, active ? 210 : 150, LightTexture.FULL_BRIGHT,
+        renderHaloRing(pose, consumer, HALO_OUTER_RADIUS, HALO_INNER_RADIUS, HALO_THICKNESS, HALO_ANGLES, active ? 210 : 150, LightTexture.FULL_BRIGHT,
                        packedOverlay);
 
         pose.popPose();
     }
 
-    private void renderHaloRing(PoseStack pose, VertexConsumer consumer, float outerRadius, float innerRadius, float thickness, int segments, int alpha, int light, int overlay) {
+    private void renderHaloRing(PoseStack pose, VertexConsumer consumer, float outerRadius, float innerRadius, float thickness, RingAngles angles, int alpha, int light, int overlay) {
 
         Matrix4f matrix = pose.last().pose();
         Matrix3f normal = pose.last().normal();
@@ -125,15 +126,13 @@ public class LunarFontBlockEntityRenderer implements BlockEntityRenderer<LunarFo
         float halfThickness = thickness * 0.5F;
         float topY = halfThickness;
         float bottomY = -halfThickness;
+        int segments = angles.segments();
 
         for (int i = 0; i < segments; i++) {
-            float a0 = (float) (Math.PI * 2.0D * i / segments);
-            float a1 = (float) (Math.PI * 2.0D * (i + 1) / segments);
-
-            float cos0 = (float) Math.cos(a0);
-            float sin0 = (float) Math.sin(a0);
-            float cos1 = (float) Math.cos(a1);
-            float sin1 = (float) Math.sin(a1);
+            float cos0 = angles.cos(i);
+            float sin0 = angles.sin(i);
+            float cos1 = angles.cos(i + 1);
+            float sin1 = angles.sin(i + 1);
 
             float outerX0 = cos0 * outerRadius;
             float outerZ0 = sin0 * outerRadius;

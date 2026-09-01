@@ -22,6 +22,7 @@ import org.brahypno.esotericismtinker.transcendence.intrinsic.NoumenonAllocation
 import org.brahypno.esotericismtinker.transcendence.intrinsic.NoumenonData;
 import org.brahypno.esotericismtinker.transcendence.intrinsic.NoumenonDatabase;
 import org.brahypno.esotericismtinker.transcendence.intrinsic.NoumenonInvestitureLogic;
+import org.brahypno.esotericismtinker.transcendence.intrinsic.NoumenonKeys;
 import org.brahypno.esotericismtinker.transcendence.intrinsic.NoumenonSublimationEntry;
 import org.brahypno.esotericismtinker.transcendence.intrinsic.NoumenonSublimationGroup;
 import org.brahypno.esotericismtinker.transcendence.intrinsic.NoumenonSublimationLogic;
@@ -38,7 +39,6 @@ import slimeknights.tconstruct.library.tools.SlotType;
 import slimeknights.tconstruct.library.tools.layout.LayoutIcon;
 import slimeknights.tconstruct.library.tools.layout.StationSlotLayout;
 import slimeknights.tconstruct.library.tools.nbt.LazyToolStack;
-import slimeknights.tconstruct.library.tools.nbt.ToolStack;
 import slimeknights.tconstruct.tables.client.inventory.ToolTableScreen;
 
 import java.util.ArrayList;
@@ -113,6 +113,8 @@ public final class TranscendenceAnvilScreen
     private ItemStack lastInvestitureSource = ItemStack.EMPTY;
     private ResourceLocation lastSelectedInvestiture;
     private boolean positiveAspectDisplayed;
+    private int lastAllocationStateVersion = Integer.MIN_VALUE;
+    private ItemStack lastAllocationInput = ItemStack.EMPTY;
 
     public TranscendenceAnvilScreen(TranscendenceAnvilMenu menu, Inventory inventory, Component title) {
         super(menu, inventory, title);
@@ -290,6 +292,20 @@ public final class TranscendenceAnvilScreen
         refreshTuningButtons();
     }
 
+    private void refreshAllocationButtonsIfChanged() {
+        LazyToolStack input = menu.getInputTool();
+        ItemStack inputStack = input == null ? ItemStack.EMPTY : input.getStack();
+        int version = menu.getAllocationStateVersion();
+        if (version == lastAllocationStateVersion
+            && ItemStack.isSameItemSameTags(inputStack, lastAllocationInput)) {
+            return;
+        }
+
+        lastAllocationStateVersion = version;
+        lastAllocationInput = inputStack.copy();
+        refreshReceptionButtons();
+    }
+
     private void rebuildSublimationWidgets() {
         sublimationRows.clear();
         LazyToolStack shown = getShownTool();
@@ -409,8 +425,7 @@ public final class TranscendenceAnvilScreen
             );
         }
 
-        ToolStack candidate = input.getTool().copy();
-        return NoumenonAllocationLogic.validateAndApply(candidate, data -> {
+        return NoumenonAllocationLogic.validate(input.getTool(), data -> {
             data.receptionSlots.clear();
             for (SlotType type : receptionTypes) {
                 int value = menu.getPendingReception(type.getName());
@@ -446,8 +461,7 @@ public final class TranscendenceAnvilScreen
             return Component.translatable("gui.esotericism_tinker.transcendence_anvil.reception.committed");
         }
 
-        ToolStack candidate = input.getTool().copy();
-        return NoumenonAllocationLogic.validateAndApply(candidate, data -> {
+        return NoumenonAllocationLogic.validate(input.getTool(), data -> {
             data.receptionSlots.clear();
             for (SlotType type : receptionTypes) {
                 String name = type.getName();
@@ -562,7 +576,7 @@ public final class TranscendenceAnvilScreen
     private static boolean hasPositiveAspect(LazyToolStack shown) {
         return shown != null
                && !shown.getStack().isEmpty()
-               && NoumenonData.read(shown.getTool()).level > 0;
+               && shown.getTool().getPersistentData().getInt(NoumenonKeys.LEVEL) > 0;
     }
 
     private LazyToolStack getShownTool() {
@@ -981,9 +995,10 @@ public final class TranscendenceAnvilScreen
         updateDisplay();
 
         /*
-         * DataSlot/recipe synchronization can change button validity without changing pages.
+         * DataSlot synchronization and input replacement can change button validity
+         * without changing pages. Full validation only runs when one of those inputs changed.
          */
-        refreshReceptionButtons();
+        refreshAllocationButtonsIfChanged();
         syncSublimationWidgets();
         syncInvestitureWidgets();
     }

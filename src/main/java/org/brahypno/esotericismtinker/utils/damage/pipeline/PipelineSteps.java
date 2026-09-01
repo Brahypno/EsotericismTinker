@@ -76,7 +76,10 @@ final class PipelineSteps {
     if (ProfileGuidedExplorer.shouldSkip(context, result, ProbeStepId.BASIC_HANDLER)) return StepResult.noProgress();
 
     DamageSnapshot before = DamageSnapshot.of(victim);
-    NbtStateDiff.Snapshot beforeNbt = NbtStateDiff.capture(victim, result, "basic_handler_before");
+    boolean captureNbt = NbtMutationProbe.claimDamageObservation(victim, result.debugEnabled());
+    NbtStateDiff.Snapshot beforeNbt = captureNbt
+                                              ? NbtStateDiff.capture(victim, result, "basic_handler_before")
+                                              : null;
     clearInvulnerability(context.entity(), victim);
     GuardStateSupport.clearDamageGuards(victim, result, "basic_handler");
 
@@ -88,16 +91,20 @@ final class PipelineSteps {
     }
 
     DamageSnapshot afterBasic = DamageSnapshot.of(victim);
-    NbtStateDiff.Snapshot afterBasicNbt = NbtStateDiff.capture(victim, result, "basic_handler_after_basic");
+    NbtStateDiff.Snapshot afterBasicNbt = captureNbt
+                                                  ? NbtStateDiff.capture(victim, result, "basic_handler_after_basic")
+                                                  : null;
     if (returned) result.markPipelineEntered("basic_handler returned true");
     result.recordDamageLikeChange(before, afterBasic);
     float basicDealt = positiveDelta(before.health(), afterBasic.health()) + positiveDelta(before.absorption(), afterBasic.absorption());
     if (basicDealt > DamageConstants.DAMAGE_EPS || afterBasic.authoritativeChangeFrom(before)) {
       NbtStateDiff.logDiff("basic_handler", beforeNbt, afterBasicNbt, basicDealt, result);
     }
-    result.add("basic_handler: returned=" + returned
-        + ", health " + before.health() + " -> " + afterBasic.health()
-        + ", absorption " + before.absorption() + " -> " + afterBasic.absorption());
+    if (result.debugEnabled()) {
+      result.add("basic_handler: returned=" + returned
+          + ", health " + before.health() + " -> " + afterBasic.health()
+          + ", absorption " + before.absorption() + " -> " + afterBasic.absorption());
+    }
     handleServerDeath(victim, context.source(), result, "basic_handler");
 
     boolean progress = afterBasic.authoritativeChangeFrom(before) || result.killConfirmed();
@@ -108,7 +115,9 @@ final class PipelineSteps {
       MethodInvokeResult invokeResult = DamageMethodInvoker.invokeActuallyHurt(victim, context.source(), context.remainingOrAmount(result));
       for (String line : invokeResult.lines()) result.add("basic_handler_actually_hurt: " + line);
       DamageSnapshot afterActual = DamageSnapshot.of(victim);
-      NbtStateDiff.Snapshot afterActualNbt = NbtStateDiff.capture(victim, result, "basic_handler_after_actual");
+      NbtStateDiff.Snapshot afterActualNbt = captureNbt
+                                                ? NbtStateDiff.capture(victim, result, "basic_handler_after_actual")
+                                                : null;
       if (invokeResult.invoked()) result.markPipelineEntered("basic_handler actuallyHurt invoked");
       result.recordDamageLikeChange(afterBasic, afterActual);
       float actualDealt = positiveDelta(afterBasic.health(), afterActual.health()) + positiveDelta(afterBasic.absorption(), afterActual.absorption());

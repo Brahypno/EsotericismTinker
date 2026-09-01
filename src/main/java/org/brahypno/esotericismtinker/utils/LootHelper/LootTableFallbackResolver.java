@@ -15,6 +15,13 @@ import java.io.InputStream;
 import java.util.*;
 
 public final class LootTableFallbackResolver {
+    private static final ClassValue<List<String>> LOOT_TABLE_CONSTANTS = new ClassValue<>() {
+        @Override
+        protected List<String> computeValue(Class<?> type) {
+            return List.copyOf(extractLootTableLikeConstants(type));
+        }
+    };
+
     private LootTableFallbackResolver() {}
 
 
@@ -33,7 +40,7 @@ public final class LootTableFallbackResolver {
         addIfLootTableExists(level, candidates, new ResourceLocation(namespace, "entities/" + entityPath));
         addIfLootTableExists(level, candidates, new ResourceLocation(namespace, entityPath));
 
-        for (String constant : extractLootTableLikeConstants(victim.getClass())) {
+        for (String constant : LOOT_TABLE_CONSTANTS.get(victim.getClass())) {
             ResourceLocation direct = ResourceLocation.tryParse(constant);
             if (direct != null && direct.getNamespace() != null && constant.contains(":")){
                 addIfLootTableExists(level, candidates, direct);

@@ -29,7 +29,9 @@ import slimeknights.tconstruct.library.tools.nbt.ModDataNBT;
 import slimeknights.tconstruct.library.tools.stat.ToolStats;
 
 import javax.annotation.Nullable;
+import java.util.IdentityHashMap;
 import java.util.List;
+import java.util.Map;
 
 
 /**
@@ -41,6 +43,8 @@ public record ProjectileSpawnModule(@Nullable EntityType<?> projectile, boolean 
         implements ModifierModule, ProjectileLaunchModifierHook, ModifierCondition.ConditionalModule<IToolStackView> {
     private static final int RANDOM_PROJECTILE_TRIES = 64;
     private static final List<ModuleHook<?>> DEFAULT_HOOKS = HookProvider.<ProjectileSpawnModule>defaultHooks(ModifierHooks.PROJECTILE_LAUNCH);
+    private static final Map<EntityType<?>, EntityKind> RANDOM_ENTITY_KINDS = new IdentityHashMap<>();
+    private static volatile List<EntityType<?>> randomEntityTypes;
 
     public static final RecordLoadable<ProjectileSpawnModule> LOADER = RecordLoadable.create(
             Loadables.ENTITY_TYPE.nullableField("projectile", ProjectileSpawnModule::projectile),
@@ -123,22 +127,47 @@ public record ProjectileSpawnModule(@Nullable EntityType<?> projectile, boolean 
             return entity instanceof Projectile projectile ? projectile : null;
         }
 
-        List<EntityType<?>> types = ForgeRegistries.ENTITY_TYPES.getValues().stream().toList();
+        List<EntityType<?>> types = getRandomEntityTypes();
         if (types.isEmpty()){
             return null;
         }
 
         for (int i = 0; i < RANDOM_PROJECTILE_TRIES; i++) {
             EntityType<?> type = types.get(TConstruct.RANDOM.nextInt(types.size()));
+            if (RANDOM_ENTITY_KINDS.get(type) == EntityKind.NON_PROJECTILE){
+                continue;
+            }
             Entity entity = type.create(level);
             if (entity instanceof Projectile projectile){
+                RANDOM_ENTITY_KINDS.put(type, EntityKind.PROJECTILE);
                 return projectile;
             }
             if (entity != null){
+                RANDOM_ENTITY_KINDS.put(type, EntityKind.NON_PROJECTILE);
                 entity.discard();
             }
         }
         return null;
+    }
+
+    private static List<EntityType<?>> getRandomEntityTypes() {
+        List<EntityType<?>> types = randomEntityTypes;
+        if (types != null){
+            return types;
+        }
+        synchronized (ProjectileSpawnModule.class) {
+            types = randomEntityTypes;
+            if (types == null){
+                types = List.copyOf(ForgeRegistries.ENTITY_TYPES.getValues());
+                randomEntityTypes = types;
+            }
+        }
+        return types;
+    }
+
+    private enum EntityKind {
+        PROJECTILE,
+        NON_PROJECTILE
     }
 
     @Override

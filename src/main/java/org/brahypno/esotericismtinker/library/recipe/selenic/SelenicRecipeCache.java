@@ -2,6 +2,7 @@ package org.brahypno.esotericismtinker.library.recipe.selenic;
 
 
 import net.minecraft.server.MinecraftServer;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.crafting.RecipeManager;
 import net.minecraft.world.level.Level;
 import org.brahypno.esotericismtinker.library.recipe.EsotericismTinkerRecipeTypes;
@@ -27,20 +28,33 @@ public final class SelenicRecipeCache {
     }
 
     public static List<SelenicAstrolabeRecipe> getSortedRecipes(RecipeManager manager) {
+        return getEntry(manager).sortedRecipes();
+    }
+
+    public static Optional<SelenicAstrolabeRecipe> getById(Level level, ResourceLocation id) {
+        return Optional.ofNullable(getEntry(level.getRecipeManager()).byId().get(id));
+    }
+
+    private static synchronized Entry getEntry(RecipeManager manager) {
         Entry entry = CACHE.get(manager);
 
         if (entry != null){
-            return entry.sortedRecipes();
+            return entry;
         }
 
         List<SelenicAstrolabeRecipe> recipes = EsotericismTinkerRecipeTypes.SelenicRecipeSources.getRecipes(manager);
 
         recipes.sort(PRIORITY_ORDER);
 
-        Entry created = new Entry(List.copyOf(recipes));
+        Map<ResourceLocation, SelenicAstrolabeRecipe> byId = new HashMap<>();
+        for (SelenicAstrolabeRecipe recipe : recipes) {
+            // Keep the same first match as the priority-sorted list if sources share an ID.
+            byId.putIfAbsent(recipe.getId(), recipe);
+        }
+        Entry created = new Entry(List.copyOf(recipes), Map.copyOf(byId));
         CACHE.put(manager, created);
 
-        return created.sortedRecipes();
+        return created;
     }
 
     public static Optional<SelenicAstrolabeRecipe> findBest(Level level, SelenicAstrolabeContext context) {
@@ -53,9 +67,10 @@ public final class SelenicRecipeCache {
         return Optional.empty();
     }
 
-    public static void clear() {
+    public static synchronized void clear() {
         CACHE.clear();
     }
 
-    private record Entry(List<SelenicAstrolabeRecipe> sortedRecipes) {}
+    private record Entry(List<SelenicAstrolabeRecipe> sortedRecipes,
+                         Map<ResourceLocation, SelenicAstrolabeRecipe> byId) {}
 }

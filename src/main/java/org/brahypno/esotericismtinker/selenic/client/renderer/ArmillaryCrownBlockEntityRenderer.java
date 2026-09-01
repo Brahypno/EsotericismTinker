@@ -31,6 +31,7 @@ public class ArmillaryCrownBlockEntityRenderer implements BlockEntityRenderer<Ar
     private static final float VERTICAL_RING_Y = 0.58F;
 
     private static final int RING_SEGMENTS = 64;
+    private static final RingAngles RING_ANGLES = new RingAngles(RING_SEGMENTS);
 
     private static final float IDLE_HORIZONTAL_RING_SPEED = 0.45F;
     private static final float ACTIVE_HORIZONTAL_RING_SPEED = 2.0F;
@@ -118,7 +119,7 @@ public class ArmillaryCrownBlockEntityRenderer implements BlockEntityRenderer<Ar
                 RING_OUTER_RADIUS,
                 RING_INNER_RADIUS,
                 RING_THICKNESS,
-                RING_SEGMENTS,
+                RING_ANGLES,
                 alpha,
                 LightTexture.FULL_BRIGHT,
                 packedOverlay
@@ -152,7 +153,7 @@ public class ArmillaryCrownBlockEntityRenderer implements BlockEntityRenderer<Ar
                 RING_OUTER_RADIUS,
                 RING_INNER_RADIUS,
                 RING_THICKNESS,
-                RING_SEGMENTS,
+                RING_ANGLES,
                 alpha,
                 LightTexture.FULL_BRIGHT,
                 packedOverlay
@@ -186,7 +187,7 @@ public class ArmillaryCrownBlockEntityRenderer implements BlockEntityRenderer<Ar
                 RING_OUTER_RADIUS,
                 RING_INNER_RADIUS,
                 RING_THICKNESS,
-                RING_SEGMENTS,
+                RING_ANGLES,
                 alpha,
                 LightTexture.FULL_BRIGHT,
                 packedOverlay
@@ -195,22 +196,20 @@ public class ArmillaryCrownBlockEntityRenderer implements BlockEntityRenderer<Ar
         pose.popPose();
     }
 
-    private void renderRing(PoseStack pose, VertexConsumer consumer, float outerRadius, float innerRadius, float thickness, int segments, int alpha, int light, int overlay) {
+    private void renderRing(PoseStack pose, VertexConsumer consumer, float outerRadius, float innerRadius, float thickness, RingAngles angles, int alpha, int light, int overlay) {
         Matrix4f matrix = pose.last().pose();
         Matrix3f normal = pose.last().normal();
 
         float halfThickness = thickness * 0.5F;
         float topY = halfThickness;
         float bottomY = -halfThickness;
+        int segments = angles.segments();
 
         for (int i = 0; i < segments; i++) {
-            float a0 = (float) (Math.PI * 2.0D * i / segments);
-            float a1 = (float) (Math.PI * 2.0D * (i + 1) / segments);
-
-            float cos0 = (float) Math.cos(a0);
-            float sin0 = (float) Math.sin(a0);
-            float cos1 = (float) Math.cos(a1);
-            float sin1 = (float) Math.sin(a1);
+            float cos0 = angles.cos(i);
+            float sin0 = angles.sin(i);
+            float cos1 = angles.cos(i + 1);
+            float sin1 = angles.sin(i + 1);
 
             float outerX0 = cos0 * outerRadius;
             float outerZ0 = sin0 * outerRadius;

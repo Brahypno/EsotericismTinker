@@ -1,6 +1,7 @@
 package org.brahypno.esotericismtinker.tools.traits.combat;
 
 import org.brahypno.esotericismtinker.EsotericismTinker;
+import org.brahypno.esotericismtinker.utils.damage.DamageOptions;
 import org.brahypno.esotericismtinker.utils.damage.DamageProbe;
 import org.brahypno.esotericismtinker.utils.damage.DamageProbeResult;
 import org.jetbrains.annotations.NotNull;
@@ -21,28 +22,37 @@ public class ForceHurt extends Modifier implements MeleeHitModifierHook, Monster
 
     @Override
     public float beforeMeleeHit(IToolStackView tool, ModifierEntry modifier, ToolAttackContext context, float damage, float baseKnockback, float knockback) {
-        EsotericismTinker.LOGGER.debug("before hit");
-        DamageProbeResult result = DamageProbe.finalDamageMethod(context.getTarget(), context.makeDamageSource(), 4000);
-        EsotericismTinker.LOGGER.debug(result.debugText());
+        forceDamage(context, "before hit");
         return knockback;
     }
 
     @Override
     public void failedMeleeHit(IToolStackView tool, ModifierEntry modifier, ToolAttackContext context, float damageAttempted) {
-        EsotericismTinker.LOGGER.debug("fail hit");
-        DamageProbeResult result = DamageProbe.finalDamageMethod(context.getTarget(), context.makeDamageSource(), 4000);
-        EsotericismTinker.LOGGER.debug(result.debugText());
+        forceDamage(context, "fail hit");
     }
 
     @Override
     public void afterMeleeHit(IToolStackView tool, ModifierEntry modifier, ToolAttackContext context, float damage) {
-        EsotericismTinker.LOGGER.debug("after hit");
-        DamageProbeResult result = DamageProbe.finalDamageMethod(context.getTarget(), context.makeDamageSource(), 4000);
-        EsotericismTinker.LOGGER.debug(result.debugText());
+        forceDamage(context, "after hit");
     }
 
     @Override
     public void onMonsterMeleeHit(IToolStackView tool, ModifierEntry modifier, ToolAttackContext context, float damage) {
         failedMeleeHit(tool, modifier, context, damage);
+    }
+
+    private static void forceDamage(ToolAttackContext context, String phase) {
+        boolean debug = EsotericismTinker.LOGGER.isDebugEnabled();
+        if (debug) {
+            EsotericismTinker.LOGGER.debug(phase);
+        }
+        DamageProbeResult result = DamageProbe.finalDamageMethod(
+                context.getTarget(),
+                context.makeDamageSource(),
+                4000,
+                DamageOptions.finalNoRemove().withDebug(debug));
+        if (debug) {
+            EsotericismTinker.LOGGER.debug(result.debugText());
+        }
     }
 }

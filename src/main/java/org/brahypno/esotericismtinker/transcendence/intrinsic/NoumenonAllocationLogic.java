@@ -13,8 +13,9 @@ public final class NoumenonAllocationLogic {
         void apply(NoumenonData data);
     }
 
+    /** Checks an allocation on a copy without committing it, for example for GUI buttons. */
     @Nullable
-    public static Component validateAndApply(ToolStack target, Mutation mutation) {
+    public static Component validate(ToolStack target, Mutation mutation) {
         ToolStack simulated = target.copy();
         NoumenonData simulatedData = NoumenonData.read(simulated);
         mutation.apply(simulatedData);
@@ -40,6 +41,17 @@ public final class NoumenonAllocationLogic {
             return Component.translatable(
                     "command.esotericism_tinker.noumenon_test.tconstruct_validation_failed",
                     validation);
+        }
+
+        return null;
+    }
+
+    /** Validates a copy before committing the allocation to the supplied tool. */
+    @Nullable
+    public static Component validateAndApply(ToolStack target, Mutation mutation) {
+        Component validation = validate(target, mutation);
+        if (validation != null) {
+            return validation;
         }
 
         NoumenonData targetData = NoumenonData.read(target);

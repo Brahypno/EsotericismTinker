@@ -1,6 +1,7 @@
 package org.brahypno.esotericismtinker.library.modifiers.modules.transcendence;
 
 import net.minecraft.core.RegistryAccess;
+import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.damagesource.DamageSource;
@@ -88,8 +89,8 @@ public record NoumenonModule(
     @Override
     public Component getDisplayName(IToolStackView tool, ModifierEntry entry,
                                     Component name, @Nullable RegistryAccess access) {
-        NoumenonData data = NoumenonData.read(tool);
-        int level = data.level == 0 ? entry.getLevel() : data.level;
+        int storedLevel = tool.getPersistentData().getInt(NoumenonKeys.LEVEL);
+        int level = storedLevel == 0 ? entry.getLevel() : storedLevel;
         String key = entry.getModifier().getTranslationKey();
         return name.copy().withStyle(style ->
                 style.withColor(ResourceColorManager.getTextColor(key + "." + level)));
@@ -180,7 +181,7 @@ public record NoumenonModule(
                                    EquipmentContext context, EquipmentSlot slotType,
                                    DamageSource source, float amount) {
         if (!condition.matches(tool, modifier)) return false;
-        int level = level(NoumenonData.read(tool), "armor_threshold");
+        int level = level(tool, "armor_threshold");
         return level > 0 && amount < (1.0f + 0.75f * level);
     }
 
@@ -189,7 +190,7 @@ public record NoumenonModule(
                            EquipmentContext context, EquipmentSlot slotType,
                            DamageSource source, float amount, boolean isDirectDamage) {
         if (!condition.matches(tool, modifier)) return;
-        int level = level(NoumenonData.read(tool), "shield_counter");
+        int level = level(tool, "shield_counter");
         if (level <= 0 || !isDirectDamage || !context.getEntity().isBlocking()) return;
 
         if (source.getEntity() instanceof LivingEntity attacker
@@ -203,22 +204,22 @@ public record NoumenonModule(
     public float getMeleeDamage(IToolStackView tool, ModifierEntry modifier,
                                 ToolAttackContext context, float baseDamage, float damage) {
         if (!condition.matches(tool, modifier)) return damage;
-        NoumenonData data = NoumenonData.read(tool);
+        CompoundTag sublimations = tool.getPersistentData().getCompound(NoumenonKeys.SUBLIMATIONS);
 
-        int reap = level(data, "scythe_reap");
+        int reap = level(sublimations, "scythe_reap");
         if (reap > 0 && context.isExtraAttack()) damage *= 1.0f + 0.10f * reap;
 
         LivingEntity target = context.getLivingTarget();
-        int execute = level(data, "axe_execute");
+        int execute = level(sublimations, "axe_execute");
         if (execute > 0 && target != null && target.getMaxHealth() > 0
                 && target.getHealth() / target.getMaxHealth() <= 0.30f) {
             damage *= 1.0f + 0.10f * execute;
         }
 
-        int heavy = level(data, "axe_heavy");
+        int heavy = level(sublimations, "axe_heavy");
         if (heavy > 0 && context.isFullyCharged()) damage *= 1.0f + 0.07f * heavy;
 
-        int crush = level(data, "hammer_crush");
+        int crush = level(sublimations, "hammer_crush");
         if (crush > 0 && target != null) {
             damage += (float) target.getAttributeValue(Attributes.ARMOR) * 0.05f * crush;
         }
@@ -230,7 +231,7 @@ public record NoumenonModule(
                                 ToolAttackContext context, float damage,
                                 float baseKnockback, float knockback) {
         if (!condition.matches(tool, modifier)) return knockback;
-        int level = level(NoumenonData.read(tool), "hammer_knockback");
+        int level = level(tool, "hammer_knockback");
         return level <= 0 ? knockback : knockback + 0.3f * level;
     }
 
@@ -238,7 +239,7 @@ public record NoumenonModule(
     public void afterMeleeHit(IToolStackView tool, ModifierEntry modifier,
                               ToolAttackContext context, float damageDealt) {
         if (!condition.matches(tool, modifier) || !context.isExtraAttack()) return;
-        int level = level(NoumenonData.read(tool), "scythe_sustain");
+        int level = level(tool, "scythe_sustain");
         if (level > 0 && damageDealt > 0) {
             context.getAttacker().heal(damageDealt * 0.015f * level);
         }
@@ -249,7 +250,7 @@ public record NoumenonModule(
     public int onDamageTool(IToolStackView tool, ModifierEntry modifier,
                             int amount, @Nullable LivingEntity holder) {
         if (!condition.matches(tool, modifier)) return amount;
-        int level = level(NoumenonData.read(tool), "harvest_endurance");
+        int level = level(tool, "harvest_endurance");
         if (level <= 0 || !BlockHarvestModifierHook.MarkHarvesting.isHarvesting(tool)) return amount;
 
         float expected = amount * Math.max(0.15f, 1.0f - 0.10f * level);
@@ -299,5 +300,13 @@ public record NoumenonModule(
 
     private static int level(NoumenonData data, String path) {
         return Math.max(0, data.sublimations.getOrDefault(NoumenonKeys.id(path), 0));
+    }
+
+    private static int level(IToolContext tool, String path) {
+        return level(tool.getPersistentData().getCompound(NoumenonKeys.SUBLIMATIONS), path);
+    }
+
+    private static int level(CompoundTag sublimations, String path) {
+        return Math.max(0, sublimations.getInt(NoumenonKeys.MOD_ID + ":" + path));
     }
 }

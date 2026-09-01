@@ -67,8 +67,8 @@ public class NoumenonData {
         result.debugElevationPoints = data.getInt(NoumenonKeys.DEBUG_ELEVATION_POINTS);
         result.refreshPointCapacities();
 
-        result.receptionSlots.putAll(readReceptionMap(data, NoumenonKeys.RECEPTION_SLOTS));
-        result.sublimations.putAll(readResourceMap(data, NoumenonKeys.SUBLIMATIONS));
+        readReceptionMap(data, NoumenonKeys.RECEPTION_SLOTS, result.receptionSlots);
+        readResourceMap(data, NoumenonKeys.SUBLIMATIONS, result.sublimations);
         result.tuning = readTuning(data);
 
         String investiture = data.getString(NoumenonKeys.INVESTED_DEFINITION);
@@ -76,7 +76,7 @@ public class NoumenonData {
             result.investedDefinition = new ResourceLocation(investiture);
         result.investitureLocked = data.getBoolean(NoumenonKeys.INVESTITURE_LOCKED);
         result.investitureRejection = data.getInt(NoumenonKeys.INVESTITURE_REJECTION);
-        result.investedTraits.putAll(readResourceMap(data, NoumenonKeys.INVESTED_TRAITS));
+        readResourceMap(data, NoumenonKeys.INVESTED_TRAITS, result.investedTraits);
         return result;
     }
 
@@ -215,36 +215,32 @@ public class NoumenonData {
         return (int) Math.min(Integer.MAX_VALUE, Math.max(0L, value));
     }
 
-    private static Map<String, Integer> readReceptionMap(IModDataView data, ResourceLocation key) {
-        Map<String, Integer> result = new LinkedHashMap<>();
+    private static void readReceptionMap(IModDataView data, ResourceLocation key, Map<String, Integer> result) {
         if (!data.contains(key, Tag.TAG_COMPOUND))
-            return result;
+            return;
         CompoundTag tag = data.getCompound(key);
         for (String slotType : tag.getAllKeys()) {
             int value = tag.getInt(slotType);
             if (value > 0)
                 result.put(slotType, value);
         }
-        return result;
     }
 
-    private static Map<ResourceLocation, Integer> readResourceMap(IModDataView data, ResourceLocation key) {
-        Map<ResourceLocation, Integer> result = new LinkedHashMap<>();
+    private static void readResourceMap(IModDataView data, ResourceLocation key, Map<ResourceLocation, Integer> result) {
         if (!data.contains(key, Tag.TAG_COMPOUND))
-            return result;
+            return;
         CompoundTag tag = data.getCompound(key);
         for (String raw : tag.getAllKeys()) {
             ResourceLocation id = ResourceLocation.tryParse(raw);
             if (id != null)
                 result.put(id, tag.getInt(raw));
         }
-        return result;
     }
 
     /**
-     * Reads the scalar form first, then migrates old ID-to-level maps by summing their positive values.
+     * Reads only the scalar tuning value, without decoding unrelated allocations.
      */
-    private static int readTuning(IModDataView data) {
+    public static int readTuning(IModDataView data) {
         return Math.max(0, data.getInt(NoumenonKeys.TUNING));
     }
 
