@@ -107,7 +107,9 @@ public class SuperByproductMeltingModuleInventory extends MeltingModuleInventory
             if (existing.isEmpty()){
                 setStackInSlot(slot, toInsert);
             }else {
-                existing.grow(insertSize);
+                ItemStack combined = existing.copy();
+                combined.grow(insertSize);
+                setStackInSlot(slot, combined);
             }
         }
         return insertSize > 0 ? ItemHandlerHelper.copyStackWithSize(stack, stack.getCount() - insertSize) : stack;
@@ -129,6 +131,7 @@ public class SuperByproductMeltingModuleInventory extends MeltingModuleInventory
         if (main.isEmpty() || main.getAmount() <= 0)
             return false;
         int count = 0;
+        main.setAmount(main.getAmount() * inv.getStack().getCount());
 
         if (fluidHandler.fill(main.copy(), IFluidHandler.FluidAction.SIMULATE) != main.getAmount())
             return false;
