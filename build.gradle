@@ -18,6 +18,8 @@ plugins {
 
 apply plugin: 'org.spongepowered.mixin'
 
+jarJar.enable()
+
 group = mod_group_id
 version = mod_version
 
@@ -207,7 +209,7 @@ dependencies {
     implementation fg.deobf("curse.maven:patchouli-306770:6164575")
     implementation fg.deobf("software.bernie.geckolib:geckolib-forge-${minecraft_version}:${geckolib_version}")
     implementation fg.deobf("com.hollingsworth.ars_nouveau:ars_nouveau-${minecraft_version}:${ars_version}")
-    // Dev 环境编译、运行时使用，ForgeGradle 会 remap 到当前 mappings
+    
     implementation fg.deobf("${mod_group_id}:changelib:${changelib_version}")
 
 // 真正打进最终 jar 的依赖
@@ -238,6 +240,8 @@ tasks.named('processResources', ProcessResources).configure {
 
 // Example for how to get properties into the manifest for reading at runtime.
 tasks.named('jar', Jar).configure {
+    archiveClassifier = 'slim'
+
     manifest {
         attributes(["Specification-Title"     : mod_id,
                     "Specification-Vendor"    : mod_authors,
@@ -250,6 +254,15 @@ tasks.named('jar', Jar).configure {
 
     // This is the preferred method to reobfuscate your jar file
     finalizedBy 'reobfJar'
+}
+
+tasks.named('jarJar', Jar).configure {
+    archiveClassifier = ''
+    finalizedBy 'reobfJarJar'
+}
+
+tasks.named('build').configure {
+    dependsOn tasks.named('jarJar')
 }
 
 tasks.withType(JavaCompile).configureEach {
@@ -272,7 +285,7 @@ publishing {
             artifactId = mod_id
             version = mod_version
 
-            artifact tasks.named('jar')
+            artifact tasks.named('jarJar')
         }
     }
 
