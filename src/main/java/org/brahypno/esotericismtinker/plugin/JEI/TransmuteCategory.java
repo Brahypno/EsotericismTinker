@@ -1,15 +1,12 @@
 package org.brahypno.esotericismtinker.plugin.JEI;
 
-import mezz.jei.api.constants.VanillaTypes;
 import mezz.jei.api.forge.ForgeTypes;
 import mezz.jei.api.gui.builder.IRecipeLayoutBuilder;
-import mezz.jei.api.gui.drawable.IDrawable;
 import mezz.jei.api.helpers.IGuiHelper;
 import mezz.jei.api.recipe.IFocusGroup;
 import mezz.jei.api.recipe.RecipeIngredientRole;
 import mezz.jei.api.recipe.RecipeType;
 import net.minecraft.network.chat.Component;
-import net.minecraft.world.item.ItemStack;
 import net.minecraftforge.fluids.FluidStack;
 import org.brahypno.esotericismtinker.EsotericismTinker;
 import org.brahypno.esotericismtinker.smeltery.EsotericismTinkerSmeltery;
@@ -17,9 +14,9 @@ import slimeknights.tconstruct.common.config.Config;
 import slimeknights.tconstruct.library.recipe.FluidValues;
 import slimeknights.tconstruct.library.recipe.melting.IMeltingContainer.OreRateType;
 import slimeknights.tconstruct.library.recipe.melting.MeltingRecipe;
-import slimeknights.tconstruct.plugin.jei.AlloyRecipeCategory;
 import slimeknights.tconstruct.plugin.jei.melting.AbstractMeltingCategory;
 import slimeknights.tconstruct.plugin.jei.melting.MeltingFuelHandler;
+import slimeknights.tconstruct.plugin.jei.util.CategoryUtil;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -33,42 +30,22 @@ public class TransmuteCategory extends AbstractMeltingCategory {
             RecipeType.create(EsotericismTinker.MODID, "transmute", MeltingRecipe.class);
     private static final Component TITLE = Component.translatable("jei.esotericism_tinker.transmute.title");
 
-    private final IDrawable icon;
-
     public TransmuteCategory(IGuiHelper helper) {
-        super(helper);
-        icon = helper.createDrawableIngredient(
-                VanillaTypes.ITEM_STACK, new ItemStack(EsotericismTinkerSmeltery.transmuteController));
+        super(helper, TYPE, TITLE, helper.createDrawableItemLike(EsotericismTinkerSmeltery.transmuteController));
     }
 
     @Override
-    public RecipeType<MeltingRecipe> getRecipeType() {
-        return TYPE;
-    }
-
-    @Override
-    public Component getTitle() {
-        return TITLE;
-    }
-
-    @Override
-    public IDrawable getIcon() {
-        return icon;
-    }
-
-    @Override
-    @SuppressWarnings("removal")
     public void setRecipe(IRecipeLayoutBuilder builder, MeltingRecipe recipe, IFocusGroup focuses) {
-        builder.addSlot(RecipeIngredientRole.INPUT, 24, 18).addIngredients(recipe.getInput());
+        builder.addInputSlot(24, 18).addIngredients(recipe.getInput());
 
-        AlloyRecipeCategory.drawVariableFluids(
-                builder, RecipeIngredientRole.OUTPUT, 96, 4, 32, 32,
+        CategoryUtil.drawMultipleFluids(
+                builder, ignored -> RecipeIngredientRole.OUTPUT, 96, 4, 32, 32,
                 createTransmuteOutputs(recipe), FluidValues.METAL_BLOCK, Function.identity(),
                 ignored -> MeltingFluidCallback.INSTANCE);
 
         builder.addSlot(RecipeIngredientRole.RENDER_ONLY, 4, 4)
-               .addTooltipCallback(FUEL_TOOLTIP)
-               .setFluidRenderer(1, false, 12, 32)
+               .addRichTooltipCallback(FUEL_TOOLTIP)
+               .setFluidRenderer(1L, false, 12, 32)
                .addIngredients(ForgeTypes.FLUID_STACK, MeltingFuelHandler.getUsableFuels(recipe.getTemperature()));
     }
 

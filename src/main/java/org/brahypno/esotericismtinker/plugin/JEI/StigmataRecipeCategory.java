@@ -5,14 +5,14 @@ import mezz.jei.api.constants.VanillaTypes;
 import mezz.jei.api.gui.builder.IRecipeLayoutBuilder;
 import mezz.jei.api.gui.builder.IRecipeSlotBuilder;
 import mezz.jei.api.gui.drawable.IDrawable;
+import mezz.jei.api.gui.placement.HorizontalAlignment;
 import mezz.jei.api.gui.ingredient.IRecipeSlotsView;
+import mezz.jei.api.gui.widgets.IRecipeExtrasBuilder;
 import mezz.jei.api.helpers.IGuiHelper;
 import mezz.jei.api.recipe.IFocusGroup;
 import mezz.jei.api.recipe.RecipeIngredientRole;
 import mezz.jei.api.recipe.RecipeType;
-import mezz.jei.api.recipe.category.IRecipeCategory;
-import net.minecraft.client.Minecraft;
-import net.minecraft.client.gui.Font;
+import mezz.jei.api.recipe.category.AbstractRecipeCategory;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
@@ -25,49 +25,35 @@ import slimeknights.tconstruct.plugin.jei.modifiers.ModifierIngredientRenderer;
 /**
  * Stigmata category using the exact Tinkers' Construct modifier-station layout.
  */
-public final class StigmataRecipeCategory implements IRecipeCategory<StigmataJeiRecipe> {
+public final class StigmataRecipeCategory extends AbstractRecipeCategory<StigmataJeiRecipe> {
     public static final RecipeType<StigmataJeiRecipe> TYPE = RecipeType.create(
             EsotericismTinker.MODID, "stigmata", StigmataJeiRecipe.class);
     private static final ResourceLocation BACKGROUND =
             new ResourceLocation("tconstruct", "textures/gui/jei/tinker_station.png");
 
     private final IDrawable background;
-    private final IDrawable icon;
     private final ModifierIngredientRenderer modifierRenderer = new ModifierIngredientRenderer(124, 10);
 
     public StigmataRecipeCategory(IGuiHelper helper) {
+        super(TYPE, Component.translatable("jei.esotericism_tinker.stigmata"),
+              helper.createDrawableIngredient(VanillaTypes.ITEM_STACK,
+                                              new ItemStack(org.brahypno.esotericismtinker.transcendence.table.EsotericismTinkerTranscendenceTable.transcendenceAnvil)),
+              128, 77);
         this.background = helper.createDrawable(BACKGROUND, 0, 0, 128, 77);
-        this.icon = helper.createDrawableIngredient(VanillaTypes.ITEM_STACK,
-                                                    new ItemStack(
-                                                            org.brahypno.esotericismtinker.transcendence.table.EsotericismTinkerTranscendenceTable.transcendenceAnvil));
     }
 
     @Override
-    public RecipeType<StigmataJeiRecipe> getRecipeType() {
-        return TYPE;
-    }
-
-    @Override
-    public Component getTitle() {
-        return Component.translatable("jei.esotericism_tinker.stigmata");
-    }
-
-    @SuppressWarnings("removal")
-    @Override
-    public IDrawable getBackground() {
-        return background;
-    }
-
-    @Override
-    public IDrawable getIcon() {
-        return icon;
+    public void createRecipeExtras(IRecipeExtrasBuilder builder, StigmataJeiRecipe recipe, IFocusGroup focuses) {
+        Component stageText = Component.translatable("jei.esotericism_tinker.stigmata.stage", recipe.source().data().targetStage().index());
+        builder.addText(stageText, 80, 9)
+               .setPosition(46, 16)
+               .setColor(Color.GRAY.getRGB())
+               .setTextAlignment(HorizontalAlignment.CENTER);
     }
 
     @Override
     public void draw(StigmataJeiRecipe recipe, IRecipeSlotsView recipeSlotsView, GuiGraphics graphics, double mouseX, double mouseY) {
-        Component stageText = Component.translatable("jei.esotericism_tinker.stigmata.stage", recipe.source().data().targetStage().index());
-        Font font = Minecraft.getInstance().font;
-        graphics.drawString(font, stageText, 86 - font.width(stageText) / 2, 16, Color.GRAY.getRGB(), false);
+        background.draw(graphics);
     }
 
     @Override

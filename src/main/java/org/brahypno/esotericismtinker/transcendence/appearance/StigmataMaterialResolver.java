@@ -4,6 +4,7 @@ import net.minecraft.world.item.ItemStack;
 import org.jetbrains.annotations.Nullable;
 import slimeknights.tconstruct.library.materials.MaterialRegistry;
 import slimeknights.tconstruct.library.materials.definition.IMaterial;
+import slimeknights.tconstruct.library.materials.definition.MaterialId;
 import slimeknights.tconstruct.library.materials.definition.MaterialVariantId;
 import slimeknights.tconstruct.library.recipe.material.MaterialRecipe;
 import slimeknights.tconstruct.library.recipe.material.MaterialRecipeCache;
@@ -46,7 +47,7 @@ public final class StigmataMaterialResolver {
     }
 
     private static @Nullable StigmataMaterialInput resolveVariant(MaterialVariantId variant, double unitsPerItem) {
-        if (variant == null || variant.getId().equals(IMaterial.UNKNOWN_ID))
+        if (variant == null || variant.getId().equals(MaterialId.UNKNOWN))
             return null;
         IMaterial material = MaterialRegistry.getMaterial(variant.getId());
         if (material == IMaterial.UNKNOWN)

@@ -101,7 +101,7 @@ public final class ContentStigmata extends ContentModifier {
             for (String effect : effects) {
                 effectData.add(new TextData("● "));
                 effectData.add(new TextData(effect));
-                effectData.add(TextData.LINEBREAK);
+                effectData.add(new TextData().linebreak(true));
             }
             list.add(new TextElement(
                     5, y + 14 + h, BookScreen.PAGE_WIDTH / 2 + 7,

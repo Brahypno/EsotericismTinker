@@ -57,11 +57,11 @@ public class EsotericismTinkerToolDefinitionProvider extends AbstractToolDefinit
                 .smallToolStartingSlots()
                 // traits
                 .module(ToolTraitsModule.builder()
-                                        .trait(TinkerModifiers.silky, 1)
+                                        .trait(ModifierIds.silky, 1)
                                         .trait(ModifierIds.spilling)
                                         .trait(EsotericismTinkerModifiers.self_sacrifice)
                                         .trait(TinkerModifiers.melting)
-                                        .trait(TinkerModifiers.silkyShears).build())
+                                        .trait(ModifierIds.silkyShears).build())
                 // behavior
                 .module(ToolActionsModule.of(ToolActions.SWORD_DIG, ToolActions.HOE_DIG))
                 .module(IsEffectiveModule.tag(TinkerTags.Blocks.MINABLE_WITH_DAGGER))

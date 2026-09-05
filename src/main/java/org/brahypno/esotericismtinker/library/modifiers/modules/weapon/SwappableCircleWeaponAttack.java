@@ -11,9 +11,9 @@ import net.minecraft.world.entity.decoration.ArmorStand;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.Level;
 import org.jetbrains.annotations.NotNull;
-import slimeknights.mantle.data.loadable.primitive.FloatLoadable;
 import slimeknights.mantle.data.loadable.primitive.StringLoadable;
 import slimeknights.mantle.data.loadable.record.RecordLoadable;
+import slimeknights.tconstruct.library.json.LevelingValue;
 import slimeknights.tconstruct.library.modifiers.ModifierEntry;
 import slimeknights.tconstruct.library.modifiers.ModifierHooks;
 import slimeknights.tconstruct.library.modifiers.hook.combat.MeleeHitModifierHook;
@@ -26,8 +26,8 @@ import slimeknights.tconstruct.library.module.HookProvider;
 import slimeknights.tconstruct.library.module.ModuleHook;
 import slimeknights.tconstruct.library.tools.context.ToolAttackContext;
 import slimeknights.tconstruct.library.tools.helper.ToolAttackUtil;
+import slimeknights.tconstruct.library.tools.item.IModifiable;
 import slimeknights.tconstruct.library.tools.nbt.IToolStackView;
-import slimeknights.tconstruct.tools.TinkerModifiers;
 
 import javax.annotation.Nullable;
 import java.util.List;
@@ -39,13 +39,17 @@ public class SwappableCircleWeaponAttack implements ModifierModule, MeleeHitModi
     private final ResourceLocation key;
     private final String match;
     private final Component component;
-    private final float diameter;
+    private final LevelingValue diameter;
 
     public SwappableCircleWeaponAttack(@Nullable ResourceLocation key, String match, float diameter) {
+        this(key, match, new LevelingValue(diameter, 1.0F));
+    }
+
+    public SwappableCircleWeaponAttack(@Nullable ResourceLocation key, String match, LevelingValue diameter) {
         this.key = key;
         this.match = match;
         this.diameter = diameter;
-        this.component = Component.translatable("stat.dreamtinker.tool.display." + match);
+        this.component = Component.translatable("stat.esotericism_tinker.tool.display." + match);
     }
 
     public @NotNull RecordLoadable<? extends SwappableCircleWeaponAttack> getLoader() {
@@ -70,8 +74,7 @@ public class SwappableCircleWeaponAttack implements ModifierModule, MeleeHitModi
         // no need for fully charged for scythe sweep, easier than sword sweep
         // basically sword sweep logic, just deals full damage to all entities (and full effects)
         // but also takes more durability loss
-        //double range = diameter.compute(tool.getVolatileData().getInt(IModifiable.EXPANDED));
-        double range = diameter + tool.getModifierLevel(TinkerModifiers.expanded.getId());
+        double range = diameter.compute(tool.getVolatileData().getInt(IModifiable.EXPANDED));
         // allow having no range until modified with range
         if (range > 0){
             double rangeSq = range * range;
@@ -98,14 +101,15 @@ public class SwappableCircleWeaponAttack implements ModifierModule, MeleeHitModi
         }
     }
 
-    public float diameter() {
+    public LevelingValue diameter() {
         return this.diameter;
     }
 
     static {
         DEFAULT_HOOKS = HookProvider.defaultHooks(ModifierHooks.MELEE_HIT, ModifierHooks.MONSTER_MELEE_HIT, ModifierHooks.DISPLAY_NAME);
         LOADER = RecordLoadable.create(ModuleWithKey.FIELD, StringLoadable.DEFAULT.requiredField("match", (m) -> m.match),
-                                       FloatLoadable.ANY.defaultField("diameter", 0.0F, true, SwappableCircleWeaponAttack::diameter)
+                                       LevelingValue.ADD_TO_LEVEL.defaultField("diameter", LevelingValue.LEVEL, true,
+                                                                              SwappableCircleWeaponAttack::diameter)
                 , SwappableCircleWeaponAttack::new);
 
 

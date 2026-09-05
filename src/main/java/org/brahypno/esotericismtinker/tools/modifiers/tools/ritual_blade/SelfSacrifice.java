@@ -21,9 +21,9 @@ import slimeknights.tconstruct.library.modifiers.modules.build.StatBoostModule;
 import slimeknights.tconstruct.library.module.ModuleHookMap;
 import slimeknights.tconstruct.library.recipe.FluidValues;
 import slimeknights.tconstruct.library.tools.capability.fluid.ToolTankHelper;
+import slimeknights.tconstruct.library.tools.helper.ModifierUtil;
 import slimeknights.tconstruct.library.tools.nbt.IToolStackView;
 import slimeknights.tconstruct.library.tools.stat.ToolStats;
-import slimeknights.tconstruct.tools.modifiers.ability.interaction.BlockingModifier;
 
 import javax.annotation.Nullable;
 
@@ -41,7 +41,7 @@ public class SelfSacrifice extends NoLevelsModifier implements GeneralInteractio
 
     @Override
     public UseAnim getUseAction(IToolStackView tool, ModifierEntry modifier) {
-        return BlockingModifier.blockWhileCharging(tool, UseAnim.BOW);
+        return ModifierUtil.blockWhileCharging(tool, UseAnim.BOW);
     }
 
     @Override

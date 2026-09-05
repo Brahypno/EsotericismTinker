@@ -79,7 +79,7 @@ public class ByproductEntityMeltingModule {
       if (entity instanceof ItemEntity itemEntity) {
         ItemStack stack = insertFunction.apply(itemEntity.getItem());
         if (stack.isEmpty()) entity.discard(); else itemEntity.setItem(stack);
-      } else if (canMelt != Boolean.FALSE && !type.is(EntityTypes.MELTING_HIDE)
+      } else if (canMelt != Boolean.FALSE && !type.is(EntityTypes.MELTING_BLACKLIST)
           && entity instanceof LivingEntity living && canMeltEntity(living)) {
         if (canMelt == null) canMelt = canMeltEntities.getAsBoolean();
         if (canMelt) {

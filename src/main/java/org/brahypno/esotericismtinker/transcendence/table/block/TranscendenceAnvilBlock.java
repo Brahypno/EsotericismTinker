@@ -17,6 +17,7 @@ import net.minecraft.world.phys.shapes.Shapes;
 import net.minecraft.world.phys.shapes.VoxelShape;
 import slimeknights.mantle.util.RetexturedHelper;
 import slimeknights.tconstruct.library.materials.definition.IMaterial;
+import slimeknights.tconstruct.library.materials.definition.MaterialId;
 import slimeknights.tconstruct.library.materials.definition.MaterialVariantId;
 import slimeknights.tconstruct.library.tools.part.IMaterialItem;
 import slimeknights.tconstruct.tables.block.TinkersAnvilBlock;
@@ -110,7 +111,7 @@ public final class TranscendenceAnvilBlock extends TinkersAnvilBlock {
             anvil.updateTexture(texture);
         else {
             MaterialVariantId material = IMaterialItem.getMaterialFromStack(stack);
-            if (material != IMaterial.UNKNOWN_ID)
+            if (material != MaterialId.UNKNOWN)
                 anvil.setMaterial(material);
         }
     }

@@ -33,6 +33,7 @@ import org.jetbrains.annotations.Nullable;
 import slimeknights.mantle.util.RetexturedHelper;
 import slimeknights.tconstruct.library.client.model.ModelProperties;
 import slimeknights.tconstruct.library.materials.definition.IMaterial;
+import slimeknights.tconstruct.library.materials.definition.MaterialId;
 import slimeknights.tconstruct.library.materials.definition.MaterialVariantId;
 import slimeknights.tconstruct.library.recipe.RecipeResult;
 import slimeknights.tconstruct.library.recipe.TinkerRecipeTypes;
@@ -75,7 +76,7 @@ public final class TranscendenceAnvilBlockEntity extends RetexturedTableBlockEnt
     private LazyToolStack result;
     private ItemStack synchronizedPreview = ItemStack.EMPTY;
     private ItemStack pendingBaseTool = ItemStack.EMPTY;
-    private MaterialVariantId material = IMaterial.UNKNOWN_ID;
+    private MaterialVariantId material = MaterialId.UNKNOWN;
 
     public TranscendenceAnvilBlockEntity(BlockPos pos, BlockState state) {
         super(EsotericismTinkerTranscendenceTable.transcendenceAnvilBE.get(), pos, state, NAME, INPUT_COUNT + 1);
@@ -704,7 +705,7 @@ public final class TranscendenceAnvilBlockEntity extends RetexturedTableBlockEnt
     @Override
     public void updateTexture(String name) {
         if (!name.isEmpty()){
-            material = IMaterial.UNKNOWN_ID;
+            material = MaterialId.UNKNOWN;
         }
         super.updateTexture(name);
     }
@@ -722,7 +723,7 @@ public final class TranscendenceAnvilBlockEntity extends RetexturedTableBlockEnt
     @Override
     public void saveSynced(CompoundTag tags) {
         super.saveSynced(tags);
-        if (material != IMaterial.UNKNOWN_ID){
+        if (material != MaterialId.UNKNOWN){
             tags.putString(MATERIAL_TAG, material.toString());
         }
     }
@@ -733,7 +734,7 @@ public final class TranscendenceAnvilBlockEntity extends RetexturedTableBlockEnt
         if (tags.contains(MATERIAL_TAG, Tag.TAG_STRING)){
             material = Objects.requireNonNullElse(
                     MaterialVariantId.tryParse(tags.getString(MATERIAL_TAG)),
-                    IMaterial.UNKNOWN_ID
+                    MaterialId.UNKNOWN
             );
             RetexturedHelper.onTextureUpdated(this);
         }

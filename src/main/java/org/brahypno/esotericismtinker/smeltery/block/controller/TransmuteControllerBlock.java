@@ -15,7 +15,6 @@ import net.minecraft.world.level.block.state.BlockState;
 import org.brahypno.esotericismtinker.smeltery.EsotericismTinkerSmeltery;
 import org.brahypno.esotericismtinker.smeltery.block.entity.controller.TransmuteBlockEntity;
 import org.jetbrains.annotations.Nullable;
-import slimeknights.mantle.util.BlockEntityHelper;
 import slimeknights.tconstruct.smeltery.block.controller.HeatingControllerBlock;
 import slimeknights.tconstruct.smeltery.block.entity.controller.HeatingStructureBlockEntity;
 
@@ -40,14 +39,18 @@ public class TransmuteControllerBlock extends HeatingControllerBlock {
     public void setPlacedBy(Level worldIn, BlockPos pos, BlockState state, @javax.annotation.Nullable LivingEntity placer, ItemStack stack) {
         super.setPlacedBy(worldIn, pos, state, placer, stack);
         // check structure
-        BlockEntityHelper.get(TransmuteBlockEntity.class, worldIn, pos).ifPresent(TransmuteBlockEntity::updateStructure);
+        if (worldIn.getBlockEntity(pos) instanceof TransmuteBlockEntity transmute) {
+            transmute.updateStructure();
+        }
     }
 
     @Override
     @Deprecated
     public void onRemove(BlockState state, Level worldIn, BlockPos pos, BlockState newState, boolean isMoving) {
         if (!newState.is(this)){
-            BlockEntityHelper.get(TransmuteBlockEntity.class, worldIn, pos).ifPresent(TransmuteBlockEntity::invalidateStructure);
+            if (worldIn.getBlockEntity(pos) instanceof TransmuteBlockEntity transmute) {
+                transmute.invalidateStructure();
+            }
         }
         super.onRemove(state, worldIn, pos, newState, isMoving);
     }
