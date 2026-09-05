@@ -6,10 +6,9 @@ import net.minecraftforge.event.server.ServerStoppingEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
 import org.brahypno.esotericismtinker.EsotericismTinker;
-import org.brahypno.esotericismtinker.transcendence.intrinsic.data.NoumenonCostJsonLoader;
 import org.brahypno.esotericismtinker.library.recipe.selenic.SelenicRecipeCache;
+import org.brahypno.esotericismtinker.transcendence.intrinsic.data.NoumenonCostJsonLoader;
 import org.brahypno.esotericismtinker.utils.PartInfoLookup;
-import org.brahypno.esotericismtinker.utils.LootHelper.LootResourceCache;
 
 import java.util.concurrent.CompletableFuture;
 
@@ -24,8 +23,8 @@ public final class ReloadEvents {
                                   barrier, manager, preparationsProfiler, reloadProfiler,
                                   backgroundExecutor, gameExecutor) ->
                                   CompletableFuture.completedFuture(null)
-                                          .thenCompose(barrier::wait)
-                                          .thenRunAsync(ReloadEvents::clearCaches, gameExecutor)
+                                                   .thenCompose(barrier::wait)
+                                                   .thenRunAsync(ReloadEvents::clearCaches, gameExecutor)
         );
     }
 
@@ -42,6 +41,5 @@ public final class ReloadEvents {
     private static void clearCaches() {
         SelenicRecipeCache.clear();
         PartInfoLookup.clearRuntime();
-        LootResourceCache.clear();
     }
 }

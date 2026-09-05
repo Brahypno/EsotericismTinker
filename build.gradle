@@ -207,7 +207,13 @@ dependencies {
     implementation fg.deobf("curse.maven:patchouli-306770:6164575")
     implementation fg.deobf("software.bernie.geckolib:geckolib-forge-${minecraft_version}:${geckolib_version}")
     implementation fg.deobf("com.hollingsworth.ars_nouveau:ars_nouveau-${minecraft_version}:${ars_version}")
+    // Dev 环境编译、运行时使用，ForgeGradle 会 remap 到当前 mappings
+    implementation fg.deobf("${mod_group_id}:changelib:${changelib_version}")
 
+// 真正打进最终 jar 的依赖
+    jarJar(group: mod_group_id, name: 'changelib', version: changelib_range) {
+        jarJar.pin(it, changelib_version)
+    }
 
 }
 

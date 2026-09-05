@@ -1,9 +1,9 @@
 package org.brahypno.esotericismtinker.tools.traits.combat;
 
+import org.brahypno.changelib.DamageHelper.DamageOptions;
+import org.brahypno.changelib.DamageHelper.DamageProbe;
+import org.brahypno.changelib.DamageHelper.DamageProbeResult;
 import org.brahypno.esotericismtinker.EsotericismTinker;
-import org.brahypno.esotericismtinker.utils.damage.DamageOptions;
-import org.brahypno.esotericismtinker.utils.damage.DamageProbe;
-import org.brahypno.esotericismtinker.utils.damage.DamageProbeResult;
 import org.jetbrains.annotations.NotNull;
 import slimeknights.tconstruct.library.modifiers.Modifier;
 import slimeknights.tconstruct.library.modifiers.ModifierEntry;
@@ -43,7 +43,7 @@ public class ForceHurt extends Modifier implements MeleeHitModifierHook, Monster
 
     private static void forceDamage(ToolAttackContext context, String phase) {
         boolean debug = EsotericismTinker.LOGGER.isDebugEnabled();
-        if (debug) {
+        if (debug){
             EsotericismTinker.LOGGER.debug(phase);
         }
         DamageProbeResult result = DamageProbe.finalDamageMethod(
@@ -51,7 +51,7 @@ public class ForceHurt extends Modifier implements MeleeHitModifierHook, Monster
                 context.makeDamageSource(),
                 4000,
                 DamageOptions.finalNoRemove().withDebug(debug));
-        if (debug) {
+        if (debug){
             EsotericismTinker.LOGGER.debug(result.debugText());
         }
     }
