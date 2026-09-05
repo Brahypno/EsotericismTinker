@@ -29,7 +29,8 @@ import java.util.*;
  * Builds a small bounded set of aligned, valid examples for JEI cycling.
  */
 public final class StigmataJeiDisplayFactory {
-    private static final int MAX_EXAMPLES = 24;
+    private static final int EXAMPLES_PER_TOOL = 4;
+    private static final int MAX_ATTEMPTS_PER_TOOL = EXAMPLES_PER_TOOL * 8;
 
     private StigmataJeiDisplayFactory() {}
 
@@ -62,19 +63,24 @@ public final class StigmataJeiDisplayFactory {
         List<ItemStack> fixedSelectors = new ArrayList<>();
         List<ItemStack> after = new ArrayList<>();
 
-        int attempts = Math.max(MAX_EXAMPLES * 8, pool.tools.size() * 4);
-        for (int seed = 0; seed < attempts && before.size() < MAX_EXAMPLES; seed++) {
-            DisplayRow row = buildRow(recipe.data().targetStage(), selectors, pool, seed);
-            if (null == row){
-                continue;
+        for (int toolIndex = 0; toolIndex < pool.tools.size(); toolIndex++) {
+            List<ItemStack> toolParts = new ArrayList<>();
+            for (int variation = 0;
+                 variation < MAX_ATTEMPTS_PER_TOOL && toolParts.size() < EXAMPLES_PER_TOOL;
+                 variation++) {
+                DisplayRow row = buildRow(recipe.data().targetStage(), selectors, pool, toolIndex, variation);
+                if (null == row || toolParts.stream().anyMatch(stack -> ItemStack.isSameItemSameTags(stack, row.part))){
+                    continue;
+                }
+                toolParts.add(row.part);
+                before.add(row.before);
+                parts.add(row.part);
+                material1.add(row.materials.get(0));
+                material2.add(row.materials.get(1));
+                material3.add(row.materials.get(2));
+                fixedSelectors.add(row.selector);
+                after.add(row.after);
             }
-            before.add(row.before);
-            parts.add(row.part);
-            material1.add(row.materials.get(0));
-            material2.add(row.materials.get(1));
-            material3.add(row.materials.get(2));
-            fixedSelectors.add(row.selector);
-            after.add(row.after);
         }
 
         if (before.isEmpty()){
@@ -88,8 +94,8 @@ public final class StigmataJeiDisplayFactory {
 
     private static DisplayRow buildRow(
             StigmataStage target, List<ItemStack> selectors,
-            CandidatePool pool, int seed) {
-        Item item = pool.tools.get(Math.floorMod(seed, pool.tools.size()));
+            CandidatePool pool, int toolIndex, int variation) {
+        Item item = pool.tools.get(toolIndex);
         if (!(item instanceof IModifiable modifiable)){
             return null;
         }
@@ -105,10 +111,18 @@ public final class StigmataJeiDisplayFactory {
             return null;
         }
 
-        PartChoice manifestation = pool.choosePart(nativeParts, true, null, seed * 3 + 1);
-        PartChoice alienation = pool.choosePart(nativeParts, false, null, seed * 3 + 2);
+        // Keep prior stages stable for a given tool. This gives JEI several rows with
+        // an identical focused input tool while the part for the current stage varies.
+        int stableSeed = toolIndex * 31;
+        PartChoice manifestation = pool.choosePart(
+                nativeParts, true, null,
+                target == StigmataStage.MANIFESTATION ? variation : stableSeed);
+        PartChoice alienation = pool.choosePart(
+                nativeParts, false, null,
+                target == StigmataStage.ALIENATION ? variation : stableSeed + 1);
         PartChoice sealing = pool.choosePart(nativeParts, true,
-                                             null == manifestation ? null : manifestation.id, seed * 3 + 3);
+                                             null == manifestation ? null : manifestation.id,
+                                             target == StigmataStage.SEALING ? variation : stableSeed + 2);
         if (null == manifestation || null == alienation || null == sealing){
             return null;
         }
@@ -126,7 +140,7 @@ public final class StigmataJeiDisplayFactory {
             case ALIENATION -> alienation;
             case SEALING -> sealing;
         };
-        List<ItemStack> tierMaterials = pool.chooseMaterials(current.tier, seed);
+        List<ItemStack> tierMaterials = pool.chooseMaterials(current.tier, variation);
         if (3 > tierMaterials.size()){
             return null;
         }
@@ -136,7 +150,7 @@ public final class StigmataJeiDisplayFactory {
             return null;
         }
 
-        ItemStack selector = selectors.get(Math.floorMod(seed, selectors.size())).copy();
+        ItemStack selector = selectors.get(Math.floorMod(variation, selectors.size())).copy();
         selector.setCount(1);
         return new DisplayRow(before.createStack(), current.stack.copy(), tierMaterials,
                               selector, after.createStack());
