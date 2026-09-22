@@ -233,9 +233,9 @@ public final class ContentStigmata extends ContentModifier {
         public List<ItemStack> getDisplayItems(int slot) {
             return switch (slot) {
                 case 0 -> recipe.parts();
-                case 1 -> recipe.material1();
-                case 2 -> recipe.material2();
-                case 3 -> recipe.material3();
+                case 1 -> recipe.materials();
+                case 2 -> StigmataJeiRecipe.rotate(recipe.materials(), 1);
+                case 3 -> StigmataJeiRecipe.rotate(recipe.materials(), 2);
                 case 4 -> recipe.selectors();
                 default -> List.of();
             };
@@ -248,7 +248,7 @@ public final class ContentStigmata extends ContentModifier {
 
         @Override
         public List<ItemStack> getToolWithModifier() {
-            return recipe.toolsAfter();
+            return recipe.results();
         }
 
         @Override

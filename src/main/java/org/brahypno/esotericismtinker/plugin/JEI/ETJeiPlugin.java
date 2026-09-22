@@ -2,7 +2,9 @@ package org.brahypno.esotericismtinker.plugin.JEI;
 
 import mezz.jei.api.IModPlugin;
 import mezz.jei.api.JeiPlugin;
+import mezz.jei.api.gui.builder.IIngredientAcceptor;
 import mezz.jei.api.helpers.IGuiHelper;
+import mezz.jei.api.recipe.RecipeType;
 import mezz.jei.api.registration.IRecipeCatalystRegistration;
 import mezz.jei.api.registration.IRecipeCategoryRegistration;
 import mezz.jei.api.registration.IRecipeRegistration;
@@ -10,9 +12,15 @@ import mezz.jei.api.runtime.IJeiRuntime;
 import net.minecraft.client.Minecraft;
 import net.minecraft.core.RegistryAccess;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.tags.TagKey;
+import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.crafting.RecipeManager;
+import net.minecraft.world.level.ItemLike;
+import net.minecraft.world.level.Level;
 import net.minecraftforge.fml.ModList;
 import org.brahypno.esotericismtinker.EsotericismTinker;
+import org.brahypno.esotericismtinker.common.EsotericismTinkerTagKeys;
 import org.brahypno.esotericismtinker.library.recipe.EsotericismTinkerRecipeTypes;
 import org.brahypno.esotericismtinker.library.recipe.selenic.SelenicAstrolabeRecipe;
 import org.brahypno.esotericismtinker.library.recipe.selenic.SelenicTinkerPartRecipe;
@@ -25,12 +33,16 @@ import org.brahypno.esotericismtinker.transcendence.table.EsotericismTinkerTrans
 import org.brahypno.esotericismtinker.tools.EsotericismTinkerModifiers;
 import org.jetbrains.annotations.NotNull;
 import slimeknights.mantle.recipe.helper.RecipeHelper;
+import slimeknights.mantle.util.RetexturedHelper;
 import slimeknights.tconstruct.library.modifiers.ModifierEntry;
 import slimeknights.tconstruct.library.recipe.TinkerRecipeTypes;
 import slimeknights.tconstruct.library.recipe.melting.MeltingRecipe;
+import slimeknights.tconstruct.library.tools.part.IMaterialItem;
 import slimeknights.tconstruct.plugin.jei.TConstructJEIConstants;
 
+import java.util.ArrayList;
 import java.util.List;
+import java.util.function.Consumer;
 
 @JeiPlugin
 public class ETJeiPlugin implements IModPlugin {
@@ -58,36 +70,36 @@ public class ETJeiPlugin implements IModPlugin {
 
     @Override
     public void registerRecipes(IRecipeRegistration registration) {
-        if (Minecraft.getInstance().level == null){
+        Level level = Minecraft.getInstance().level;
+        if (level == null){
             return;
         }
         if (ModList.get().isLoaded("ars_nouveau")){
             ArsJeiCompat.registerRecipes(registration);
         }
-        List<ByproductEntityMeltingRecipe> byproductEntityMelting = Minecraft.getInstance().level
-                .getRecipeManager()
+        RecipeManager recipeManager = level.getRecipeManager();
+        RegistryAccess registryAccess = level.registryAccess();
+
+        List<ByproductEntityMeltingRecipe> byproductEntityMelting = recipeManager
                 .getAllRecipesFor(ByproductEntityMeltingRecipeRegistry.TYPE.get());
         registration.addRecipes(ByproductEntityMeltingCategory.TYPE, byproductEntityMelting);
 
-        RegistryAccess registryAccess = Minecraft.getInstance().level.registryAccess();
         List<MeltingRecipe> meltingRecipes = RecipeHelper.getJEIRecipes(
-                registryAccess, Minecraft.getInstance().level.getRecipeManager(),
+                registryAccess, recipeManager,
                 TinkerRecipeTypes.MELTING.get(), MeltingRecipe.class);
-        registration.addRecipes(TransmuteCategory.TYPE, meltingRecipes);
+        registration.addRecipes(TransmuteCategory.TYPE, TransmuteCategory.createDisplays(meltingRecipes));
 
-        List<SelenicAstrolabeRecipe> astrolabe_recipes = Minecraft.getInstance().level
-                .getRecipeManager()
+        List<SelenicAstrolabeRecipe> astrolabe_recipes = recipeManager
                 .getAllRecipesFor(EsotericismTinkerRecipeTypes.SELENIC_ASTROLABE_TYPE.get());
 
         registration.addRecipes(SelenicAstrolabeRecipeCategory.TYPE, astrolabe_recipes);
 
 
-        List<SelenicTinkerPartRecipe> tinker_recipes = Minecraft.getInstance().level
-                .getRecipeManager()
+        List<SelenicTinkerPartRecipe> tinker_recipes = recipeManager
                 .getAllRecipesFor(EsotericismTinkerRecipeTypes.SELENIC_ASTROLABE_TINKER_TYPE.get());
         List<SelenicTinkerPartJeiRecipe> partDisplays =
                 SelenicTinkerPartJeiRecipe.createAll(
-                        Minecraft.getInstance().level,
+                        level,
                         tinker_recipes
                 );
 
@@ -96,12 +108,11 @@ public class ETJeiPlugin implements IModPlugin {
                 partDisplays
         );
 
-        List<StigmataRecipeAdapter> stigmataRecipes = Minecraft.getInstance().level
-                .getRecipeManager()
+        List<StigmataRecipeAdapter> stigmataRecipes = recipeManager
                 .getAllRecipesFor(EsotericismTinkerRecipeTypes.STIGMATA_TYPE.get());
         List<StigmataJeiRecipe> stigmataDisplays =
                 StigmataJeiDisplayFactory.createAll(
-                        Minecraft.getInstance().level,
+                        level,
                         stigmataRecipes
                 );
         registration.addRecipes(StigmataRecipeCategory.TYPE, stigmataDisplays);
@@ -118,15 +129,66 @@ public class ETJeiPlugin implements IModPlugin {
                 SelenicTinkerPartRecipeCategory.TYPE
         );
 
-        registration.addRecipeCatalyst(
-                new ItemStack(EsotericismTinkerSmeltery.transmuteController),
+        // the controller is retextured by the ashen block tag, so every texture variant acts as a catalyst
+        addTableCatalyst(
+                registration,
+                EsotericismTinkerSmeltery.transmuteController,
+                EsotericismTinkerTagKeys.Items.ASHEN_BLOCKS,
+                true,
                 TransmuteCategory.TYPE
         );
-        
-        registration.addRecipeCatalyst(
-                new ItemStack(EsotericismTinkerTranscendenceTable.transcendenceAnvil),
+
+        // the anvil is a material item, so every material variant acts as a catalyst
+        addMaterialCatalyst(
+                registration,
+                EsotericismTinkerTranscendenceTable.transcendenceAnvil,
                 StigmataRecipeCategory.TYPE
         );
+    }
+
+    /**
+     * Adds a table with retextured variants as a catalyst, matching Tinkers' Construct.
+     *
+     * @param addDefault  If true, the untextured variant is added as well
+     */
+    private static void addTableCatalyst(
+            IRecipeCatalystRegistration registration, ItemLike table, TagKey<Item> tag,
+            boolean addDefault, RecipeType<?>... types) {
+        List<ItemStack> catalysts = new ArrayList<>();
+
+        if (addDefault){
+            catalysts.add(new ItemStack(table));
+        }
+
+        RetexturedHelper.addTagVariants(stack -> {
+            catalysts.add(stack);
+            return false;
+        }, table, tag);
+
+        addCatalysts(registration, catalysts, types);
+    }
+
+    /** Adds an item with material variants as a catalyst, matching Tinkers' Construct anvils. */
+    private static void addMaterialCatalyst(
+            IRecipeCatalystRegistration registration, ItemLike item, RecipeType<?>... types) {
+        List<ItemStack> catalysts = new ArrayList<>();
+        catalysts.add(new ItemStack(item));
+
+        if (item.asItem() instanceof IMaterialItem materialItem){
+            materialItem.addVariants(catalysts::add, "");
+        }
+
+        addCatalysts(registration, catalysts, types);
+    }
+
+    /** Registers the same catalyst list for every given recipe type. */
+    private static void addCatalysts(
+            IRecipeCatalystRegistration registration, List<ItemStack> catalysts, RecipeType<?>... types) {
+        Consumer<IIngredientAcceptor<?>> acceptor = ingredients -> ingredients.addItemStacks(catalysts);
+
+        for (RecipeType<?> type : types) {
+            registration.addRecipeCatalyst(type, acceptor);
+        }
     }
 
     @Override

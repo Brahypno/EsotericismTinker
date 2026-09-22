@@ -21,6 +21,8 @@ import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.SortedSet;
+import java.util.TreeSet;
 
 public final class PartInfoLookup {
     public static final int DEFAULT_COST = 5;
@@ -174,6 +176,65 @@ public final class PartInfoLookup {
         return candidates.stream()
                          .filter(part -> part.canUseMaterial(material.getId()))
                          .toList();
+    }
+
+    public static List<Integer> runtimeCosts(
+            Level level,
+            MaterialVariantId material,
+            List<MaterialStatsId> statsIds) {
+        ensureRuntime(level);
+        return runtimeCosts(material, statsIds);
+    }
+
+    /**
+     * Lists the costs that have at least one part usable by the given material, in ascending order.
+     * Equivalent to calling {@link #runtimeParts(MaterialVariantId, List, int)} for every cost,
+     * but reads the runtime index directly instead of guessing which costs to try.
+     */
+    public static List<Integer> runtimeCosts(
+            MaterialVariantId material,
+            List<MaterialStatsId> statsIds) {
+        SortedSet<Integer> costs = new TreeSet<>();
+
+        if (!runtimeBuilt){
+            for (Item item : ForgeRegistries.ITEMS.getValues()) {
+                if (item instanceof ToolPartItem part
+                    && statsIds.contains(part.getStatType())
+                    && part.canUseMaterial(material.getId())){
+                    int cost = runtimeCost(part);
+                    if (cost > 0){
+                        costs.add(cost);
+                    }
+                }
+            }
+
+            return List.copyOf(costs);
+        }
+
+        for (MaterialStatsId statsId : statsIds) {
+            Map<Integer, List<ToolPartItem>> byCost = RUNTIME_PARTS.get(statsId);
+
+            if (byCost == null){
+                continue;
+            }
+
+            for (Map.Entry<Integer, List<ToolPartItem>> entry : byCost.entrySet()) {
+                int cost = entry.getKey();
+
+                if (cost <= 0 || costs.contains(cost)){
+                    continue;
+                }
+
+                for (ToolPartItem part : entry.getValue()) {
+                    if (part.canUseMaterial(material.getId())){
+                        costs.add(cost);
+                        break;
+                    }
+                }
+            }
+        }
+
+        return List.copyOf(costs);
     }
 
     public static ToolPartItem exactPart(

@@ -7,6 +7,7 @@ import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
 import net.minecraftforge.registries.ForgeRegistries;
+import org.brahypno.esotericismtinker.plugin.JEI.StigmataJeiRecipe.StigmataToolDisplay;
 import org.brahypno.esotericismtinker.tools.EsotericismTinkerModifiers;
 import org.brahypno.esotericismtinker.transcendence.appearance.*;
 import org.brahypno.esotericismtinker.transcendence.appearance.config.StigmataConfig;
@@ -16,6 +17,7 @@ import slimeknights.tconstruct.library.materials.definition.IMaterial;
 import slimeknights.tconstruct.library.materials.definition.MaterialId;
 import slimeknights.tconstruct.library.materials.definition.MaterialVariantId;
 import slimeknights.tconstruct.library.modifiers.ModifierEntry;
+import slimeknights.tconstruct.library.tools.definition.ToolDefinition;
 import slimeknights.tconstruct.library.tools.definition.module.material.ToolPartsHook;
 import slimeknights.tconstruct.library.tools.helper.ToolBuildHandler;
 import slimeknights.tconstruct.library.tools.item.IModifiable;
@@ -26,11 +28,13 @@ import slimeknights.tconstruct.library.tools.part.ToolPartItem;
 import java.util.*;
 
 /**
- * Builds a small bounded set of aligned, valid examples for JEI cycling.
- */
-public final class StigmataJeiDisplayFactory {
-    private static final int EXAMPLES_PER_TOOL = 4;
-    private static final int MAX_ATTEMPTS_PER_TOOL = EXAMPLES_PER_TOOL * 8;
+ * Builds one display entry per tool, each carrying the options that are valid for that tool.
+ */public final class StigmataJeiDisplayFactory {
+    /** How many parts, and how many material units, are offered per tool. */
+    private static final int MAX_PARTS_PER_TOOL = 4;
+    private static final int MAX_MATERIALS_PER_TOOL = 12;
+    /** How many seeds are tried before giving up on a tool. */
+    private static final int MAX_ATTEMPTS_PER_TOOL = 8;
 
     private StigmataJeiDisplayFactory() {}
 
@@ -50,110 +54,113 @@ public final class StigmataJeiDisplayFactory {
     }
 
     private static StigmataJeiRecipe create(StigmataRecipeAdapter recipe, CandidatePool pool) {
-        List<ItemStack> selectors = List.of(recipe.data().selector().getItems());
+        List<ItemStack> selectors = Arrays.stream(recipe.data().selector().getItems())
+                                         .map(stack -> {
+                                             ItemStack copy = stack.copy();
+                                             copy.setCount(1);
+                                             return copy;
+                                         })
+                                         .toList();
         if (selectors.isEmpty() || pool.tools.isEmpty()){
             return null;
         }
 
-        List<ItemStack> before = new ArrayList<>();
-        List<ItemStack> parts = new ArrayList<>();
-        List<ItemStack> material1 = new ArrayList<>();
-        List<ItemStack> material2 = new ArrayList<>();
-        List<ItemStack> material3 = new ArrayList<>();
-        List<ItemStack> fixedSelectors = new ArrayList<>();
-        List<ItemStack> after = new ArrayList<>();
-
+        List<StigmataToolDisplay> tools = new ArrayList<>();
         for (int toolIndex = 0; toolIndex < pool.tools.size(); toolIndex++) {
-            List<ItemStack> toolParts = new ArrayList<>();
-            for (int variation = 0;
-                 variation < MAX_ATTEMPTS_PER_TOOL && toolParts.size() < EXAMPLES_PER_TOOL;
-                 variation++) {
-                DisplayRow row = buildRow(recipe.data().targetStage(), selectors, pool, toolIndex, variation);
-                if (null == row || toolParts.stream().anyMatch(stack -> ItemStack.isSameItemSameTags(stack, row.part))){
-                    continue;
-                }
-                toolParts.add(row.part);
-                before.add(row.before);
-                parts.add(row.part);
-                material1.add(row.materials.get(0));
-                material2.add(row.materials.get(1));
-                material3.add(row.materials.get(2));
-                fixedSelectors.add(row.selector);
-                after.add(row.after);
+            StigmataToolDisplay display = createToolDisplay(recipe.data().targetStage(), pool, toolIndex);
+            if (null != display){
+                tools.add(display);
             }
         }
 
-        if (before.isEmpty()){
+        if (tools.isEmpty()){
             return null;
         }
-        return new StigmataJeiRecipe(recipe, List.copyOf(before), List.copyOf(parts),
-                                     new ModifierEntry(EsotericismTinkerModifiers.STIGMATA, recipe.data().targetStage().index()),
-                                     List.copyOf(material1), List.copyOf(material2), List.copyOf(material3),
-                                     List.copyOf(fixedSelectors), List.copyOf(after));
+        return new StigmataJeiRecipe(recipe, List.copyOf(tools), selectors,
+                                     new ModifierEntry(EsotericismTinkerModifiers.STIGMATA, recipe.data().targetStage().index()));
     }
 
-    private static DisplayRow buildRow(
-            StigmataStage target, List<ItemStack> selectors,
-            CandidatePool pool, int toolIndex, int variation) {
+    /**
+     * Collects the options that are valid for one tool at the given stage.
+     * <p>
+     * The input tool uses the same prior stage picks for every option, so each tool has one well
+     * defined input while its parts, materials, and outputs stay exchangeable.
+     */
+    private static StigmataToolDisplay createToolDisplay(StigmataStage target, CandidatePool pool, int toolIndex) {
         Item item = pool.tools.get(toolIndex);
-        if (!(item instanceof IModifiable modifiable)){
+        ToolTemplate template = pool.template(item);
+        if (null == template){
             return null;
         }
 
-        // Match TConstruct's modifier JEI presentation: use its dedicated ui_render
-        // material tool so the Stigmata and material modifiers remain prominent.
-        ItemStack renderStack = ToolBuildHandler.buildToolForRendering(
-                item, modifiable.getToolDefinition());
-        ToolStack base = ToolStack.from(renderStack);
-        base.ensureHasData();
-        Set<ResourceLocation> nativeParts = nativePartIds(base);
+        Set<ResourceLocation> nativeParts = template.nativeParts();
         if (2 > nativeParts.size()){
             return null;
         }
 
-        // Keep prior stages stable for a given tool. This gives JEI several rows with
-        // an identical focused input tool while the part for the current stage varies.
+        ToolStack base = ToolStack.from(template.renderStack().copy());
+        base.ensureHasData();
+
+        // prior stages stay stable for a given tool, matching the rules the anvil enforces
         int stableSeed = toolIndex * 31;
-        PartChoice manifestation = pool.choosePart(
-                nativeParts, true, null,
-                target == StigmataStage.MANIFESTATION ? variation : stableSeed);
-        PartChoice alienation = pool.choosePart(
-                nativeParts, false, null,
-                target == StigmataStage.ALIENATION ? variation : stableSeed + 1);
-        PartChoice sealing = pool.choosePart(nativeParts, true,
-                                             null == manifestation ? null : manifestation.id,
-                                             target == StigmataStage.SEALING ? variation : stableSeed + 2);
-        if (null == manifestation || null == alienation || null == sealing){
-            return null;
-        }
-
         ToolStack before = base.copy();
-        if (2 <= target.index() && !apply(before, manifestation.stack, StigmataStage.MANIFESTATION)){
-            return null;
+        ResourceLocation excluded = null;
+        if (2 <= target.index()){
+            PartChoice manifestation = pool.choosePart(nativeParts, true, null, stableSeed);
+            if (null == manifestation || !apply(before, manifestation.stack, StigmataStage.MANIFESTATION)){
+                return null;
+            }
+            excluded = manifestation.id;
         }
-        if (3 <= target.index() && !apply(before, alienation.stack, StigmataStage.ALIENATION)){
+        if (3 <= target.index()){
+            PartChoice alienation = pool.choosePart(nativeParts, false, null, stableSeed + 1);
+            if (null == alienation || !apply(before, alienation.stack, StigmataStage.ALIENATION)){
+                return null;
+            }
+        }
+
+        // enumerate the parts this tool accepts for the target stage
+        boolean requireNative = StigmataStage.ALIENATION != target;
+        List<ItemStack> parts = new ArrayList<>();
+        List<ItemStack> results = new ArrayList<>();
+        int minTier = Integer.MAX_VALUE;
+        for (int seed = 0; seed < MAX_ATTEMPTS_PER_TOOL && parts.size() < MAX_PARTS_PER_TOOL; seed++) {
+            PartChoice choice = pool.choosePart(nativeParts, requireNative, excluded, seed);
+            if (null == choice || containsPart(parts, choice.stack)){
+                continue;
+            }
+
+            ToolStack after = before.copy();
+            if (!apply(after, choice.stack, target)){
+                continue;
+            }
+
+            parts.add(choice.stack.copy());
+            results.add(after.createStack());
+            minTier = Math.min(minTier, choice.tier);
+        }
+
+        if (parts.isEmpty()){
             return null;
         }
 
-        PartChoice current = switch (target) {
-            case MANIFESTATION -> manifestation;
-            case ALIENATION -> alienation;
-            case SEALING -> sealing;
-        };
-        List<ItemStack> tierMaterials = pool.chooseMaterials(current.tier, variation);
-        if (3 > tierMaterials.size()){
+        List<ItemStack> materials = pool.materialOptions(minTier, MAX_MATERIALS_PER_TOOL);
+        if (materials.isEmpty()){
             return null;
         }
 
-        ToolStack after = before.copy();
-        if (!apply(after, current.stack, target)){
-            return null;
+        return new StigmataToolDisplay(before.createStack(), List.copyOf(parts),
+                                       List.copyOf(results), materials);
+    }
+
+    private static boolean containsPart(List<ItemStack> parts, ItemStack stack) {
+        for (ItemStack existing : parts) {
+            if (ItemStack.isSameItemSameTags(existing, stack)){
+                return true;
+            }
         }
 
-        ItemStack selector = selectors.get(Math.floorMod(variation, selectors.size())).copy();
-        selector.setCount(1);
-        return new DisplayRow(before.createStack(), current.stack.copy(), tierMaterials,
-                              selector, after.createStack());
+        return false;
     }
 
     private static boolean apply(ToolStack tool, ItemStack part, StigmataStage stage) {
@@ -161,9 +168,9 @@ public final class StigmataJeiDisplayFactory {
         return result.success();
     }
 
-    private static Set<ResourceLocation> nativePartIds(ToolStack tool) {
+    private static Set<ResourceLocation> nativePartIds(ToolDefinition definition) {
         Set<ResourceLocation> ids = new HashSet<>();
-        for (IToolPart part : ToolPartsHook.parts(tool.getDefinition())) {
+        for (IToolPart part : ToolPartsHook.parts(definition)) {
             ResourceLocation id = BuiltInRegistries.ITEM.getKey(part.asItem());
             if (null != id){
                 ids.add(id);
@@ -172,10 +179,20 @@ public final class StigmataJeiDisplayFactory {
         return ids;
     }
 
-    private record DisplayRow(ItemStack before, ItemStack part, List<ItemStack> materials,
-                              ItemStack selector, ItemStack after) {}
-
     private record PartChoice(ResourceLocation id, ItemStack stack, int tier) {}
+
+    /**
+     * Reusable render tool for one tool item. Building it is the most expensive part of a row,
+     * so it is built once per tool instead of once per example.
+     */
+    private record ToolTemplate(ItemStack renderStack, Set<ResourceLocation> nativeParts) {}
+
+    /**
+     * Cache key for {@link CandidatePool#choosePart}. Native part sets are stored by identity
+     * in practice, as each tool reuses the set built by its {@link ToolTemplate}.
+     */
+    private record PartKey(Set<ResourceLocation> nativeParts, boolean requireNative,
+                           ResourceLocation excluded, int seed) {}
 
     /**
      * One JEI representative for one underlying TConstruct material identity.
@@ -188,7 +205,9 @@ public final class StigmataJeiDisplayFactory {
             List<ToolPartItem> parts,
             Map<ResourceLocation, ToolPartItem> partsById,
             List<IMaterial> materials,
-            Map<Integer, List<ItemStack>> materialsByTier
+            Map<Integer, List<ItemStack>> materialsByTier,
+            Map<Item, ToolTemplate> toolTemplates,
+            Map<PartKey, Optional<PartChoice>> partChoices
     ) {
 
         static CandidatePool build() {
@@ -250,10 +269,41 @@ public final class StigmataJeiDisplayFactory {
                     List.copyOf(parts),
                     Map.copyOf(partsById),
                     List.copyOf(visibleMaterials),
-                    Map.copyOf(materials));
+                    Map.copyOf(materials),
+                    new HashMap<>(),
+                    new HashMap<>());
+        }
+
+        /**
+         * Gets the reusable render tool for the given item, building it on first use.
+         * Matches TConstruct's modifier JEI presentation: use its dedicated ui_render
+         * material tool so the Stigmata and material modifiers remain prominent.
+         */
+        ToolTemplate template(Item item) {
+            return toolTemplates.computeIfAbsent(item, CandidatePool::buildTemplate);
+        }
+
+        private static ToolTemplate buildTemplate(Item item) {
+            if (!(item instanceof IModifiable modifiable)){
+                return null;
+            }
+
+            ToolDefinition definition = modifiable.getToolDefinition();
+            ItemStack renderStack = ToolBuildHandler.buildToolForRendering(item, definition);
+            return new ToolTemplate(renderStack, nativePartIds(definition));
         }
 
         PartChoice choosePart(
+                Set<ResourceLocation> nativeParts, boolean requireNative,
+                ResourceLocation excluded, int seed) {
+            return partChoices.computeIfAbsent(
+                    new PartKey(nativeParts, requireNative, excluded, seed),
+                    key -> Optional.ofNullable(
+                            selectPart(key.nativeParts(), key.requireNative(), key.excluded(), key.seed()))
+            ).orElse(null);
+        }
+
+        private PartChoice selectPart(
                 Set<ResourceLocation> nativeParts, boolean requireNative,
                 ResourceLocation excluded, int seed) {
             List<ToolPartItem> candidates;
@@ -322,16 +372,28 @@ public final class StigmataJeiDisplayFactory {
             return 0 >= firstName.compareTo(secondName) ? first : second;
         }
 
-        List<ItemStack> chooseMaterials(int tier, int seed) {
-            List<ItemStack> source = materialsByTier.getOrDefault(tier, List.of());
-            if (source.isEmpty()){
-                return List.of();
+        /**
+         * Material units that can pay for a part of the given tier, lowest tier first.
+         * Every returned stack already carries the count the anvil asks for.
+         */
+        List<ItemStack> materialOptions(int minTier, int limit) {
+            List<ItemStack> options = new ArrayList<>();
+
+            for (Map.Entry<Integer, List<ItemStack>> entry : new TreeMap<>(materialsByTier).entrySet()) {
+                if (entry.getKey() < minTier){
+                    continue;
+                }
+
+                for (ItemStack stack : entry.getValue()) {
+                    if (options.size() >= limit){
+                        return List.copyOf(options);
+                    }
+
+                    options.add(stack.copy());
+                }
             }
-            int start = Math.floorMod(seed * 3, source.size());
-            return List.of(
-                    source.get(start).copy(),
-                    source.get((start + 1) % source.size()).copy(),
-                    source.get((start + 2) % source.size()).copy());
+
+            return List.copyOf(options);
         }
     }
 }

@@ -1,14 +1,17 @@
 package org.brahypno.esotericismtinker.plugin.JEI;
 
 import java.awt.Color;
+import java.util.List;
 import mezz.jei.api.constants.VanillaTypes;
 import mezz.jei.api.gui.builder.IRecipeLayoutBuilder;
 import mezz.jei.api.gui.builder.IRecipeSlotBuilder;
 import mezz.jei.api.gui.drawable.IDrawable;
+import mezz.jei.api.gui.ingredient.IRecipeSlotDrawable;
 import mezz.jei.api.gui.placement.HorizontalAlignment;
 import mezz.jei.api.gui.ingredient.IRecipeSlotsView;
 import mezz.jei.api.gui.widgets.IRecipeExtrasBuilder;
 import mezz.jei.api.helpers.IGuiHelper;
+import mezz.jei.api.recipe.IFocus;
 import mezz.jei.api.recipe.IFocusGroup;
 import mezz.jei.api.recipe.RecipeIngredientRole;
 import mezz.jei.api.recipe.RecipeType;
@@ -18,12 +21,19 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.ItemStack;
 import org.brahypno.esotericismtinker.EsotericismTinker;
+import org.brahypno.esotericismtinker.plugin.JEI.StigmataJeiRecipe.StigmataToolDisplay;
+import org.brahypno.esotericismtinker.transcendence.table.EsotericismTinkerTranscendenceTable;
 import org.jetbrains.annotations.Nullable;
 import slimeknights.tconstruct.plugin.jei.TConstructJEIConstants;
 import slimeknights.tconstruct.plugin.jei.modifiers.ModifierIngredientRenderer;
+import slimeknights.tconstruct.plugin.jei.util.CategoryUtil;
 
 /**
  * Stigmata category using the exact Tinkers' Construct modifier-station layout.
+ * <p>
+ * The tool slot drives the display: {@link #onDisplayedIngredientsUpdate} rewrites the slots around
+ * it with the options that are valid for the tool JEI is currently showing, so nothing is frozen and
+ * no combination on screen mixes up unrelated tools, parts, and materials.
  */
 public final class StigmataRecipeCategory extends AbstractRecipeCategory<StigmataJeiRecipe> {
     public static final RecipeType<StigmataJeiRecipe> TYPE = RecipeType.create(
@@ -31,13 +41,21 @@ public final class StigmataRecipeCategory extends AbstractRecipeCategory<Stigmat
     private static final ResourceLocation BACKGROUND =
             new ResourceLocation("tconstruct", "textures/gui/jei/tinker_station.png");
 
+    /** Slot names, needed to find the slots again once JEI starts cycling. */
+    private static final String TOOL_SLOT = "stigmata_tool";
+    private static final String PART_SLOT = "stigmata_part";
+    private static final String MATERIAL_1_SLOT = "stigmata_material_1";
+    private static final String MATERIAL_2_SLOT = "stigmata_material_2";
+    private static final String MATERIAL_3_SLOT = "stigmata_material_3";
+    private static final String RESULT_SLOT = "stigmata_result";
+
     private final IDrawable background;
     private final ModifierIngredientRenderer modifierRenderer = new ModifierIngredientRenderer(124, 10);
 
     public StigmataRecipeCategory(IGuiHelper helper) {
         super(TYPE, Component.translatable("jei.esotericism_tinker.stigmata"),
               helper.createDrawableIngredient(VanillaTypes.ITEM_STACK,
-                                              new ItemStack(org.brahypno.esotericismtinker.transcendence.table.EsotericismTinkerTranscendenceTable.transcendenceAnvil)),
+                                              new ItemStack(EsotericismTinkerTranscendenceTable.transcendenceAnvil)),
               128, 77);
         this.background = helper.createDrawable(BACKGROUND, 0, 0, 128, 77);
     }
@@ -59,31 +77,75 @@ public final class StigmataRecipeCategory extends AbstractRecipeCategory<Stigmat
     @Override
     public void setRecipe(IRecipeLayoutBuilder builder, StigmataJeiRecipe recipe, IFocusGroup focuses) {
         // Same five ingredient positions as TConstruct ModifierRecipeCategory.
-        IRecipeSlotBuilder part = builder.addSlot(RecipeIngredientRole.INPUT, 3, 33)
-                .addItemStacks(recipe.parts());
-        IRecipeSlotBuilder material1 = builder.addSlot(RecipeIngredientRole.INPUT, 25, 15)
-                .addItemStacks(recipe.material1());
-        IRecipeSlotBuilder material2 = builder.addSlot(RecipeIngredientRole.INPUT, 47, 33)
-                .addItemStacks(recipe.material2());
-        IRecipeSlotBuilder material3 = builder.addSlot(RecipeIngredientRole.INPUT, 43, 58)
-                .addItemStacks(recipe.material3());
-        IRecipeSlotBuilder selector = builder.addSlot(RecipeIngredientRole.INPUT, 7, 58)
-                .addItemStacks(recipe.selectors());
-        IRecipeSlotBuilder before = builder.addSlot(RecipeIngredientRole.CATALYST, 25, 38)
-                .addItemStacks(recipe.toolsBefore());
-        IRecipeSlotBuilder after = builder.addSlot(RecipeIngredientRole.OUTPUT, 105, 34)
-                .addItemStacks(recipe.toolsAfter());
+        // The lists here hold every option of every tool, both so JEI indexes the recipe for
+        // ingredient lookups and so the display is complete before the first update hook runs.
+        builder.addSlot(RecipeIngredientRole.INPUT, 3, 33)
+               .addItemStacks(recipe.parts())
+               .setSlotName(PART_SLOT);
+        builder.addSlot(RecipeIngredientRole.INPUT, 25, 15)
+               .addItemStacks(recipe.materials())
+               .setSlotName(MATERIAL_1_SLOT);
+        builder.addSlot(RecipeIngredientRole.INPUT, 47, 33)
+               .addItemStacks(StigmataJeiRecipe.rotate(recipe.materials(), 1))
+               .setSlotName(MATERIAL_2_SLOT);
+        builder.addSlot(RecipeIngredientRole.INPUT, 43, 58)
+               .addItemStacks(StigmataJeiRecipe.rotate(recipe.materials(), 2))
+               .setSlotName(MATERIAL_3_SLOT);
+        builder.addSlot(RecipeIngredientRole.INPUT, 7, 58)
+               .addItemStacks(recipe.selectors());
+        builder.addSlot(RecipeIngredientRole.CATALYST, 25, 38)
+               .addItemStacks(recipe.toolsBefore())
+               .setSlotName(TOOL_SLOT);
+        builder.addSlot(RecipeIngredientRole.OUTPUT, 105, 34)
+               .addItemStacks(recipe.results())
+               .setSlotName(RESULT_SLOT);
 
         // Expose the real modifier ingredient, matching TConstruct's modifier category.
         // This supplies both the rendered name and JEI's modifier-name search target.
         builder.addSlot(RecipeIngredientRole.OUTPUT, 3, 3)
-                .setCustomRenderer(TConstructJEIConstants.MODIFIER_TYPE, modifierRenderer)
-                .addIngredient(TConstructJEIConstants.MODIFIER_TYPE, recipe.modifier());
+               .setCustomRenderer(TConstructJEIConstants.MODIFIER_TYPE, modifierRenderer)
+               .addIngredient(TConstructJEIConstants.MODIFIER_TYPE, recipe.modifier());
+    }
 
-        // Every list in StigmataJeiRecipe represents the same indexed display rows.
-        // Without a focus link JEI cycles each slot independently, producing combinations
-        // whose part, materials, tool state, and output do not belong to one another.
-        builder.createFocusLink(part, material1, material2, material3, selector, before, after);
+    @Override
+    public void onDisplayedIngredientsUpdate(StigmataJeiRecipe recipe, List<IRecipeSlotDrawable> recipeSlots, IFocusGroup focuses) {
+        IRecipeSlotDrawable toolSlot = CategoryUtil.findSlot(recipeSlots, TOOL_SLOT);
+        if (null == toolSlot){
+            return;
+        }
+
+        // looking up a result tool drives the display from the tool that produces it
+        StigmataToolDisplay display = null;
+        IFocus<ItemStack> focus = focuses.getItemStackFocuses().findFirst().orElse(null);
+        if (null != focus && RecipeIngredientRole.OUTPUT == focus.getRole()){
+            display = recipe.displayForResult(focus.getTypedValue().getIngredient());
+        }
+
+        if (null == display){
+            ItemStack tool = toolSlot.getDisplayedItemStack().orElse(ItemStack.EMPTY);
+            display = recipe.displayFor(tool);
+        }
+
+        if (null == display){
+            return;
+        }
+
+        setOptions(recipeSlots, PART_SLOT, display.parts());
+        setOptions(recipeSlots, MATERIAL_1_SLOT, display.materials());
+        setOptions(recipeSlots, MATERIAL_2_SLOT, StigmataJeiRecipe.rotate(display.materials(), 1));
+        setOptions(recipeSlots, MATERIAL_3_SLOT, StigmataJeiRecipe.rotate(display.materials(), 2));
+        setOptions(recipeSlots, RESULT_SLOT, display.results());
+    }
+
+    /** Replaces what a slot offers without touching the recipe itself. */
+    private static void setOptions(List<IRecipeSlotDrawable> recipeSlots, String name, List<ItemStack> options) {
+        IRecipeSlotDrawable slot = CategoryUtil.findSlot(recipeSlots, name);
+        if (null == slot){
+            return;
+        }
+
+        slot.clearDisplayOverrides();
+        slot.createDisplayOverrides().addItemStacks(options);
     }
 
     @Nullable

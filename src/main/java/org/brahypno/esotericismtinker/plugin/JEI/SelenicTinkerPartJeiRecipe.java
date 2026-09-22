@@ -52,21 +52,34 @@ public record SelenicTinkerPartJeiRecipe(
             List<SelenicTinkerPartJeiRecipe> displays,
             SelenicTinkerPartRecipe recipe
     ) {
-        for (int cost = 1; cost <= MAX_DISPLAY_COST; cost++) {
-            List<ItemStack> outputs = exactOutputsForCost(level, recipe, cost);
+        ToolPartItem part = PartInfoLookup.exactPart(
+                recipe.getPartItemId(),
+                recipe.getMaterialId(),
+                recipe.getStatIds()
+        );
 
-            if (outputs.isEmpty()){
-                continue;
-            }
-
-            displays.add(new SelenicTinkerPartJeiRecipe(
-                    recipe,
-                    cost,
-                    List.copyOf(outputs)
-            ));
-
+        if (part == null){
             return;
         }
+
+        // The cost of a part is fixed, so this resolves the same display the old
+        // 1..MAX_DISPLAY_COST scan found, without 64 registry lookups per recipe.
+        PartInfoLookup.CostedPart result = PartInfoLookup.exactPartWithCost(
+                level,
+                recipe.getMaterialId(),
+                part,
+                MAX_DISPLAY_COST
+        );
+
+        if (result.isEmpty()){
+            return;
+        }
+
+        displays.add(new SelenicTinkerPartJeiRecipe(
+                recipe,
+                result.cost(),
+                List.of(result.stack())
+        ));
     }
 
     private static void addDynamicDisplays(
@@ -74,7 +87,15 @@ public record SelenicTinkerPartJeiRecipe(
             Map<GroupKey, MutableDisplay> groups,
             SelenicTinkerPartRecipe recipe
     ) {
-        for (int cost = 1; cost <= MAX_DISPLAY_COST; cost++) {
+        for (int cost : PartInfoLookup.runtimeCosts(
+                level,
+                recipe.getMaterialId(),
+                recipe.getStatIds()
+        )) {
+            if (cost > MAX_DISPLAY_COST){
+                break;
+            }
+
             List<ItemStack> outputs = dynamicOutputsForCost(level, recipe, cost);
 
             if (outputs.isEmpty()){
@@ -105,35 +126,6 @@ public record SelenicTinkerPartJeiRecipe(
         }
 
         return outputs;
-    }
-
-    private static List<ItemStack> exactOutputsForCost(
-            Level level,
-            SelenicTinkerPartRecipe recipe,
-            int cost
-    ) {
-        ToolPartItem part = PartInfoLookup.exactPart(
-                recipe.getPartItemId(),
-                recipe.getMaterialId(),
-                recipe.getStatIds()
-        );
-
-        if (part == null){
-            return List.of();
-        }
-
-        PartInfoLookup.CostedPart result = PartInfoLookup.exactPartWithCost(
-                level,
-                recipe.getMaterialId(),
-                part,
-                cost
-        );
-
-        if (result.isEmpty() || result.cost() != cost){
-            return List.of();
-        }
-
-        return List.of(result.stack());
     }
 
     private record GroupKey(
