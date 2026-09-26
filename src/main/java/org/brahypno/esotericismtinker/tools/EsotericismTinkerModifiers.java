@@ -15,11 +15,7 @@ import org.brahypno.esotericismtinker.library.modifiers.modules.build.AllSlotMod
 import org.brahypno.esotericismtinker.library.modifiers.modules.combat.*;
 import org.brahypno.esotericismtinker.library.modifiers.modules.harvest.BlockLootMultiplierModule;
 import org.brahypno.esotericismtinker.library.modifiers.modules.harvest.EntityLootMultiplierModule;
-import org.brahypno.esotericismtinker.library.modifiers.modules.transcendence.StigmataCommonConsequenceModule;
-import org.brahypno.esotericismtinker.library.modifiers.modules.transcendence.StigmataDefensiveConsequenceModule;
-import org.brahypno.esotericismtinker.library.modifiers.modules.transcendence.NoumenonModule;
-import org.brahypno.esotericismtinker.library.modifiers.modules.transcendence.StigmataModule;
-import org.brahypno.esotericismtinker.library.modifiers.modules.transcendence.StigmataOffensiveConsequenceModule;
+import org.brahypno.esotericismtinker.library.modifiers.modules.transcendence.*;
 import org.brahypno.esotericismtinker.library.modifiers.modules.weapon.SelfDestroyModule;
 import org.brahypno.esotericismtinker.library.modifiers.modules.weapon.SwappableCircleWeaponAttack;
 import org.brahypno.esotericismtinker.tools.modifiers.tools.ritual_blade.SelfSacrifice;
@@ -78,6 +74,8 @@ public final class EsotericismTinkerModifiers extends EsotericismTinkerModule {
             ModifierModule.LOADER.register(EsotericismTinker.getLocation("absorption_gain_module"), AbsorptionGainModule.LOADER);
             ModifierModule.LOADER.register(EsotericismTinker.getLocation("explosion_like_projectile_damage_module"),
                                            ExplosionLikeProjectileDamageModule.LOADER);
+            ModifierModule.LOADER.register(EsotericismTinker.getLocation("absorption_gain"), AbsorptionGainModule.Weapon.LOADER);
+            ModifierModule.LOADER.register(EsotericismTinker.getLocation("absorption_gain_armor"), AbsorptionGainModule.Armor.LOADER);
 
             ModifierModule.LOADER.register(EsotericismTinker.getLocation("projectile_cloude_on_hit_module"), ProjectileCloudOnHitModule.LOADER);
             ModifierModule.LOADER.register(EsotericismTinker.getLocation("projectile_spawn_module"), ProjectileSpawnModule.LOADER);
