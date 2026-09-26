@@ -47,9 +47,16 @@ public class ETModifierCheck {
             new EquipmentSlot[]{EquipmentSlot.FEET, EquipmentSlot.LEGS, EquipmentSlot.CHEST, EquipmentSlot.HEAD, EquipmentSlot.OFFHAND, EquipmentSlot.MAINHAND};
 
     public static int getModifierLevel(@NotNull LivingEntity entity, ModifierId id, EquipmentSlot slot) {
-        if (null == entity.getItemBySlot(slot))
+        if (entity instanceof Player player && player.getInventory() == null){
             return 0;
-        return ModifierUtil.getModifierLevel(entity.getItemBySlot(slot), id);
+        }
+
+        ItemStack stack = entity.getItemBySlot(slot);
+        if (stack == null || stack.isEmpty()){
+            return 0;
+        }
+
+        return ModifierUtil.getModifierLevel(stack, id);
     }
 
     public static int getMainhandModifierLevel(LivingEntity entity, ModifierId modifierId) {
