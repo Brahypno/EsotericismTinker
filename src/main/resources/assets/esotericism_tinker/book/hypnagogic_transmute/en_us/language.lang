@@ -5,7 +5,7 @@ exploration=Exploration
 selenic=Selenic Astrolabe
 transcendence=Transcendence Anvil
 
-als_harvest=General Materials
+materials_harvest=General Materials
 materials_harvest.subtext=Materials used for creating melee weapons or harvest tools.
 materials_ranged=Ranged Materials
 materials_ranged.subtext=Materials used for creating ranged weapons.
@@ -13,5 +13,7 @@ materials_ammo=Ammo Materials
 materials_ammo.subtext=Materials used for creating arrows and shurikens.
 materials_armor=Armor Materials
 materials_armor.subtext=Materials used for creating armor and shields.
+materials_slime=Slimesuit Materials
+materials_slime.subtext=This section describes the effects of all materials used in creating a slimesuit.
 book.esotericism_tinker.stigmata.stage=Stage %s
 book.esotericism_tinker.stigmata.no_recipe=No available Stigmata recipe was found.

@@ -13,5 +13,7 @@ materials_ammo=弹药材料
 materials_ammo.subtext=这些材料可以锻造出箭矢或手里剑。
 materials_armor=盔甲材料
 materials_armor.subtext=这些材料可以锻造成盔甲和盾牌的部件。
+materials_slime=黏液盔甲材料
+materials_slime.subtext=本章节描述各材料所对应黏液盔甲的效果。
 book.esotericism_tinker.stigmata.stage=阶段 %s
 book.esotericism_tinker.stigmata.no_recipe=未发现可用的刻痕配方。

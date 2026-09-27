@@ -139,5 +139,45 @@
         }
       }
     }
+  },
+  {
+    "name": "materials_slime",
+    "data": "no-load",
+    "extraData": {
+      "tconstruct:material_tier": [
+        {
+          "type": "tconstruct:slime",
+          "tag": "esotericism_tinker:book_materials",
+          "detailed": true
+        },
+        {
+          "type": "tconstruct:skull",
+          "tag": "esotericism_tinker:book_materials",
+          "detailed": true,
+          "suffix": "item.tconstruct.skull"
+        },
+        {
+          "type": "tconstruct:ribcage",
+          "tag": "esotericism_tinker:book_materials",
+          "detailed": true,
+          "suffix": "item.tconstruct.ribcage"
+        },
+        {
+          "type": "tconstruct:shell",
+          "tag": "esotericism_tinker:book_materials",
+          "detailed": true,
+          "suffix": "item.tconstruct.shell"
+        },
+        {
+          "type": "tconstruct:laces",
+          "tag": "esotericism_tinker:book_materials",
+          "detailed": true,
+          "suffix": "item.tconstruct.laces"
+        }
+      ]
+    },
+    "icon": {
+      "item": "minecraft:creeper_head"
+    }
   }
 ]
