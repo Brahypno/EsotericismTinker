@@ -213,11 +213,11 @@ public class EsotericismTinkerRecipeProvider extends RecipeProvider implements I
                            .save(consumer, location(folder + "drain"));
         ShapedRetexturedRecipeBuilder.fromShaped(
                                              ShapedRecipeBuilder.shaped(RecipeCategory.REDSTONE, EsotericismTinkerSmeltery.ashenDrain)
-                                                                .define('#', EsotericismTinkerTagKeys.Items.TRANSMUTE)
+                                                                .define('#', EsotericismTinkerTagKeys.Items.TRANSMUTE_BLOCKS)
                                                                 .define('C', TinkerMaterials.knightmetal.getIngotTag())
                                                                 .pattern("C#C")
                                                                 .unlockedBy("has_item", has(EsotericismTinkerTagKeys.Items.TRANSMUTE_BLOCKS)))
-                                     .setSource(EsotericismTinkerTagKeys.Items.TRANSMUTE_BLOCKS)
+                                     .setSource('#')
                                      .build(consumer, location(folder + "drain_retextured"));
         ShapedRecipeBuilder.shaped(RecipeCategory.REDSTONE, EsotericismTinkerSmeltery.ashenChute)
                            .define('#', EsotericismTinkerSmeltery.ashenBrick.get())
@@ -235,7 +235,7 @@ public class EsotericismTinkerRecipeProvider extends RecipeProvider implements I
                                                                 .pattern("#")
                                                                 .pattern("C")
                                                                 .unlockedBy("has_item", has(EsotericismTinkerTagKeys.Items.TRANSMUTE_BLOCKS)))
-                                     .setSource(EsotericismTinkerTagKeys.Items.TRANSMUTE_BLOCKS)
+                                     .setSource('#')
                                      .build(consumer, location(folder + "chute_retextured"));
         ShapedRecipeBuilder.shaped(RecipeCategory.REDSTONE, EsotericismTinkerSmeltery.ashenDuct)
                            .define('#', EsotericismTinkerSmeltery.ashenBrick.get())
@@ -251,7 +251,7 @@ public class EsotericismTinkerRecipeProvider extends RecipeProvider implements I
                                                                 .define('C', Tags.Items.INGOTS_GOLD)
                                                                 .pattern("C#C")
                                                                 .unlockedBy("has_item", has(EsotericismTinkerTagKeys.Items.TRANSMUTE_BLOCKS)))
-                                     .setSource(EsotericismTinkerTagKeys.Items.TRANSMUTE_BLOCKS)
+                                     .setSource('#')
                                      .build(consumer, location(folder + "duct_retextured"));
         // stone -> road
         SimpleCookingRecipeBuilder.smelting(Ingredient.of(EsotericismTinkerSmeltery.ashenStone), RecipeCategory.BUILDING_BLOCKS,

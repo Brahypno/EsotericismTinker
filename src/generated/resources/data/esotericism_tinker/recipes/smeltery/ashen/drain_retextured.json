@@ -3,7 +3,7 @@
   "category": "redstone",
   "key": {
     "#": {
-      "tag": "esotericism_tinker:transmute"
+      "tag": "esotericism_tinker:transmute_blocks"
     },
     "C": {
       "tag": "forge:ingots/knightmetal"
@@ -17,7 +17,5 @@
     "item": "esotericism_tinker:ashen_drain"
   },
   "show_notification": true,
-  "texture": {
-    "tag": "esotericism_tinker:transmute_blocks"
-  }
+  "texture": "#"
 }

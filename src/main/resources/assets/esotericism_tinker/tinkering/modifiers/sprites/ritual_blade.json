@@ -1,0 +1,14 @@
+{
+  "constant": {
+    "_tank": [
+      {
+        "type": "tconstruct:tank",
+        "partial": "esotericism_tinker:item/tool/ritual_blade/modifiers/tconstruct_tank_partial",
+        "full": "esotericism_tinker:item/tool/ritual_blade/modifiers/tconstruct_tank_full"
+      },
+      {
+        "texture": "esotericism_tinker:item/tool/ritual_blade/modifiers/tconstruct_tank"
+      }
+    ]
+  }
+}

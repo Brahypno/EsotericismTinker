@@ -19,7 +19,5 @@
     "item": "esotericism_tinker:ashen_chute"
   },
   "show_notification": true,
-  "texture": {
-    "tag": "esotericism_tinker:transmute_blocks"
-  }
+  "texture": "#"
 }

@@ -17,7 +17,5 @@
     "item": "esotericism_tinker:ashen_duct"
   },
   "show_notification": true,
-  "texture": {
-    "tag": "esotericism_tinker:transmute_blocks"
-  }
+  "texture": "#"
 }
