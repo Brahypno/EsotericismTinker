@@ -11,6 +11,7 @@ import org.brahypno.esotericismtinker.EsotericismTinkerModule;
 import org.brahypno.esotericismtinker.library.modifiers.modules.armor.FlightModule;
 import org.brahypno.esotericismtinker.library.modifiers.modules.armor.RepriseProtectionModule;
 import org.brahypno.esotericismtinker.library.modifiers.modules.armor.ResonanceArmorModule;
+import org.brahypno.esotericismtinker.library.modifiers.modules.behavior.IncreaseToolDamageModule;
 import org.brahypno.esotericismtinker.library.modifiers.modules.build.AllSlotModule;
 import org.brahypno.esotericismtinker.library.modifiers.modules.combat.*;
 import org.brahypno.esotericismtinker.library.modifiers.modules.harvest.BlockLootMultiplierModule;
@@ -66,6 +67,7 @@ public final class EsotericismTinkerModifiers extends EsotericismTinkerModule {
             ModifierModule.LOADER.register(EsotericismTinker.getLocation("swappable_circle_weapon_attack"), SwappableCircleWeaponAttack.LOADER);
             ModifierModule.LOADER.register(EsotericismTinker.getLocation("effects_remover"), MobEffectsRemoverModule.LOADER);
             ModifierModule.LOADER.register(EsotericismTinker.getLocation("self_mob_effect"), SelfMobEffectModule.LOADER);
+            ModifierModule.LOADER.register(EsotericismTinker.getLocation("increase_tool_damage"), IncreaseToolDamageModule.LOADER);
             ModifierModule.LOADER.register(EsotericismTinker.getLocation("block_loot_multiplier"), BlockLootMultiplierModule.LOADER);
             ModifierModule.LOADER.register(EsotericismTinker.getLocation("entity_loot_multiplier"), EntityLootMultiplierModule.LOADER);
             ModifierModule.LOADER.register(EsotericismTinker.getLocation("armor_resonance_module"), ResonanceArmorModule.LOADER);
@@ -79,6 +81,7 @@ public final class EsotericismTinkerModifiers extends EsotericismTinkerModule {
 
             ModifierModule.LOADER.register(EsotericismTinker.getLocation("projectile_cloude_on_hit_module"), ProjectileCloudOnHitModule.LOADER);
             ModifierModule.LOADER.register(EsotericismTinker.getLocation("projectile_spawn_module"), ProjectileSpawnModule.LOADER);
+            ModifierModule.LOADER.register(EsotericismTinker.getLocation("projectile_velocity"), ProjectileVelocityModule.LOADER);
             ModifierModule.LOADER.register(EsotericismTinker.getLocation("all_slot_module"), AllSlotModule.LOADER);
             ModifierModule.LOADER.register(EsotericismTinker.getLocation("my_creative_flight_module"), FlightModule.LOADER);
             ModifierModule.LOADER.register(EsotericismTinker.getLocation("noumenon"), NoumenonModule.LOADER);
