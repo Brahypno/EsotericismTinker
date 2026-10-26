@@ -101,7 +101,7 @@ public record StigmataDefensiveConsequenceModule(ModifierCondition<IToolContext>
         }
 
         for (EquipmentSlot slot : EquipmentSlot.values()) {
-            IToolStackView equippedTool = context.getToolInSlot(slot);
+            IToolStackView equippedTool = context.getValidTool(slot);
             if (null == equippedTool
                 || equippedTool.isBroken()
                 || !equippedTool.hasTag(TinkerTags.Items.ARMOR)){

@@ -7,7 +7,7 @@ public final class NoumenonLogic {
 
     public static int computeRejection(IToolContext context, NoumenonData data) {
         int rejection = data.level * data.level;
-        rejection += data.usedSubstratePoints();
+        rejection += data.usedReceptionSlotPoints();
         rejection += data.usedElevationPoints() * 2;
         rejection += data.investitureRejection;
 

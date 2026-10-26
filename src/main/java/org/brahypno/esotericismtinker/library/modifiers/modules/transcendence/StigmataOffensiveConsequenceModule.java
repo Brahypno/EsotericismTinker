@@ -12,6 +12,8 @@ import net.minecraft.world.entity.projectile.AbstractArrow;
 import net.minecraft.world.entity.projectile.Projectile;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.phys.BlockHitResult;
+import net.minecraft.world.phys.EntityHitResult;
 import net.minecraftforge.event.entity.player.AttackEntityEvent;
 import net.minecraftforge.event.entity.player.PlayerEvent;
 import net.minecraftforge.event.entity.player.PlayerInteractEvent;
@@ -30,6 +32,7 @@ import slimeknights.tconstruct.library.modifiers.hook.mining.BlockBreakModifierH
 import slimeknights.tconstruct.library.modifiers.hook.mining.BreakSpeedContext;
 import slimeknights.tconstruct.library.modifiers.hook.mining.BreakSpeedModifierHook;
 import slimeknights.tconstruct.library.modifiers.hook.ranged.LauncherHitModifierHook;
+import slimeknights.tconstruct.library.modifiers.hook.ranged.ProjectileHitModifierHook;
 import slimeknights.tconstruct.library.modifiers.hook.ranged.ProjectileLaunchModifierHook;
 import slimeknights.tconstruct.library.modifiers.modules.ModifierModule;
 import slimeknights.tconstruct.library.modifiers.modules.util.ModifierCondition;
@@ -56,7 +59,7 @@ public record StigmataOffensiveConsequenceModule(ModifierCondition<IToolContext>
         implements ModifierModule, StigmataConsequenceModuleBridge,
         MeleeHitModifierHook, LauncherHitModifierHook, MeleeDamageModifierHook,
         BreakSpeedModifierHook, BlockBreakModifierHook,
-        ProjectileLaunchModifierHook, ProjectileHurtHook, LeftClickHook {
+        ProjectileLaunchModifierHook, ProjectileHitModifierHook, ProjectileHurtHook, LeftClickHook {
     public static final RecordLoadable<StigmataOffensiveConsequenceModule> LOADER =
             RecordLoadable.create(
                     ModifierCondition.CONTEXT_FIELD,
@@ -67,6 +70,7 @@ public record StigmataOffensiveConsequenceModule(ModifierCondition<IToolContext>
                     ModifierHooks.MELEE_HIT, ModifierHooks.LAUNCHER_HIT,
                     ModifierHooks.MELEE_DAMAGE, ModifierHooks.BREAK_SPEED,
                     ModifierHooks.BLOCK_BREAK, ModifierHooks.PROJECTILE_LAUNCH,
+                    ModifierHooks.PROJECTILE_HIT,
                     EsotericismTinkerHook.PROJECTILE_HURT,
                     EsotericismTinkerHook.LEFT_CLICK);
 
@@ -191,6 +195,36 @@ public record StigmataOffensiveConsequenceModule(ModifierCondition<IToolContext>
                                               state, modifier, projectile, owner,
                                               target);
         }
+    }
+
+    @Override
+    public boolean onProjectileHitEntity(
+            ModifierNBT modifiers, ModDataNBT persistentData, ModifierEntry modifier,
+            Projectile projectile, EntityHitResult hit, @Nullable LivingEntity attacker,
+            @Nullable LivingEntity target, boolean notBlocked) {
+        ConsequenceState state = getProjectileState(persistentData);
+        if (null != state && null != attacker && notBlocked
+            && !projectile.level().isClientSide){
+            StigmataConsequenceEffects.get(state.consequence())
+                                      .onLauncherHitEntity(
+                                              state, modifier, projectile, attacker,
+                                              hit.getEntity(), target, 0);
+        }
+        return false;
+    }
+
+    @Override
+    public boolean onProjectileHitsBlock(
+            ModifierNBT modifiers, ModDataNBT persistentData, ModifierEntry modifier,
+            Projectile projectile, BlockHitResult hit, @Nullable LivingEntity owner) {
+        ConsequenceState state = getProjectileState(persistentData);
+        if (null != state && null != owner && !projectile.level().isClientSide){
+            StigmataConsequenceEffects.get(state.consequence())
+                                      .onLauncherHitBlock(
+                                              state, modifier, projectile, owner,
+                                              hit.getBlockPos());
+        }
+        return false;
     }
 
     @Override

@@ -815,6 +815,14 @@ public final class StigmataConsequenceEffects {
         }
 
         @Override
+        public void onLauncherHitEntity(
+                ConsequenceState state, ModifierEntry modifier, Projectile projectile,
+                LivingEntity attacker, Entity target, @Nullable LivingEntity livingTarget,
+                float damageDealt) {
+            consume(state, attacker, 1.2F);
+        }
+
+        @Override
         public void afterBlockBreak(
                 ConsequenceState state, ModifierEntry modifier, ToolHarvestContext context) {
             consume(state, context.getLiving(), 0.65F);
@@ -853,6 +861,14 @@ public final class StigmataConsequenceEffects {
                 ConsequenceState state, ModifierEntry modifier, ToolAttackContext context,
                 float damageDealt) {
             consumeExperience(state, context.getAttacker());
+        }
+
+        @Override
+        public void onLauncherHitEntity(
+                ConsequenceState state, ModifierEntry modifier, Projectile projectile,
+                LivingEntity attacker, Entity target, @Nullable LivingEntity livingTarget,
+                float damageDealt) {
+            consumeExperience(state, attacker);
         }
 
         @Override
@@ -1088,6 +1104,14 @@ public final class StigmataConsequenceEffects {
                 ConsequenceState state, ModifierEntry modifier, ToolAttackContext context,
                 float baseDamage, float damage) {
             return damage * multiplier(state, context.getAttacker());
+        }
+
+        @Override
+        public float modifyProjectileHurt(
+                ConsequenceState state, ModifierEntry modifier, Projectile projectile,
+                DamageSource source, @Nullable LivingEntity attacker,
+                LivingEntity target, float amount) {
+            return null == attacker ? amount : amount * multiplier(state, attacker);
         }
 
         @Override

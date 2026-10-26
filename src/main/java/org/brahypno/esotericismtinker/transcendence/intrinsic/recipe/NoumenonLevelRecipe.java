@@ -84,6 +84,7 @@ public class NoumenonLevelRecipe extends ModifierRecipe {
 
         data.level = resultLevel;
         data.write(persistentData);
+        tool.rebuildStats();
 
         Component toolValidation = tool.tryValidate();
         if (toolValidation != null) {

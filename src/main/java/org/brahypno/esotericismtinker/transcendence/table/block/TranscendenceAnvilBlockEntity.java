@@ -743,6 +743,7 @@ public final class TranscendenceAnvilBlockEntity extends RetexturedTableBlockEnt
 
         pendingBaseTool = getItem(0).copy();
         resetReceptionBaseline();
+        resetSublimationBaseline();
     }
 
     @Override
