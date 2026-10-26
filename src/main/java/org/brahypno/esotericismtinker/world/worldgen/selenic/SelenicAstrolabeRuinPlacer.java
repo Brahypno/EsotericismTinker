@@ -366,20 +366,21 @@ public final class SelenicAstrolabeRuinPlacer {
             BoundingBox box
     ) {
         int radius = Math.min(config.placement().reserveRadius() + 2, 7);
+        int minDx = Math.max(-radius, box.minX() - basePos.getX());
+        int maxDx = Math.min(radius, box.maxX() - basePos.getX());
+        int minDz = Math.max(-radius, box.minZ() - basePos.getZ());
+        int maxDz = Math.min(radius, box.maxZ() - basePos.getZ());
 
-        for (int dx = -radius; dx <= radius; dx++) {
-            for (int dz = -radius; dz <= radius; dz++) {
+        for (int dx = minDx; dx <= maxDx; dx++) {
+            for (int dz = minDz; dz <= maxDz; dz++) {
                 BlockPos column = basePos.offset(dx, 0, dz);
-                if (!containsColumn(box, column)){
-                    continue;
-                }
-                RandomSource random = randomAt(ruinSeed, column, 0xF0A1D4710L);
                 int distance = Math.abs(dx) + Math.abs(dz);
 
                 if (distance > radius + 1){
                     continue;
                 }
 
+                RandomSource random = randomAt(ruinSeed, column, 0xF0A1D4710L);
                 if (distance > 2 && random.nextFloat() < 0.35F){
                     continue;
                 }
@@ -598,6 +599,12 @@ public final class SelenicAstrolabeRuinPlacer {
             float testimonyChance,
             BoundingBox box
     ) {
+        // Nothing consumes this random stream after the stands. Avoid inspecting the
+        // core from the neighboring chunks that only own peripheral loot chests.
+        if (box.maxX() < fontPos.getX() - 1 || box.minX() > fontPos.getX() + 1
+            || box.maxZ() < fontPos.getZ() - 1 || box.minZ() > fontPos.getZ() + 1){
+            return;
+        }
         int placed = 0;
 
         for (int[] offset : shuffledOffsets(random)) {

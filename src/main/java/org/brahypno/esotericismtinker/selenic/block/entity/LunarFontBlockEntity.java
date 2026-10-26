@@ -41,6 +41,7 @@ public class LunarFontBlockEntity extends BlockEntity {
     private static final int BASE_FLUID_CAPACITY = 1000;
     private static final int FLUID_CAPACITY_PER_SPINE = 1000;
     private static final int SUCCESS_SIGNAL_TICKS = 6;
+    private static final int IDLE_SCAN_INTERVAL = 20;
     private static final ClassValue<Boolean> USES_DEFAULT_RECIPE_MATCHES = new ClassValue<>() {
         @Override
         protected Boolean computeValue(Class<?> type) {
@@ -61,6 +62,7 @@ public class LunarFontBlockEntity extends BlockEntity {
     private int cachedUpperSpines = 0;
     private int cachedTestimonyCount = 0;
     private boolean wasPowered = false;
+    private final int idleScanPhase;
 
     @Nullable
     private ResourceLocation activeRecipeId;
@@ -70,12 +72,13 @@ public class LunarFontBlockEntity extends BlockEntity {
 
     public LunarFontBlockEntity(BlockPos pos, BlockState state) {
         super(EsotericismTinkerSelenic.lunarFontBE.get(), pos, state);
+        idleScanPhase = Math.floorMod(Mth.getSeed(pos), IDLE_SCAN_INTERVAL);
     }
 
     public static void serverTick(Level level, BlockPos pos, BlockState state, LunarFontBlockEntity be) {
         if (be.activeRecipeId != null){
             be.tickActiveRecipe();
-        }else if (level.getGameTime() % 20L == 0L){
+        }else if (Math.floorMod(level.getGameTime(), IDLE_SCAN_INTERVAL) == be.idleScanPhase){
             be.scanFigureAndTrim();
         }
     }
@@ -371,8 +374,10 @@ public class LunarFontBlockEntity extends BlockEntity {
         int oldTestimonyCount = cachedTestimonyCount;
 
         if (figure.valid()){
-            List<TestimonyStandBlockEntity> witnesses = collectWitnesses(level, figure);
-            updateCachedFigure(figure, witnesses.size());
+            // Witnesses only affect recipes. Activation and active ticks take a fresh snapshot;
+            // idle fonts (including worldgen ruins) only need the axis for capacity trimming.
+            int testimonyCount = activeRecipeId == null ? 0 : collectWitnesses(level, figure).size();
+            updateCachedFigure(figure, testimonyCount);
             trimCrownToCurrentCapacity(level, figure);
         }else {
             cachedLowerSpines = 0;

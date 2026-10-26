@@ -13,13 +13,13 @@ public final class SelenicFigureScanner {
     private SelenicFigureScanner() {}
 
     public static SelenicFigure scan(Level level, BlockPos fontPos) {
-        int lowerSpines = countLowerSpines(level, fontPos);
         UpperAxis upper = scanUpperAxis(level, fontPos);
 
         if (!upper.hasCrown()){
             return SelenicFigure.invalid(upper.failure());
         }
 
+        int lowerSpines = countLowerSpines(level, fontPos);
         if (lowerSpines + upper.spines() <= 0){
             return SelenicFigure.invalid(SelenicFailure.NO_SPINE);
         }

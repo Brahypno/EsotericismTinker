@@ -138,7 +138,8 @@ public class ArmillaryCrownBlockEntity extends BlockEntity {
             return;
         }
 
-        for (int i = 0; i < getActiveInputSlots(); i++) {
+        int slotCount = getActiveInputSlots();
+        for (int i = 0; i < slotCount; i++) {
             ItemStack stack = items.getStackInSlot(i);
 
             if (!stack.isEmpty()){
@@ -182,16 +183,17 @@ public class ArmillaryCrownBlockEntity extends BlockEntity {
     }
 
     public void trimToCurrentCapacity() {
-        dropExcessItems();
-        capFluidToCapacity();
+        int upperSpines = getUpperSpinesBelow();
+        dropExcessItems(Mth.clamp(1 + upperSpines, 1, MAX_INPUT_SLOTS));
+        capFluidToCapacity(BASE_INPUT_FLUID_CAPACITY + upperSpines * INPUT_FLUID_CAPACITY_PER_SPINE);
     }
 
-    private void dropExcessItems() {
+    private void dropExcessItems(int slotCount) {
         if (level == null){
             return;
         }
 
-        for (int i = getActiveInputSlots(); i < MAX_INPUT_SLOTS; i++) {
+        for (int i = slotCount; i < MAX_INPUT_SLOTS; i++) {
             ItemStack stack = items.getStackInSlot(i);
 
             if (!stack.isEmpty()){
@@ -207,12 +209,12 @@ public class ArmillaryCrownBlockEntity extends BlockEntity {
         }
     }
 
-    private void capFluidToCapacity() {
+    private void capFluidToCapacity(int capacity) {
         FluidStack fluid = tank.getFluid();
 
-        if (!fluid.isEmpty() && fluid.getAmount() > getFluidCapacity()){
+        if (!fluid.isEmpty() && fluid.getAmount() > capacity){
             FluidStack capped = fluid.copy();
-            capped.setAmount(getFluidCapacity());
+            capped.setAmount(capacity);
             tank.setFluid(capped);
         }
     }
