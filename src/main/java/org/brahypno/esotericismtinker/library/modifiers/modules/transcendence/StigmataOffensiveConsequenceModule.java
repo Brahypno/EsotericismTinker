@@ -81,6 +81,8 @@ public record StigmataOffensiveConsequenceModule(ModifierCondition<IToolContext>
             EsotericismTinker.getLocation("stigmata_projectile_stage");
     private static final ResourceLocation PROJECTILE_OVERLOAD =
             EsotericismTinker.getLocation("stigmata_projectile_overload");
+    private static final ResourceLocation PROJECTILE_BURDEN =
+            EsotericismTinker.getLocation("stigmata_projectile_burden");
 
     public static Builder builder() {
         return new Builder();
@@ -100,7 +102,8 @@ public record StigmataOffensiveConsequenceModule(ModifierCondition<IToolContext>
             return null;
         }
         return new ConsequenceState(
-                StigmataConsequence.fromSeed(seed), seed, stage, overload);
+                StigmataConsequence.fromSeed(seed), seed, stage, overload,
+                Math.max(overload, persistentData.getInt(PROJECTILE_BURDEN)));
     }
 
     @Override
@@ -240,6 +243,7 @@ public record StigmataOffensiveConsequenceModule(ModifierCondition<IToolContext>
                 PROJECTILE_CONSEQUENCE_SEED, state.consequenceSeed());
         persistentData.putInt(PROJECTILE_STAGE, state.stage());
         persistentData.putInt(PROJECTILE_OVERLOAD, state.overload());
+        persistentData.putInt(PROJECTILE_BURDEN, state.burden());
         StigmataConsequenceEffects.get(state.consequence())
                                   .onProjectileLaunch(
                                           state, modifier, shooter, projectile,

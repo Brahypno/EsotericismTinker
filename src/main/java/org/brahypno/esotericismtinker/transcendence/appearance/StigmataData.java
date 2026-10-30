@@ -29,6 +29,9 @@ import java.util.List;
 public final class StigmataData {
     public static final ResourceLocation KEY =
             new ResourceLocation("esotericism_tinker", "stigmata");
+    /** Only written by the OP acceptance kit; zero is the non-overloaded control sample. */
+    public static final ResourceLocation TEST_OVERLOAD =
+            new ResourceLocation("esotericism_tinker", "stigmata_test_overload");
 
     private static final String MANIFESTATION = "manifestation";
     private static final String ALIENATION = "alienation";
@@ -116,6 +119,9 @@ public final class StigmataData {
     }
 
     public int overload(IToolContext context) {
+        if (context.getPersistentData().contains(TEST_OVERLOAD)) {
+            return Math.max(0, Math.min(burden(), context.getPersistentData().getInt(TEST_OVERLOAD)));
+        }
         return Math.max(0, burden() - capacity(context) - attunement(context));
     }
 

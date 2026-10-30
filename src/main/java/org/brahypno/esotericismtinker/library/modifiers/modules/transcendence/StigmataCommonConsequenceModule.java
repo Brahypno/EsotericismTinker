@@ -10,6 +10,7 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.TooltipFlag;
 import net.minecraft.world.level.Level;
 import org.brahypno.esotericismtinker.library.modifiers.modules.transcendence.StigmataConsequenceEffects.ConsequenceState;
+import org.brahypno.esotericismtinker.transcendence.appearance.StigmataData;
 import slimeknights.mantle.client.TooltipKey;
 import slimeknights.mantle.data.loadable.record.RecordLoadable;
 import slimeknights.tconstruct.common.TinkerTags;
@@ -81,7 +82,7 @@ public record StigmataCommonConsequenceModule(ModifierCondition<IToolContext> co
     public void onInventoryTick(
             IToolStackView tool, ModifierEntry modifier, Level world, LivingEntity holder,
             int itemSlot, boolean isSelected, boolean isCorrectSlot, ItemStack stack) {
-        if (world.isClientSide || !isCorrectSlot){
+        if (world.isClientSide || !isCorrectSlot || tool.isBroken()){
             return;
         }
         ConsequenceState state = getOwnActiveState(tool, modifier);
@@ -100,6 +101,9 @@ public record StigmataCommonConsequenceModule(ModifierCondition<IToolContext> co
             TooltipFlag tooltipFlag) {
         if (TooltipKey.SHIFT != tooltipKey){
             return;
+        }
+        if (tool.getPersistentData().contains(StigmataData.TEST_OVERLOAD)) {
+            tooltip.add(Component.translatable("command.esotericism_tinker.stigmata_test.temporary"));
         }
         ConsequenceState state = getOwnActiveState(tool, modifier);
         if (null != state){

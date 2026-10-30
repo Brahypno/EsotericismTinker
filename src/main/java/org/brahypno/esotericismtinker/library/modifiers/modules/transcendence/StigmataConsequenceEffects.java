@@ -1,11 +1,17 @@
 package org.brahypno.esotericismtinker.library.modifiers.modules.transcendence;
 
-import net.minecraft.core.BlockPos;
-import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.ChatFormatting;
+import net.minecraft.core.BlockPos;
+import net.minecraft.core.particles.DustParticleOptions;
+import net.minecraft.core.particles.ParticleOptions;
+import net.minecraft.core.particles.ParticleTypes;
+import net.minecraft.core.particles.SimpleParticleType;
+import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerLevel;
-import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.sounds.SoundEvents;
+import net.minecraft.sounds.SoundEvent;
+import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.effect.MobEffect;
 import net.minecraft.world.effect.MobEffectInstance;
@@ -13,32 +19,33 @@ import net.minecraft.world.effect.MobEffects;
 import net.minecraft.world.entity.*;
 import net.minecraft.world.entity.ai.attributes.Attribute;
 import net.minecraft.world.entity.ai.attributes.AttributeModifier;
-import net.minecraft.world.entity.ai.attributes.Attributes;
+import net.minecraft.world.entity.monster.Monster;
 import net.minecraft.world.entity.monster.Silverfish;
 import net.minecraft.world.entity.monster.Vex;
+import net.minecraft.world.entity.npc.Villager;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.entity.projectile.Projectile;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
-import net.minecraft.world.level.block.BaseFireBlock;
-import net.minecraft.world.level.block.SculkSpreader;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
-import net.minecraftforge.event.TickEvent;
 import net.minecraftforge.event.entity.living.LivingDeathEvent;
+import net.minecraftforge.event.entity.living.LivingDropsEvent;
+import net.minecraftforge.event.entity.living.LivingEvent;
+import net.minecraftforge.event.entity.living.LivingExperienceDropEvent;
 import net.minecraftforge.event.entity.player.AttackEntityEvent;
 import net.minecraftforge.event.entity.player.PlayerInteractEvent;
-import net.minecraftforge.event.level.LevelEvent;
-import net.minecraftforge.event.server.ServerStoppedEvent;
+import net.minecraftforge.event.entity.player.PlayerXpEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
 import org.brahypno.esotericismtinker.EsotericismTinker;
 import org.brahypno.esotericismtinker.transcendence.appearance.StigmataConsequence;
 import org.brahypno.esotericismtinker.transcendence.appearance.StigmataData;
+import org.brahypno.esotericismtinker.transcendence.appearance.StigmataOverloadDegree;
 import org.brahypno.esotericismtinker.transcendence.appearance.StigmataStage;
+import org.joml.Vector3f;
 import slimeknights.tconstruct.library.modifiers.ModifierEntry;
-import slimeknights.tconstruct.library.modifiers.hook.mining.BreakSpeedContext;
 import slimeknights.tconstruct.library.tools.context.EquipmentContext;
 import slimeknights.tconstruct.library.tools.context.ToolAttackContext;
 import slimeknights.tconstruct.library.tools.context.ToolHarvestContext;
@@ -46,58 +53,46 @@ import slimeknights.tconstruct.library.tools.nbt.IToolStackView;
 import slimeknights.tconstruct.library.tools.nbt.ModDataNBT;
 
 import javax.annotation.Nullable;
-import java.nio.charset.StandardCharsets;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Locale;
 import java.util.function.BiConsumer;
 
 /**
- * Runtime implementations for the 17 Stigmata consequence families.
- *
- * <p>A consequence is not a second modifier bonus. At manifestation it can still be directed,
- * at alienation it stops distinguishing bearer from target, and at sealing it acts without the
- * bearer's command. Overload increases severity, but never restores control.</p>
+ * Per-bearer, per-family instability. Ordinary actions build pressure, a visible warning precedes
+ * loss of control, and each family has its own remedy. Runtime pressure survives changing tools.
+ * All terrain-facing manifestations are temporary entities or particles.
  */
 @Mod.EventBusSubscriber(modid = EsotericismTinker.MODID)
 public final class StigmataConsequenceEffects {
+    public static final String RUNTIME_KEY = "esotericism_tinker_stigmata_instability";
+    public static final String SUMMON_KEY = "esotericism_tinker_stigmata_summon";
+    public static final String TEST_DUMMY = "esotericism_tinker_stigmata_test_dummy";
+    private static final String ZONE_KEY = "esotericism_tinker_stigmata_zone";
     private static final ThreadLocal<Boolean> APPLYING_CONSEQUENCE_DAMAGE =
             ThreadLocal.withInitial(() -> false);
-
-    private static final String INCUBATION_MARKER = "esotericism_tinker_stigmata_incubation";
-    private static final String INCUBATION_POWER = "esotericism_tinker_stigmata_incubation_power";
-    private static final String INCUBATION_STAGE = "esotericism_tinker_stigmata_incubation_stage";
-    private static final String INCUBATION_OWNER = "esotericism_tinker_stigmata_incubation_owner";
-    private static final String OBSESSION_OWNER = "esotericism_tinker_stigmata_obsession_owner";
-
-    private static final Map<ServerLevel, List<PendingLightning>> PENDING_LIGHTNING = new HashMap<>();
-    private static final Map<ServerLevel, List<PendingSculk>> PENDING_SCULK = new HashMap<>();
-    private static final Handler EXALTATION = new ExaltationHandler();
-    private static final Handler MALEDICTION = new MaledictionHandler();
-    private static final Handler JUDGEMENT = new JudgementHandler();
-    private static final Handler OBSESSION = new ObsessionHandler();
-    private static final Handler INCUBATION = new IncubationHandler();
-    private static final Handler DEFILEMENT = new DefilementHandler();
-    private static final Handler DEVOURING = new DevouringHandler();
-    private static final Handler SACRAMENT = new SacramentHandler();
-    private static final Handler OFFERING = new OfferingHandler();
-    private static final Handler IMMOLATION = new ImmolationHandler();
-    private static final Handler PENANCE = new PenanceHandler();
-    private static final Handler DOMINION = new ImprintHandler(Imprint.DOMINION);
-    private static final Handler NOCTURNE = new ImprintHandler(Imprint.NOCTURNE);
-    private static final Handler ZENITH = new ImprintHandler(Imprint.ZENITH);
-    private static final Handler ABYSS = new ImprintHandler(Imprint.ABYSS);
-    private static final Handler BEATITUDE = new ImprintHandler(Imprint.BEATITUDE);
-    private static final Handler ANATHEMA = new ImprintHandler(Imprint.ANATHEMA);
+    private static final Handler HANDLER = new ReworkedHandler();
+    public static final int WARNING_THRESHOLD = 70;
+    private static final int OMEN_THRESHOLD = 50;
+    public static final int CANCEL_THRESHOLD = 40;
+    public static final int COOLDOWN_TICKS = 120;
 
     private StigmataConsequenceEffects() {}
 
     public record ConsequenceState(
             StigmataConsequence consequence, int consequenceSeed,
-            int stage, int overload) {
+            int stage, int overload, int burden) {
         public static ConsequenceState of(IToolStackView tool, StigmataData data) {
-            return new ConsequenceState(
-                    data.consequence(), data.consequenceSeed(),
-                    data.stage(), data.overload(tool));
+            return new ConsequenceState(data.consequence(), data.consequenceSeed(),
+                    data.stage(), data.overload(tool), data.burden());
         }
+
+        public int strength() {
+            return overload <= 0 ? 0 : StigmataOverloadDegree.fromValues(overload, burden).ordinal() + 1;
+        }
+
+        public int actionGain() { return 6 + 2 * strength(); }
+        public int warningTicks() { return 70 - 10 * stage; }
     }
 
     public interface Handler {
@@ -206,951 +201,1085 @@ public final class StigmataConsequenceEffects {
                 BiConsumer<Attribute, AttributeModifier> consumer) {}
     }
 
-    public static Handler get(StigmataConsequence consequence) {
-        return switch (consequence) {
-            case EXALTATION -> EXALTATION;
-            case MALEDICTION -> MALEDICTION;
-            case JUDGEMENT -> JUDGEMENT;
-            case OBSESSION -> OBSESSION;
-            case INCUBATION -> INCUBATION;
-            case DEFILEMENT -> DEFILEMENT;
-            case DEVOURING -> DEVOURING;
-            case SACRAMENT -> SACRAMENT;
-            case OFFERING -> OFFERING;
-            case IMMOLATION -> IMMOLATION;
-            case PENANCE -> PENANCE;
-            case DOMINION -> DOMINION;
-            case NOCTURNE -> NOCTURNE;
-            case ZENITH -> ZENITH;
-            case ABYSS -> ABYSS;
-            case BEATITUDE -> BEATITUDE;
-            case ANATHEMA -> ANATHEMA;
-        };
+    public static Handler get(StigmataConsequence consequence) { return HANDLER; }
+
+    private static String key(StigmataConsequence family) {
+        return family.name().toLowerCase(Locale.ROOT);
     }
 
-    public static boolean isApplyingConsequenceDamage() {
-        return APPLYING_CONSEQUENCE_DAMAGE.get();
-    }
-
-    private static boolean dealConsequenceDamage(LivingEntity entity, float amount) {
-        if (APPLYING_CONSEQUENCE_DAMAGE.get()){
-            return false;
+    private static CompoundTag root(LivingEntity holder) {
+        CompoundTag persistent = holder.getPersistentData();
+        if (!persistent.contains(RUNTIME_KEY, CompoundTag.TAG_COMPOUND)) {
+            persistent.put(RUNTIME_KEY, new CompoundTag());
         }
+        return persistent.getCompound(RUNTIME_KEY);
+    }
+
+    private static CompoundTag frame(LivingEntity holder, StigmataConsequence family) {
+        CompoundTag root = root(holder);
+        String key = key(family);
+        if (!root.contains(key, CompoundTag.TAG_COMPOUND)) root.put(key, new CompoundTag());
+        return root.getCompound(key);
+    }
+
+    public static int pressure(LivingEntity holder, StigmataConsequence family) {
+        return holder.getPersistentData().getCompound(RUNTIME_KEY).getCompound(key(family)).getInt("pressure");
+    }
+
+    public static void setPressure(LivingEntity holder, StigmataConsequence family, int pressure) {
+        CompoundTag frame = frame(holder, family);
+        frame.putInt("pressure", Math.max(0, Math.min(100, pressure)));
+        if (pressure < CANCEL_THRESHOLD) frame.remove("due");
+    }
+
+    public static void touch(ConsequenceState state, LivingEntity holder) {
+        CompoundTag frame = frame(holder, state.consequence());
+        long now = holder.level().getGameTime();
+        // Several equipped copies share one family. Retain the strongest contribution this tick.
+        if (frame.getLong("seen") != now || state.stage() > frame.getInt("stage")
+            || state.strength() > state(frame, state.consequence()).strength()) {
+            frame.putInt("seed", state.consequenceSeed());
+            frame.putInt("stage", state.stage());
+            frame.putInt("overload", state.overload());
+            frame.putInt("burden", state.burden());
+        }
+        frame.putLong("seen", now);
+    }
+
+    private static ConsequenceState state(CompoundTag frame, StigmataConsequence family) {
+        return new ConsequenceState(family, frame.getInt("seed"),
+                Math.max(1, frame.getInt("stage")), Math.max(1, frame.getInt("overload")),
+                Math.max(1, frame.getInt("burden")));
+    }
+
+    public static boolean isApplyingConsequenceDamage() { return APPLYING_CONSEQUENCE_DAMAGE.get(); }
+
+    private static boolean hurt(LivingEntity holder, float amount) {
+        if (APPLYING_CONSEQUENCE_DAMAGE.get() || holder.level().isClientSide || amount <= 0) return false;
         APPLYING_CONSEQUENCE_DAMAGE.set(true);
         try {
-            return entity.hurt(entity.damageSources().magic(), amount);
-        }
-        finally {
+            return holder.hurt(holder.damageSources().magic(), amount);
+        } finally {
             APPLYING_CONSEQUENCE_DAMAGE.set(false);
         }
     }
 
-    private static int power(ConsequenceState state) {
-        return Math.max(1, Math.min(10, state.overload() + state.stage() - 1));
+    private static boolean isImprint(StigmataConsequence family) {
+        return family.ordinal() >= StigmataConsequence.DOMINION.ordinal();
     }
 
-    private static float grace(ConsequenceState state) {
-        float rate = switch (state.stage()) {
-            case 1 -> 0.03F;
-            case 2 -> 0.02F;
-            default -> 0.01F;
+    private static boolean hasBlessing(LivingEntity holder) {
+        return holder.getActiveEffects().stream().anyMatch(effect -> effect.getEffect().isBeneficial());
+    }
+
+    private static boolean satisfied(StigmataConsequence family, LivingEntity holder) {
+        return switch (family) {
+            case DOMINION -> holder.isPassenger();
+            case NOCTURNE -> holder.level().dimensionType().hasSkyLight()
+                             && holder.level().isNight() && holder.level().canSeeSky(holder.blockPosition());
+            case ZENITH -> holder.getY() >= 128 && holder.level().canSeeSky(holder.blockPosition());
+            case ABYSS -> holder.getY() <= 0 && holder.level().getMaxLocalRawBrightness(holder.blockPosition()) <= 7;
+            case BEATITUDE -> hasBlessing(holder);
+            case ANATHEMA -> holder.hasEffect(MobEffects.BAD_OMEN);
+            default -> false;
         };
-        return 1.0F + rate * power(state);
     }
 
-    private static float penalty(ConsequenceState state) {
-        return Math.max(0.25F, 1.0F - 0.05F * power(state) - 0.12F * state.stage());
+    private static float outputMultiplier(ConsequenceState state, LivingEntity holder) {
+        if (!isImprint(state.consequence())) return 1;
+        if (satisfied(state.consequence(), holder)) {
+            return 1.03F + 0.01F * state.strength();
+        }
+        // Grace is lost immediately; damage only deteriorates once pressure is appreciable.
+        return pressure(holder, state.consequence()) < CANCEL_THRESHOLD ? 1 : 1 - 0.03F * state.strength();
     }
 
-    private static boolean chance(ServerLevel level, int denominator) {
-        return 0 == level.random.nextInt(Math.max(1, denominator));
+    private static void effect(LivingEntity target, MobEffect effect, int duration, int amplifier) {
+        target.addEffect(new MobEffectInstance(effect, duration, amplifier, false, true, true));
     }
 
-    private static boolean periodic(
-            ConsequenceState state, LivingEntity holder, int interval) {
-        return 0 == Math.floorMod(
-                holder.tickCount + state.consequenceSeed(), Math.max(1, interval));
+    /** One action per family per 10 ticks, including cleave, multishot, and multiple armor pieces. */
+    public static void action(ConsequenceState state, LivingEntity holder,
+                              @Nullable LivingEntity target, Vec3 point) {
+        if (!(holder.level() instanceof ServerLevel) || isApplyingConsequenceDamage()) return;
+        touch(state, holder);
+        CompoundTag frame = frame(holder, state.consequence());
+        long now = holder.level().getGameTime();
+        if (frame.contains("action") && now - frame.getLong("action") < 10) return;
+        frame.putLong("action", now);
+        int gain = state.actionGain();
+        if (state.consequence() == StigmataConsequence.DEVOURING && holder instanceof Player player) {
+            player.causeFoodExhaustion(0.25F + 0.1F * state.strength());
+            if (player.getFoodData().getFoodLevel() <= 6) gain += 8;
+        }
+        if (state.consequence() == StigmataConsequence.SACRAMENT && holder instanceof Player player) {
+            // Enchanting can leave totalExperience above zero after the actual balance is gone.
+            int available = player.experienceLevel > 0 ? state.stage()
+                    : Math.round(player.experienceProgress * player.getXpNeededForNextLevel());
+            if (available > 0) player.giveExperiencePoints(-Math.min(available, state.stage()));
+            else gain += 12;
+        }
+        if (state.consequence() == StigmataConsequence.BEATITUDE && target != null
+            && (target instanceof Villager || target.isAlliedTo(holder)
+                || target instanceof TamableAnimal pet && pet.isTame())) {
+            gain += 25;
+            frame.putLong("profaned", now);
+        }
+        setPressure(holder, state.consequence(), pressure(holder, state.consequence()) + gain);
+        frame.putDouble("target_x", point.x);
+        frame.putDouble("target_y", point.y);
+        frame.putDouble("target_z", point.z);
+        if (target != null) frame.putUUID("target", target.getUUID());
+        else frame.remove("target");
+        if (pressure(holder, state.consequence()) >= WARNING_THRESHOLD) {
+            arm(state, holder, state.stage() == 1 ? point : holder.position(), target);
+        }
     }
 
-    private static boolean activeSlot(boolean isSelected, boolean isCorrectSlot) {
-        return isSelected || isCorrectSlot;
+    public static boolean forceWarning(ConsequenceState state, LivingEntity holder, Vec3 point,
+                                       @Nullable LivingEntity target) {
+        if (state.overload() <= 0) return false;
+        touch(state, holder);
+        CompoundTag frame = frame(holder, state.consequence());
+        frame.remove("cooldown");
+        setPressure(holder, state.consequence(), WARNING_THRESHOLD);
+        arm(state, holder, point, target);
+        return true;
     }
 
-    private static void cloud(
-            ServerLevel level, Vec3 position, @Nullable LivingEntity owner, MobEffect effect,
-            int amplifier, int duration, float radius) {
-        AreaEffectCloud cloud = new AreaEffectCloud(level, position.x, position.y, position.z);
+    private static void arm(ConsequenceState state, LivingEntity holder, Vec3 point,
+                            @Nullable LivingEntity target) {
+        CompoundTag frame = frame(holder, state.consequence());
+        long now = holder.level().getGameTime();
+        if (frame.contains("due") || frame.getLong("cooldown") > now) return;
+        frame.putLong("due", now + state.warningTicks());
+        frame.putInt("warning_stage", state.stage());
+        frame.putInt("warning_overload", state.overload());
+        frame.putInt("warning_burden", state.burden());
+        frame.putDouble("x", point.x);
+        frame.putDouble("y", point.y);
+        frame.putDouble("z", point.z);
+        if (target != null) frame.putUUID("target", target.getUUID());
+        if (target != null) frame.putUUID("warning_target", target.getUUID());
+        else if (frame.hasUUID("target")) frame.putUUID("warning_target", frame.getUUID("target"));
+        else frame.remove("warning_target");
+        if (holder.level() instanceof ServerLevel level) {
+            playOmenSound(level, holder, state.consequence(),
+                    affectsBearer(state.consequence()) ? holder.position() : point, 0.5F, 0.25D);
+        }
+    }
+
+    private static int remedy(ConsequenceState state, LivingEntity holder, CompoundTag frame, long now) {
+        boolean resting = !frame.contains("action") || now - frame.getLong("action") >= 20;
+        boolean still = !frame.contains("last_x")
+                        || holder.position().distanceToSqr(new Vec3(frame.getDouble("last_x"),
+                                frame.getDouble("last_y"), frame.getDouble("last_z"))) < 0.04D;
+        return switch (state.consequence()) {
+            case EXALTATION -> holder.onGround() && holder.isCrouching() ? -24 : 0;
+            case MALEDICTION -> resting ? -40 : 0;
+            case JUDGEMENT, OBSESSION, SACRAMENT -> 0;
+            case INCUBATION -> resting && holder.onGround() && holder.isCrouching() ? -40 : 0;
+            case DEFILEMENT -> !still ? -12 : 0;
+            case DEVOURING -> resting && holder instanceof Player player
+                              && player.getFoodData().getFoodLevel() >= 16
+                              && player.getFoodData().getSaturationLevel() > 0 ? -40 : 0;
+            case OFFERING -> resting ? -40 : 0;
+            case IMMOLATION -> holder.isInWaterRainOrBubble() ? -40 : resting ? -16 : 0;
+            case PENANCE -> still && !holder.swinging && !holder.isSprinting() ? -24 : 0;
+            case DOMINION -> {
+                if (holder.isPassenger()) {
+                    frame.putLong("ridden", now);
+                    yield -24;
+                }
+                yield frame.contains("ridden") && now - frame.getLong("ridden") <= 200 ? -6 : 2;
+            }
+            case NOCTURNE -> satisfied(state.consequence(), holder)
+                             ? -(24 + Math.round(holder.level().getMoonBrightness() * 12)) : 2;
+            case ZENITH, ABYSS -> satisfied(state.consequence(), holder) ? -24 : 2;
+            case BEATITUDE -> frame.contains("profaned") && now - frame.getLong("profaned") < 100 ? 4
+                             : satisfied(state.consequence(), holder) ? -24 : 2;
+            case ANATHEMA -> !holder.level().getEntitiesOfClass(Villager.class,
+                                     holder.getBoundingBox().inflate(12)).isEmpty() ? 6
+                             : satisfied(state.consequence(), holder) ? -24 : 2;
+        };
+    }
+
+    @SubscribeEvent
+    public static void onLivingTick(LivingEvent.LivingTickEvent event) {
+        LivingEntity holder = event.getEntity();
+        if (!(holder.level() instanceof ServerLevel level)) return;
+        tickSummon(holder, level);
+        CompoundTag persistent = holder.getPersistentData();
+        if (!holder.isAlive()) {
+            persistent.remove(RUNTIME_KEY);
+            return;
+        }
+        if (!persistent.contains(RUNTIME_KEY)) return;
+        CompoundTag root = persistent.getCompound(RUNTIME_KEY);
+        long now = level.getGameTime();
+        int highest = -1;
+        StigmataConsequence displayed = null;
+        for (StigmataConsequence family : StigmataConsequence.values()) {
+            if (!root.contains(key(family))) continue;
+            CompoundTag frame = root.getCompound(key(family));
+            ConsequenceState state = state(frame, family);
+            boolean active = frame.contains("seen") && now - frame.getLong("seen") <= 2;
+            if (now % 20 == 0 && (!frame.contains("second") || frame.getLong("second") != now)) {
+                frame.putLong("second", now);
+                int change = active ? remedy(state, holder, frame, now) : -10;
+                if (active && change == 0) {
+                    boolean idle = !frame.contains("action") || now - frame.getLong("action") >= 20;
+                    change = state.stage() == 3 ? 2 : idle ? -6 : 0;
+                }
+                setPressure(holder, family, pressure(holder, family) + change);
+                frame.putDouble("last_x", holder.getX());
+                frame.putDouble("last_y", holder.getY());
+                frame.putDouble("last_z", holder.getZ());
+                if (active && family == StigmataConsequence.PENANCE && pressure(holder, family) >= 40) {
+                    effect(holder, MobEffects.MOVEMENT_SLOWDOWN, 25, 0);
+                }
+                if (active && pressure(holder, family) >= WARNING_THRESHOLD && !frame.contains("due")) {
+                    Vec3 point = state.stage() == 1 && frame.contains("target_x")
+                                 ? new Vec3(frame.getDouble("target_x"), frame.getDouble("target_y"),
+                                            frame.getDouble("target_z")) : holder.position();
+                    arm(state, holder, point, null);
+                }
+            }
+            if (frame.contains("due")) {
+                Vec3 point = new Vec3(frame.getDouble("x"), frame.getDouble("y"), frame.getDouble("z"));
+                ConsequenceState warning = new ConsequenceState(family, state.consequenceSeed(),
+                        frame.getInt("warning_stage"), frame.getInt("warning_overload"),
+                        frame.getInt("warning_burden"));
+                if (now >= frame.getLong("due")) {
+                    LivingEntity target = frame.hasUUID("warning_target")
+                                          && level.getEntity(frame.getUUID("warning_target")) instanceof LivingEntity living
+                                          ? living : null;
+                    burst(warning, holder, point, target);
+                    frame.remove("due");
+                    frame.putLong("cooldown", now + COOLDOWN_TICKS);
+                    setPressure(holder, family, 35);
+                } else {
+                    warningVisuals(level, holder, point, warning, (int) (frame.getLong("due") - now));
+                }
+            } else if (active && pressure(holder, family) >= OMEN_THRESHOLD) {
+                approachingVisuals(level, holder, state, pressure(holder, family), now);
+            }
+            int pressure = pressure(holder, family);
+            if ((active || frame.contains("due")) && pressure > highest) {
+                highest = pressure;
+                displayed = family;
+            }
+            if (!active && pressure == 0 && !frame.contains("due")
+                && now - frame.getLong("seen") > 600) root.remove(key(family));
+        }
+        if (now % 20 == 0 && holder instanceof Player player && displayed != null
+            && hasEquippedTestSample(player, displayed)) {
+            CompoundTag frame = root.getCompound(key(displayed));
+            player.displayClientMessage(Component.translatable("stigmata_instability.esotericism_tinker.status",
+                    displayed.displayName(), highest,
+                    frame.contains("due") ? Component.translatable("stigmata_instability.esotericism_tinker.warning",
+                            String.format(Locale.ROOT, "%.1f", Math.max(0, frame.getLong("due") - now) / 20.0D))
+                                          : Component.translatable("stigmata_instability.esotericism_tinker.calm")),
+                    true);
+        }
+        if (root.isEmpty()) persistent.remove(RUNTIME_KEY);
+    }
+
+    private static boolean hasEquippedTestSample(Player player, StigmataConsequence family) {
+        EquipmentContext context = new EquipmentContext(player);
+        for (EquipmentSlot slot : EquipmentSlot.values()) {
+            var tool = context.getValidTool(slot);
+            if (tool == null || tool.isBroken() || !tool.getPersistentData().contains(StigmataData.TEST_OVERLOAD)) continue;
+            StigmataData data = StigmataData.read(tool);
+            if (data.hasConsequenceSeed() && data.consequence() == family && data.overload(tool) > 0) return true;
+        }
+        return false;
+    }
+
+    private static SimpleParticleType particle(StigmataConsequence family) {
+        return switch (family) {
+            case EXALTATION, ZENITH -> ParticleTypes.CLOUD;
+            case MALEDICTION, SACRAMENT -> ParticleTypes.WITCH;
+            case JUDGEMENT -> ParticleTypes.ELECTRIC_SPARK;
+            case OBSESSION, ABYSS -> ParticleTypes.SOUL;
+            case INCUBATION, DEVOURING -> ParticleTypes.SPORE_BLOSSOM_AIR;
+            case DEFILEMENT -> ParticleTypes.SCULK_CHARGE_POP;
+            case OFFERING, PENANCE -> ParticleTypes.DAMAGE_INDICATOR;
+            case IMMOLATION -> ParticleTypes.FLAME;
+            case DOMINION -> ParticleTypes.CRIT;
+            case NOCTURNE -> ParticleTypes.END_ROD;
+            case BEATITUDE -> ParticleTypes.ENCHANT;
+            case ANATHEMA -> ParticleTypes.ANGRY_VILLAGER;
+        };
+    }
+
+    private static DustParticleOptions tint(StigmataConsequence family) {
+        int color = switch (family) {
+            case EXALTATION -> 0xC5ECFF;
+            case MALEDICTION -> 0xB94DE8;
+            case JUDGEMENT -> 0x70CFFF;
+            case OBSESSION -> 0x48E6C9;
+            case INCUBATION -> 0x9DBB39;
+            case DEFILEMENT -> 0x08A6AD;
+            case DEVOURING -> 0x77952E;
+            case SACRAMENT -> 0xB99AFF;
+            case OFFERING -> 0xCF233C;
+            case IMMOLATION -> 0xFF782C;
+            case PENANCE -> 0xA6A9B5;
+            case DOMINION -> 0xE4AD42;
+            case NOCTURNE -> 0x9DABEF;
+            case ZENITH -> 0xE4F7FF;
+            case ABYSS -> 0x365BB4;
+            case BEATITUDE -> 0xFFE6A1;
+            case ANATHEMA -> 0xAB244C;
+        };
+        return new DustParticleOptions(new Vector3f((color >> 16 & 255) / 255.0F,
+                (color >> 8 & 255) / 255.0F, (color & 255) / 255.0F), 1.35F);
+    }
+
+    private static SoundEvent manifestationSound(StigmataConsequence family) {
+        return switch (family) {
+            case EXALTATION -> SoundEvents.ALLAY_DEATH;
+            case MALEDICTION -> SoundEvents.EVOKER_PREPARE_SUMMON;
+            case JUDGEMENT -> SoundEvents.BEACON_DEACTIVATE;
+            case OBSESSION -> SoundEvents.VEX_CHARGE;
+            case INCUBATION -> SoundEvents.SILVERFISH_AMBIENT;
+            case DEFILEMENT -> SoundEvents.SCULK_CATALYST_BLOOM;
+            case DEVOURING -> SoundEvents.FOX_EAT;
+            case SACRAMENT -> SoundEvents.ENCHANTMENT_TABLE_USE;
+            case OFFERING -> SoundEvents.PLAYER_HURT;
+            case IMMOLATION -> SoundEvents.FIRECHARGE_USE;
+            case PENANCE -> SoundEvents.CHAIN_BREAK;
+            case DOMINION -> SoundEvents.BELL_RESONATE;
+            case NOCTURNE -> SoundEvents.PHANTOM_AMBIENT;
+            case ZENITH -> SoundEvents.ELYTRA_FLYING;
+            case ABYSS -> SoundEvents.SOUL_ESCAPE;
+            case BEATITUDE -> SoundEvents.AMETHYST_BLOCK_BREAK;
+            case ANATHEMA -> SoundEvents.ENDERMAN_STARE;
+        };
+    }
+
+    private static SoundEvent omenSound(StigmataConsequence family) {
+        return switch (family) {
+            case EXALTATION -> SoundEvents.ALLAY_AMBIENT_WITHOUT_ITEM;
+            case MALEDICTION -> SoundEvents.EVOKER_PREPARE_ATTACK;
+            case JUDGEMENT -> SoundEvents.LIGHTNING_BOLT_IMPACT;
+            case OBSESSION -> SoundEvents.VEX_AMBIENT;
+            case INCUBATION -> SoundEvents.SILVERFISH_AMBIENT;
+            case DEFILEMENT -> SoundEvents.SCULK_CATALYST_BLOOM;
+            case DEVOURING -> SoundEvents.FOX_EAT;
+            case SACRAMENT -> SoundEvents.ENCHANTMENT_TABLE_USE;
+            case OFFERING -> SoundEvents.WARDEN_HEARTBEAT;
+            case IMMOLATION -> SoundEvents.FIRE_AMBIENT;
+            case PENANCE -> SoundEvents.CHAIN_HIT;
+            case DOMINION -> SoundEvents.BELL_RESONATE;
+            case NOCTURNE -> SoundEvents.PHANTOM_AMBIENT;
+            case ZENITH -> SoundEvents.ELYTRA_FLYING;
+            case ABYSS -> SoundEvents.SOUL_ESCAPE;
+            case BEATITUDE -> SoundEvents.AMETHYST_BLOCK_CHIME;
+            case ANATHEMA -> SoundEvents.ENDERMAN_STARE;
+        };
+    }
+
+    private static void playOmenSound(ServerLevel level, LivingEntity holder, StigmataConsequence family,
+                                      Vec3 point, float volume, double progress) {
+        float pitch = switch (family) {
+            case EXALTATION, JUDGEMENT, IMMOLATION -> (float) (0.7D + progress * 0.5D);
+            case DEVOURING, OFFERING, PENANCE, ABYSS, ANATHEMA -> (float) (0.65D - progress * 0.1D);
+            case DOMINION, NOCTURNE, BEATITUDE -> (float) (1.1D - progress * 0.4D);
+            default -> (float) (0.8D + progress * 0.2D);
+        };
+        level.playSound(null, BlockPos.containing(point), omenSound(family), SoundSource.PLAYERS, volume, pitch);
+        // Echo the same theme locally when a distant marked target would hide the warning.
+        if (point.distanceToSqr(holder.position()) > 64) {
+            level.playSound(null, holder.blockPosition(), omenSound(family), SoundSource.PLAYERS,
+                    volume * 0.6F, pitch);
+        }
+    }
+
+    /** These consequences follow the bearer; the others manifest at the fixed warning location. */
+    private static boolean affectsBearer(StigmataConsequence family) {
+        return switch (family) {
+            case DEVOURING, SACRAMENT, OFFERING, PENANCE,
+                 DOMINION, NOCTURNE, ZENITH, ABYSS, BEATITUDE, ANATHEMA -> true;
+            default -> false;
+        };
+    }
+
+    private static void circle(ServerLevel level, Vec3 point, ParticleOptions particle,
+                               double radius, double height, int count, double phase) {
+        for (int i = 0; i < count; i++) {
+            double angle = Math.PI * 2 * i / count + phase;
+            level.sendParticles(particle, point.x + Math.cos(angle) * radius,
+                    point.y + height, point.z + Math.sin(angle) * radius, 1, 0, 0.015D, 0, 0);
+        }
+    }
+
+    /** A few motes below the sight line make the cue readable in first person as well. */
+    private static void glimpse(ServerLevel level, LivingEntity holder, ParticleOptions particle, int count) {
+        Vec3 look = holder.getLookAngle();
+        Vec3 front = new Vec3(look.x, 0, look.z);
+        front = front.lengthSqr() < 0.001D ? new Vec3(0, 0, 1) : front.normalize();
+        Vec3 point = holder.position().add(front.scale(0.95D)).add(0, holder.getEyeHeight() - 0.45D, 0);
+        level.sendParticles(particle, point.x, point.y, point.z, count, 0.28D, 0.12D, 0.28D, 0.005D);
+    }
+
+    private static void approachingVisuals(ServerLevel level, LivingEntity holder,
+                                            ConsequenceState state, int pressure, long now) {
+        StigmataConsequence family = state.consequence();
+        int interval = pressure >= 60 ? 20 : 30;
+        if (now % interval == 0) {
+            omenMotif(level, holder.position(), state, (pressure - OMEN_THRESHOLD) / 20.0D, true);
+            glimpse(level, holder, omenGlimpse(family), pressure >= 60 ? 4 : 2);
+        }
+        if (pressure >= 60 && now % 60 == 0) {
+            playOmenSound(level, holder, family, holder.position(), 0.25F, 0);
+        }
+    }
+
+    private static void warningVisuals(ServerLevel level, LivingEntity holder, Vec3 point,
+                                       ConsequenceState state, int remaining) {
+        StigmataConsequence family = state.consequence();
+        boolean imminent = remaining <= 20;
+        int interval = imminent ? 5 : 10;
+        if (remaining % interval == 0) {
+            double progress = 1 - remaining / (double) state.warningTicks();
+            if (!affectsBearer(family)) {
+                // A quiet, fixed boundary shows the area without replacing the family's own omen.
+                circle(level, point, tint(family), 2.5D, 0.15D, 12, 0);
+            }
+            omenMotif(level, affectsBearer(family) ? holder.position() : point, state, progress, false);
+            glimpse(level, holder, omenGlimpse(family), imminent ? 5 : 2);
+        }
+        if (remaining == 20) {
+            playOmenSound(level, holder, family, affectsBearer(family) ? holder.position() : point,
+                    0.65F, 1);
+        }
+    }
+
+    private static ParticleOptions omenGlimpse(StigmataConsequence family) {
+        return switch (family) {
+            case EXALTATION, NOCTURNE, ZENITH -> ParticleTypes.END_ROD;
+            case DEVOURING, ANATHEMA -> ParticleTypes.SMOKE;
+            case SACRAMENT -> ParticleTypes.ENCHANT;
+            case OFFERING, DOMINION, BEATITUDE -> tint(family);
+            case IMMOLATION, PENANCE -> ParticleTypes.ASH;
+            default -> particle(family);
+        };
+    }
+
+    /** The sparse approach and the full warning share a theme, rather than a common countdown ring. */
+    private static void omenMotif(ServerLevel level, Vec3 point, ConsequenceState state,
+                                   double progress, boolean sparse) {
+        progress = Math.max(0, Math.min(1, progress));
+        StigmataConsequence family = state.consequence();
+        DustParticleOptions color = tint(family);
+        int count = sparse ? 8 : progress >= 0.65D ? 24 : 16;
+        double phase = level.getGameTime() * 0.06D * (1 + progress * 0.6D);
+        // Later stages bring the same manifestation closer to the bearer or marked origin.
+        double spread = (sparse ? 0.55D : 1) * (1.3D - 0.2D * (state.stage() - 1));
+        for (int i = 0; i < count; i++) {
+            double t = i / (double) (count - 1);
+            double angle = Math.PI * 2 * t;
+            double spin = angle + phase;
+            ParticleOptions type = color;
+            double x = 0, y = 0, z = 0;
+            double vx = 0, vy = 0, vz = 0;
+            switch (family) {
+                case EXALTATION -> {
+                    type = i % 3 == 0 ? ParticleTypes.CLOUD : ParticleTypes.END_ROD;
+                    x = Math.cos(spin * 2) * (0.6D + 0.3D * t);
+                    z = Math.sin(spin * 2) * (0.6D + 0.3D * t);
+                    y = 0.2D + t * (1.2D + 1.4D * progress);
+                    vy = 0.04D + 0.08D * progress;
+                }
+                case MALEDICTION -> {
+                    type = ParticleTypes.WITCH;
+                    double radius = 1.6D - 0.8D * progress;
+                    x = Math.cos(-spin) * radius;
+                    z = Math.sin(-spin) * radius;
+                    y = 0.3D + 0.6D * Math.pow(Math.sin(angle * 2 + phase), 2);
+                    vx = z * 0.05D - x * 0.02D;
+                    vz = -x * 0.05D - z * 0.02D;
+                }
+                case JUDGEMENT -> {
+                    type = ParticleTypes.ELECTRIC_SPARK;
+                    x = (i % 2 == 0 ? -1 : 1) * (0.12D + 0.2D * Math.sin(phase + i));
+                    z = 0.18D * Math.sin(i * 2.2D + phase);
+                    y = 1.6D + t * (0.8D + 0.8D * progress);
+                    vx = Math.sin(i + phase) * 0.05D;
+                    vy = -0.08D * (0.3D + progress);
+                }
+                case OBSESSION -> {
+                    type = ParticleTypes.SOUL;
+                    double trail = phase + (i % 2) * Math.PI + (i / 2) * 0.08D;
+                    double radius = 1.6D - 0.8D * progress;
+                    x = Math.cos(trail) * radius;
+                    z = Math.sin(trail) * radius;
+                    y = 0.6D + 0.7D * t;
+                    vx = -z * 0.05D;
+                    vz = x * 0.05D;
+                }
+                case INCUBATION -> {
+                    type = i % 3 == 0 ? ParticleTypes.SPORE_BLOSSOM_AIR : color;
+                    double bud = Math.PI * 2 * (i % 3) / 3;
+                    x = Math.cos(bud) * 0.9D + Math.cos(angle * 3) * 0.18D;
+                    z = Math.sin(bud) * 0.9D + Math.sin(angle * 3) * 0.18D;
+                    y = 0.08D + 0.09D * (1 + Math.sin(phase * 2)) * (1 + Math.cos(angle));
+                    vy = 0.015D + progress * 0.04D;
+                }
+                case DEFILEMENT -> {
+                    type = i % 3 == 0 ? ParticleTypes.SCULK_CHARGE_POP : color;
+                    double branch = Math.PI * 2 * (i % 5) / 5;
+                    double radius = (0.2D + 1.9D * progress) * (0.2D + 0.8D * t);
+                    x = Math.cos(branch) * radius + Math.sin(i * 5 + phase) * 0.06D;
+                    z = Math.sin(branch) * radius + Math.cos(i * 5 + phase) * 0.06D;
+                    y = 0.1D;
+                }
+                case DEVOURING -> {
+                    type = ParticleTypes.SMOKE;
+                    double radius = 1.5D * (1 - t) * (1 - 0.4D * progress) + 0.2D;
+                    x = Math.cos(spin) * radius;
+                    z = Math.sin(spin) * radius;
+                    y = 0.5D + 0.5D * t;
+                    vx = -x * 0.08D;
+                    vy = (0.8D - y) * 0.08D;
+                    vz = -z * 0.08D;
+                }
+                case SACRAMENT -> {
+                    type = i % 3 == 0 ? ParticleTypes.ENCHANT : color;
+                    double radius = 0.4D + t * (0.6D + progress);
+                    x = Math.cos(angle) * radius;
+                    z = Math.sin(angle) * radius;
+                    y = 0.6D + 1.1D * t;
+                    vx = Math.cos(angle) * (0.035D + 0.06D * progress);
+                    vz = Math.sin(angle) * (0.035D + 0.06D * progress);
+                    vy = 0.03D;
+                }
+                case OFFERING -> {
+                    double radius = 0.25D + 0.95D * progress * t;
+                    x = Math.cos(angle) * radius;
+                    z = Math.sin(angle) * radius;
+                    y = 0.65D + 0.55D * t;
+                    vx = Math.cos(angle) * 0.06D;
+                    vz = Math.sin(angle) * 0.06D;
+                    vy = 0.02D;
+                }
+                case IMMOLATION -> {
+                    type = sparse ? ParticleTypes.ASH
+                            : i % 3 == 0 || progress < 0.4D ? ParticleTypes.SMOKE : ParticleTypes.FLAME;
+                    x = Math.cos(angle) * (0.5D + 0.4D * progress);
+                    z = Math.sin(angle) * (0.5D + 0.4D * progress);
+                    y = 0.1D + t * (0.4D + 0.6D * progress);
+                    vy = 0.03D + 0.04D * progress;
+                }
+                case PENANCE -> {
+                    double chain = Math.PI * (i % 4) / 2;
+                    double radius = 1.4D - 0.7D * progress;
+                    x = Math.cos(chain) * radius + Math.cos(angle * 4) * 0.08D;
+                    z = Math.sin(chain) * radius + Math.sin(angle * 4) * 0.08D;
+                    y = 0.15D + t * 1.9D;
+                    vy = -0.03D;
+                }
+                case DOMINION -> {
+                    double tremor = progress * 0.14D * Math.sin(phase * 3 + i);
+                    x = Math.cos(angle) * 0.9D + tremor;
+                    z = Math.sin(angle) * 0.9D - tremor;
+                    y = 1.9D + (i % 2 == 0 ? 0.25D : 0);
+                    if (progress > 0.75D && i % 3 == 0) y -= progress * 0.5D;
+                }
+                case NOCTURNE -> {
+                    type = t < progress * 0.45D ? ParticleTypes.SMOKE : ParticleTypes.END_ROD;
+                    double crescent = -Math.PI * 0.75D + Math.PI * 1.5D * t;
+                    x = Math.cos(crescent) * 0.8D;
+                    y = 1.1D + Math.sin(crescent) * 0.8D;
+                    z = Math.sin(phase) * 0.15D;
+                }
+                case ZENITH -> {
+                    type = i % 3 == 0 ? ParticleTypes.CLOUD : ParticleTypes.END_ROD;
+                    double stream = Math.PI * 2 * (i % 3) / 3;
+                    x = Math.cos(stream) * (0.7D - 0.15D * progress);
+                    z = Math.sin(stream) * (0.7D - 0.15D * progress);
+                    y = 2.8D - t * (1.4D + progress);
+                    vy = -0.1D - 0.07D * progress;
+                }
+                case ABYSS -> {
+                    type = i % 3 == 0 ? ParticleTypes.SOUL_FIRE_FLAME : color;
+                    double tendril = phase * 0.4D + Math.PI * 2 * (i % 3) / 3 + t;
+                    x = Math.cos(tendril) * 0.8D * (1 - 0.4D * t);
+                    z = Math.sin(tendril) * 0.8D * (1 - 0.4D * t);
+                    y = 0.05D + t * (0.6D + 1.5D * progress);
+                    vy = 0.035D;
+                }
+                case BEATITUDE -> {
+                    type = progress > 0.6D && i % 3 == 0 ? ParticleTypes.ASH : color;
+                    x = Math.cos(angle) * 0.95D;
+                    z = Math.sin(angle) * 0.95D;
+                    y = 1.85D + Math.sin(angle) * 0.08D;
+                    if (i % 4 == 0 && progress > 0.3D) {
+                        y -= progress * 0.6D;
+                        vy = -0.04D;
+                    }
+                }
+                case ANATHEMA -> {
+                    type = i % 3 == 0 ? ParticleTypes.SMOKE : color;
+                    double barb = Math.PI * 2 * (i % 5) / 5;
+                    double radius = 0.5D + t * (0.8D + 0.5D * progress);
+                    x = Math.cos(barb) * radius;
+                    z = Math.sin(barb) * radius;
+                    y = 0.2D + t * 0.9D;
+                    vx = Math.cos(barb) * progress * 0.03D;
+                    vz = Math.sin(barb) * progress * 0.03D;
+                    vy = type == color ? 0 : 0.04D;
+                }
+            }
+            double px = point.x + x * spread;
+            double py = point.y + y * (sparse ? 0.65D : 1);
+            double pz = point.z + z * spread;
+            level.sendParticles(type, px, py, pz, 0, vx, vy, vz, 1);
+            if (!sparse && type != color && i % 4 == 0) {
+                level.sendParticles(color, px, py, pz, 1, 0, 0, 0, 0);
+            }
+        }
+    }
+
+    private static void spiral(ServerLevel level, Vec3 point, ParticleOptions particle,
+                               double radius, double height, boolean descending, int count) {
+        for (int i = 0; i < count; i++) {
+            double fraction = i / (double) (count - 1);
+            double angle = fraction * Math.PI * 4;
+            double y = descending ? height * (1 - fraction) : height * fraction;
+            level.sendParticles(particle, point.x + Math.cos(angle) * radius, point.y + 0.2D + y,
+                    point.z + Math.sin(angle) * radius, 0, 0, descending ? -1 : 1, 0, 0.12D);
+        }
+    }
+
+    private static void rays(ServerLevel level, Vec3 point, ParticleOptions particle, boolean inward) {
+        for (int i = 0; i < 20; i++) {
+            double angle = Math.PI * 2 * i / 20;
+            double x = Math.cos(angle);
+            double z = Math.sin(angle);
+            double radius = inward ? 1.8D : 0.3D;
+            level.sendParticles(particle, point.x + x * radius, point.y + 0.8D, point.z + z * radius,
+                    0, inward ? -x : x, inward ? -0.1D : 0.25D, inward ? -z : z, 0.18D);
+        }
+    }
+
+    private static void burstVisuals(ServerLevel level, LivingEntity holder, Vec3 marked,
+                                     ConsequenceState state) {
+        StigmataConsequence family = state.consequence();
+        Vec3 point = affectsBearer(family) ? holder.position() : marked;
+        DustParticleOptions color = tint(family);
+        if (!affectsBearer(family)) circle(level, point, color, 2.5D, 0.25D, 36, 0);
+        level.sendParticles(particle(family), point.x, point.y + 0.8D, point.z,
+                24 + state.stage() * 6, 0.7D, 0.5D, 0.7D, 0.06D);
+        switch (family) {
+            case EXALTATION -> {
+                spiral(level, point, ParticleTypes.CLOUD, 1.2D, 2.8D, false, 28);
+                spiral(level, point, ParticleTypes.END_ROD, 0.75D, 2.8D, false, 20);
+            }
+            case MALEDICTION -> {
+                spiral(level, point, ParticleTypes.WITCH, 1.4D, 2.2D, false, 32);
+                rays(level, point, ParticleTypes.SMOKE, false);
+            }
+            case JUDGEMENT -> {
+                spiral(level, point, ParticleTypes.ELECTRIC_SPARK, 0.55D, 4, true, 32);
+                rays(level, point, ParticleTypes.ELECTRIC_SPARK, false);
+            }
+            case OBSESSION -> {
+                spiral(level, point, ParticleTypes.SOUL, 1.1D, 2.2D, false, 24);
+                rays(level, point, ParticleTypes.REVERSE_PORTAL, true);
+            }
+            case INCUBATION -> {
+                circle(level, point, color, 1.3D, 0.3D, 24, 0);
+                rays(level, point, ParticleTypes.SPORE_BLOSSOM_AIR, false);
+            }
+            case DEFILEMENT -> {
+                circle(level, point, color, 1.2D, 0.4D, 24, 0);
+                rays(level, point, ParticleTypes.SCULK_CHARGE_POP, false);
+            }
+            case DEVOURING -> {
+                rays(level, point, ParticleTypes.SMOKE, true);
+                spiral(level, point, color, 0.65D, 1.2D, true, 24);
+            }
+            case SACRAMENT -> {
+                rays(level, point, ParticleTypes.ENCHANT, true);
+                spiral(level, point, ParticleTypes.REVERSE_PORTAL, 1.1D, 1.8D, true, 24);
+            }
+            case OFFERING -> {
+                rays(level, point, color, false);
+                level.sendParticles(ParticleTypes.DAMAGE_INDICATOR, point.x, point.y + 1, point.z,
+                        14, 0.5D, 0.5D, 0.5D, 0.08D);
+            }
+            case IMMOLATION -> {
+                rays(level, point, ParticleTypes.FLAME, false);
+                spiral(level, point, ParticleTypes.SMOKE, 1.1D, 2.4D, false, 24);
+            }
+            case PENANCE -> {
+                for (int i = 0; i < 4; i++) {
+                    double angle = Math.PI * i / 2;
+                    Vec3 pillar = point.add(Math.cos(angle), 0, Math.sin(angle));
+                    spiral(level, pillar, color, 0.15D, 2.2D, true, 10);
+                }
+                level.sendParticles(ParticleTypes.ASH, point.x, point.y + 1.6D, point.z,
+                        24, 1, 0.5D, 1, 0.02D);
+            }
+            case DOMINION -> {
+                circle(level, point, color, 1.1D, 2.1D, 24, 0);
+                spiral(level, point, ParticleTypes.CRIT, 1.1D, 2.1D, true, 28);
+            }
+            case NOCTURNE -> {
+                spiral(level, point, ParticleTypes.END_ROD, 1.4D, 2, true, 24);
+                rays(level, point, ParticleTypes.REVERSE_PORTAL, true);
+            }
+            case ZENITH -> {
+                spiral(level, point, ParticleTypes.CLOUD, 1.5D, 3.5D, true, 32);
+                spiral(level, point, ParticleTypes.END_ROD, 0.8D, 3.5D, true, 24);
+            }
+            case ABYSS -> {
+                spiral(level, point, ParticleTypes.SOUL_FIRE_FLAME, 1.1D, 2.6D, false, 28);
+                rays(level, point, ParticleTypes.SOUL, true);
+            }
+            case BEATITUDE -> {
+                circle(level, point, color, 1.1D, 2, 28, 0);
+                rays(level, point.add(0, 1.1D, 0), ParticleTypes.ENCHANTED_HIT, false);
+            }
+            case ANATHEMA -> {
+                rays(level, point, color, false);
+                spiral(level, point, ParticleTypes.SMOKE, 1.2D, 2.5D, false, 28);
+            }
+        }
+        glimpse(level, holder, color, 8);
+        level.playSound(null, BlockPos.containing(point), manifestationSound(family),
+                SoundSource.PLAYERS, 0.8F, 0.8F + state.stage() * 0.1F);
+    }
+
+    private static void zone(ServerLevel level, LivingEntity owner, Vec3 point,
+                             StigmataConsequence family, MobEffect effect, int duration, int amplifier) {
+        for (AreaEffectCloud old : level.getEntitiesOfClass(AreaEffectCloud.class,
+                owner.getBoundingBox().inflate(48), cloud -> cloud.getPersistentData().hasUUID(ZONE_KEY)
+                        && owner.getUUID().equals(cloud.getPersistentData().getUUID(ZONE_KEY))
+                        && cloud.getPersistentData().getString("family").equals(key(family)))) old.discard();
+        AreaEffectCloud cloud = new AreaEffectCloud(level, point.x, point.y, point.z);
         cloud.setOwner(owner);
-        cloud.setRadius(radius);
-        cloud.setWaitTime(5);
-        cloud.setDuration(duration);
-        cloud.setRadiusPerTick(-radius / duration);
-        cloud.addEffect(new MobEffectInstance(effect, Math.max(20, duration / 2), amplifier));
+        cloud.setParticle(particle(family));
+        cloud.setRadius(2.5F);
+        cloud.setWaitTime(0);
+        cloud.setDuration(100);
+        cloud.setRadiusPerTick(-0.015F);
+        cloud.addEffect(new MobEffectInstance(effect, duration, amplifier));
+        cloud.getPersistentData().putUUID(ZONE_KEY, owner.getUUID());
+        cloud.getPersistentData().putString("family", key(family));
         level.addFreshEntity(cloud);
     }
 
-    private static void warningLightning(
-            ServerLevel level, Vec3 center, @Nullable LivingEntity cause, ConsequenceState state) {
-        double spread = 1.25D + 0.2D * power(state);
-        Vec3 strike = center.add(
-                (level.random.nextDouble() - 0.5D) * spread * 2.0D,
-                0,
-                (level.random.nextDouble() - 0.5D) * spread * 2.0D);
-        level.sendParticles(
-                ParticleTypes.ELECTRIC_SPARK, strike.x, strike.y + 0.15D, strike.z,
-                18 + 2 * state.stage(), spread * 0.3D, 0.15D, spread * 0.3D, 0.04D);
-        PENDING_LIGHTNING.computeIfAbsent(level, ignored -> new ArrayList<>())
-                         .add(new PendingLightning(strike, cause, level.getGameTime() + 16));
-    }
-
-    private static void spreadSculk(ServerLevel level, BlockPos origin, ConsequenceState state) {
-        SculkSpreader spreader = SculkSpreader.createLevelSpreader();
-        spreader.addCursors(origin, 35 + 15 * power(state));
-        PENDING_SCULK.computeIfAbsent(level, ignored -> new ArrayList<>())
-                     .add(new PendingSculk(spreader, origin.immutable(), 10 + 2 * state.stage()));
-        level.sendParticles(
-                ParticleTypes.SCULK_CHARGE_POP,
-                origin.getX() + 0.5D, origin.getY() + 0.5D, origin.getZ() + 0.5D,
-                12, 0.7D, 0.4D, 0.7D, 0.02D);
-    }
-
-    private static void summonVex(
-            ServerLevel level, LivingEntity summoner, @Nullable LivingEntity initialTarget,
-            ConsequenceState state) {
-        String owner = summoner.getUUID().toString();
-        AABB search = summoner.getBoundingBox().inflate(48.0D);
-        boolean alreadyPresent = !level.getEntitiesOfClass(
-                Vex.class, search,
-                vex -> owner.equals(vex.getPersistentData().getString(OBSESSION_OWNER))).isEmpty();
-        if (alreadyPresent){
-            return;
-        }
-        Vex vex = EntityType.VEX.create(level);
-        if (null == vex){
-            return;
-        }
-        vex.moveTo(
-                summoner.getX() + level.random.nextDouble() - 0.5D,
-                summoner.getEyeY(),
-                summoner.getZ() + level.random.nextDouble() - 0.5D,
-                summoner.getYRot(), 0);
-        vex.getPersistentData().putString(OBSESSION_OWNER, owner);
-        vex.setLimitedLife(100 + 20 * power(state));
-        LivingEntity target = initialTarget;
-        if (2 == state.stage() && level.random.nextInt(3) == 0){
-            target = summoner;
-        }else if (3 <= state.stage()){
-            target = summoner;
-        }
-        if (null != target && target.isAlive()){
-            vex.setTarget(target);
-        }
-        level.addFreshEntity(vex);
-    }
-
-    private static void summonSilverfish(
-            ServerLevel level, LivingEntity owner, LivingEntity near,
-            @Nullable LivingEntity initialTarget, ConsequenceState state) {
-        Silverfish silverfish = EntityType.SILVERFISH.create(level);
-        if (null == silverfish){
-            return;
-        }
-        silverfish.moveTo(
-                near.getX() + level.random.nextDouble() - 0.5D,
-                near.getY(),
-                near.getZ() + level.random.nextDouble() - 0.5D,
-                near.getYRot(), 0);
-        silverfish.getPersistentData().putBoolean(INCUBATION_MARKER, true);
-        silverfish.getPersistentData().putInt(INCUBATION_POWER, power(state));
-        silverfish.getPersistentData().putInt(INCUBATION_STAGE, state.stage());
-        silverfish.getPersistentData().putString(INCUBATION_OWNER, owner.getUUID().toString());
-        LivingEntity target = initialTarget;
-        if (2 == state.stage() && level.random.nextInt(3) == 0){
-            target = owner;
-        }else if (3 <= state.stage()){
-            target = owner;
-        }
-        if (null != target && target.isAlive()){
-            silverfish.setTarget(target);
-        }
-        level.addFreshEntity(silverfish);
-    }
-
-    private static void igniteNearby(ServerLevel level, BlockPos center, ConsequenceState state) {
-        int attempts = 2 + state.stage();
-        int radius = 2 + state.stage();
-        for (int i = 0; i < attempts; i++) {
-            BlockPos pos = center.offset(
-                    level.random.nextInt(radius * 2 + 1) - radius,
-                    level.random.nextInt(3) - 1,
-                    level.random.nextInt(radius * 2 + 1) - radius);
-            if (level.isEmptyBlock(pos)){
-                level.setBlockAndUpdate(pos, BaseFireBlock.getState(level, pos));
-            }
-        }
-    }
-
-    @Nullable
-    private static LivingEntity attacker(DamageSource source) {
-        return source.getEntity() instanceof LivingEntity living ? living : null;
-    }
-
-    private record PendingLightning(Vec3 position, @Nullable LivingEntity cause, long due) {}
-
-    private record PendingSculk(SculkSpreader spreader, BlockPos origin, int ticksLeft) {
-        PendingSculk tick(ServerLevel level) {
-            spreader.updateCursors(level, origin, level.random, true);
-            return new PendingSculk(spreader, origin, ticksLeft - 1);
-        }
-    }
-
-    @SubscribeEvent
-    public static void onLevelUnload(LevelEvent.Unload event) {
-        if (event.getLevel() instanceof ServerLevel level){
-            PENDING_LIGHTNING.remove(level);
-            PENDING_SCULK.remove(level);
-        }
-    }
-
-    @SubscribeEvent
-    public static void onServerStopped(ServerStoppedEvent event) {
-        PENDING_LIGHTNING.clear();
-        PENDING_SCULK.clear();
-    }
-
-    @SubscribeEvent
-    public static void onLevelTick(TickEvent.LevelTickEvent event) {
-        if (TickEvent.Phase.END != event.phase || !(event.level instanceof ServerLevel level)){
-            return;
-        }
-
-        List<PendingLightning> lightning = PENDING_LIGHTNING.get(level);
-        if (null != lightning){
-            lightning.removeIf(pending -> {
-                if (pending.due() > level.getGameTime()){
-                    return false;
-                }
+    private static void burst(ConsequenceState state, LivingEntity holder, Vec3 point,
+                              @Nullable LivingEntity target) {
+        if (!(holder.level() instanceof ServerLevel level)) return;
+        int strength = state.strength();
+        burstVisuals(level, holder, point, state);
+        switch (state.consequence()) {
+            case EXALTATION -> zone(level, holder, point, state.consequence(),
+                    MobEffects.LEVITATION, 35 + 5 * strength, state.stage() == 3 ? 1 : 0);
+            case MALEDICTION -> zone(level, holder, point, state.consequence(),
+                    state.stage() == 3 ? MobEffects.WITHER : MobEffects.POISON, 60 + 10 * strength, 0);
+            case JUDGEMENT -> {
                 LightningBolt bolt = EntityType.LIGHTNING_BOLT.create(level);
-                if (null != bolt){
-                    bolt.moveTo(pending.position());
-                    if (pending.cause() instanceof ServerPlayer player){
-                        bolt.setCause(player);
-                    }
+                if (bolt != null) {
+                    bolt.moveTo(point);
+                    bolt.setVisualOnly(true);
                     level.addFreshEntity(bolt);
                 }
-                return true;
-            });
-            if (lightning.isEmpty()){
-                PENDING_LIGHTNING.remove(level);
+                for (LivingEntity near : nearby(level, point)) hurt(near, 2 + strength);
+                level.playSound(null, BlockPos.containing(point), SoundEvents.LIGHTNING_BOLT_THUNDER,
+                        SoundSource.PLAYERS, 0.6F, 1.2F);
             }
-        }
-
-        List<PendingSculk> growths = PENDING_SCULK.get(level);
-        if (null != growths){
-            for (int i = growths.size() - 1; i >= 0; i--) {
-                PendingSculk next = growths.get(i).tick(level);
-                if (0 >= next.ticksLeft() || next.spreader().getCursors().isEmpty()){
-                    growths.remove(i);
-                }else {
-                    growths.set(i, next);
+            case OBSESSION -> summon(state, holder, point, target, false);
+            case INCUBATION -> summon(state, holder, point, target, true);
+            case DEFILEMENT -> zone(level, holder, point, state.consequence(), MobEffects.MOVEMENT_SLOWDOWN,
+                    50 + 10 * strength, 1);
+            case DEVOURING -> {
+                if (holder instanceof Player player) {
+                    player.causeFoodExhaustion(2 + strength);
+                    effect(player, MobEffects.HUNGER, 60 + 10 * strength, 0);
+                    if (state.stage() == 3 && player.getFoodData().getFoodLevel() <= 6) hurt(player, 1 + strength * 0.5F);
                 }
             }
-            if (growths.isEmpty()){
-                PENDING_SCULK.remove(level);
+            case SACRAMENT -> {
+                effect(holder, MobEffects.WEAKNESS, 60 + 15 * strength, 0);
+                effect(holder, MobEffects.DIG_SLOWDOWN, 40 + 10 * strength, 0);
+            }
+            case OFFERING -> hurt(holder, 1 + strength * 0.5F);
+            case IMMOLATION -> {
+                for (LivingEntity near : nearby(level, point)) near.setSecondsOnFire(2 + strength);
+            }
+            case PENANCE -> {
+                effect(holder, MobEffects.MOVEMENT_SLOWDOWN, 60 + 10 * strength, 1);
+                effect(holder, MobEffects.DIG_SLOWDOWN, 60 + 10 * strength, 1);
+            }
+            case DOMINION -> {
+                effect(holder, MobEffects.CONFUSION, 100, 0);
+                effect(holder, MobEffects.MOVEMENT_SLOWDOWN, 60 + 10 * strength, 0);
+            }
+            case NOCTURNE -> {
+                effect(holder, MobEffects.BLINDNESS, 40 + 10 * strength, 0);
+                effect(holder, MobEffects.WEAKNESS, 60, 0);
+            }
+            case ZENITH -> {
+                holder.setDeltaMovement(holder.getDeltaMovement().add(0, -0.5D, 0));
+                holder.hurtMarked = true;
+                effect(holder, MobEffects.MOVEMENT_SLOWDOWN, 60 + 10 * strength, 1);
+            }
+            case ABYSS -> {
+                effect(holder, MobEffects.GLOWING, 120 + 20 * strength, 0);
+                effect(holder, MobEffects.WEAKNESS, 60 + 10 * strength, 0);
+            }
+            case BEATITUDE -> {
+                List<MobEffectInstance> blessings = new ArrayList<>(holder.getActiveEffects());
+                for (MobEffectInstance blessing : blessings) {
+                    if (blessing.getEffect().isBeneficial()) {
+                        holder.removeEffect(blessing.getEffect());
+                        break;
+                    }
+                }
+                effect(holder, MobEffects.WEAKNESS, 60 + 10 * strength, 0);
+            }
+            case ANATHEMA -> {
+                effect(holder, MobEffects.GLOWING, 100 + 20 * strength, 0);
+                for (Monster monster : level.getEntitiesOfClass(Monster.class,
+                        holder.getBoundingBox().inflate(16))) monster.setTarget(holder);
             }
         }
+    }
 
+    private static List<LivingEntity> nearby(ServerLevel level, Vec3 point) {
+        return level.getEntitiesOfClass(LivingEntity.class, new AABB(point, point).inflate(2.5),
+                entity -> entity.isAlive() && entity.position().distanceToSqr(point) <= 6.25D);
+    }
+
+    private static void summon(ConsequenceState state, LivingEntity holder, Vec3 point,
+                               @Nullable LivingEntity target, boolean brood) {
+        if (state.stage() == 1 && (target == null || !target.isAlive())) return;
+        ServerLevel level = (ServerLevel) holder.level();
+        int maximum = brood ? 2 : 1;
+        int current = level.getEntitiesOfClass(Mob.class, holder.getBoundingBox().inflate(48),
+                mob -> mob.getPersistentData().hasUUID(SUMMON_KEY)
+                       && holder.getUUID().equals(mob.getPersistentData().getUUID(SUMMON_KEY))
+                       && mob.getPersistentData().getBoolean("brood") == brood).size();
+        for (int i = current; i < maximum; i++) {
+            Mob mob = brood ? EntityType.SILVERFISH.create(level) : EntityType.VEX.create(level);
+            if (mob == null) return;
+            double angle = Math.PI * 2 * i / maximum;
+            double distance = brood ? 2.0D : 2.75D;
+            mob.moveTo(point.x + Math.cos(angle) * distance, point.y + (brood ? 0 : 1),
+                    point.z + Math.sin(angle) * distance, 0, 0);
+            mob.setPersistenceRequired();
+            mob.getPersistentData().putUUID(SUMMON_KEY, holder.getUUID());
+            mob.getPersistentData().putBoolean("brood", brood);
+            mob.getPersistentData().putLong("expires", level.getGameTime() + (brood ? 300 : 400));
+            mob.getPersistentData().putInt("stage", state.stage());
+            LivingEntity prey = state.stage() == 1 ? target : holder;
+            if (prey != null) {
+                mob.getPersistentData().putUUID("prey", prey.getUUID());
+                mob.setTarget(prey);
+            }
+            if (mob instanceof Silverfish) mob.setNoAi(true); // no infesting or waking ordinary silverfish
+            if (mob instanceof Vex vex) vex.setLimitedLife(400);
+            level.addFreshEntity(mob);
+            level.sendParticles(brood ? ParticleTypes.SPORE_BLOSSOM_AIR : ParticleTypes.SOUL,
+                    mob.getX(), mob.getY() + 0.4D, mob.getZ(), 18, 0.3D, 0.4D, 0.3D, 0.04D);
+        }
+    }
+
+    private static void tickSummon(LivingEntity entity, ServerLevel level) {
+        CompoundTag tag = entity.getPersistentData();
+        if (!tag.hasUUID(SUMMON_KEY)) return;
+        if (level.getGameTime() >= tag.getLong("expires")) {
+            entity.discard();
+            return;
+        }
+        if (tag.hasUUID("prey")) {
+            Entity prey = level.getEntity(tag.getUUID("prey"));
+            if (!(prey instanceof LivingEntity living) || !living.isAlive()) {
+                entity.discard();
+                return;
+            }
+            // Vanilla vex targeting can replace setTarget() with a nearby player.
+            // Rebind from the saved prey, including after an entity reload.
+            if (entity instanceof Vex vex) vex.setTarget(living);
+        }
+        if (entity instanceof Silverfish && tag.hasUUID("prey")
+            && level.getEntity(tag.getUUID("prey")) instanceof LivingEntity prey && prey.isAlive()) {
+            Vec3 step = prey.position().subtract(entity.position());
+            if (step.lengthSqr() > 1) entity.setDeltaMovement(step.normalize().scale(0.12D).add(0, -0.04D, 0));
+            else if (entity.tickCount % 20 == 0) {
+                effect(prey, MobEffects.POISON, 40, 0);
+                effect(prey, MobEffects.HUNGER, 60, 0);
+                entity.discard();
+            }
+        }
     }
 
     @SubscribeEvent
-    public static void onIncubationDeath(LivingDeathEvent event) {
-        if (!(event.getEntity() instanceof Silverfish silverfish)
-            || !silverfish.getPersistentData().getBoolean(INCUBATION_MARKER)
-            || !(silverfish.level() instanceof ServerLevel level)){
-            return;
-        }
-        int strength = Math.max(1, silverfish.getPersistentData().getInt(INCUBATION_POWER));
-        int stage = Math.max(1, silverfish.getPersistentData().getInt(INCUBATION_STAGE));
-        MobEffect effect = 3 <= stage ? MobEffects.POISON : MobEffects.HUNGER;
-        cloud(
-                level, silverfish.position(), null, effect,
-                Math.min(2, strength / 4), 80 + 10 * strength, 1.5F + 0.35F * stage);
-        level.sendParticles(
-                ParticleTypes.SOUL, silverfish.getX(), silverfish.getEyeY(), silverfish.getZ(),
-                18, 0.45D, 0.35D, 0.45D, 0.04D);
-    }
-
-    private static final class ExaltationHandler implements Handler {
-        private static void manifest(ConsequenceState state, LivingEntity owner, Vec3 position) {
-            if (owner.level() instanceof ServerLevel level){
-                cloud(level, position, owner, MobEffects.LEVITATION,
-                      Math.min(2, state.stage() - 1),
-                      75 + 15 * power(state), 2.0F + 0.25F * state.stage());
-                if (2 <= state.stage()){
-                    owner.addEffect(new MobEffectInstance(
-                            MobEffects.LEVITATION, 15 + 5 * power(state),
-                            Math.min(2, state.stage() - 2)));
-                }
-            }
-        }
-
-        @Override
-        public void afterMeleeHit(ConsequenceState state, ModifierEntry modifier, ToolAttackContext context, float damageDealt) {
-            LivingEntity target = context.getLivingTarget();
-            if (null != target){
-                manifest(state, context.getAttacker(), target.position());
-            }
-        }
-
-        @Override
-        public void onLauncherHitEntity(
-                ConsequenceState state, ModifierEntry modifier, Projectile projectile,
-                LivingEntity attacker, Entity target, @Nullable LivingEntity livingTarget,
-                float damageDealt) {
-            manifest(state, attacker, target.position());
-        }
-
-        @Override
-        public void onArmorAttacked(
-                ConsequenceState state, ModifierEntry modifier, EquipmentContext context,
-                EquipmentSlot slot, DamageSource source, float amount, boolean isDirectDamage) {
-            manifest(state, context.getEntity(), context.getEntity().position());
-        }
-
-        @Override
-        public void onInventoryTick(
-                ConsequenceState state, ModifierEntry modifier, Level world, LivingEntity holder,
-                int itemSlot, boolean isSelected, boolean isCorrectSlot, ItemStack stack) {
-            if (3 <= state.stage() && world instanceof ServerLevel
-                && periodic(state, holder, Math.max(60, 120 - 5 * power(state)))){
-                holder.addEffect(new MobEffectInstance(
-                        MobEffects.LEVITATION, 35 + 3 * power(state),
-                        Math.min(2, power(state) / 4)));
-            }
+    public static void onSummonDeath(LivingDeathEvent event) {
+        LivingEntity mob = event.getEntity();
+        CompoundTag tag = mob.getPersistentData();
+        if (tag.contains(RUNTIME_KEY)) clear(mob);
+        if (tag.hasUUID(SUMMON_KEY) && mob.level() instanceof ServerLevel level
+            && level.getEntity(tag.getUUID(SUMMON_KEY)) instanceof LivingEntity owner) {
+            setPressure(owner, tag.getBoolean("brood") ? StigmataConsequence.INCUBATION : StigmataConsequence.OBSESSION, 0);
+            StigmataConsequence family = tag.getBoolean("brood")
+                    ? StigmataConsequence.INCUBATION : StigmataConsequence.OBSESSION;
+            circle(level, mob.position(), particle(family), 0.6D, 0.15D, 10, 0);
+            level.sendParticles(particle(family), mob.getX(), mob.getY() + 1, mob.getZ(),
+                    28, 0.7D, 0.8D, 0.7D, 0.04D);
         }
     }
 
-    private static final class MaledictionHandler implements Handler {
-        private static MobEffect effect(ConsequenceState state) {
-            return 3 == state.stage() ? MobEffects.WITHER : MobEffects.POISON;
-        }
-
-        private static void manifest(
-                ConsequenceState state, LivingEntity owner, Vec3 position) {
-            if (owner.level() instanceof ServerLevel level){
-                cloud(
-                        level, position, owner, effect(state),
-                        Math.min(2, power(state) / 4),
-                        100 + 15 * power(state), 1.75F + 0.2F * state.stage());
-                if (2 <= state.stage()){
-                    owner.addEffect(new MobEffectInstance(
-                            effect(state), 45 + 5 * power(state),
-                            Math.min(1, power(state) / 5)));
-                }
-            }
-        }
-
-        @Override
-        public void afterMeleeHit(
-                ConsequenceState state, ModifierEntry modifier, ToolAttackContext context,
-                float damageDealt) {
-            LivingEntity target = context.getLivingTarget();
-            if (null != target){
-                manifest(state, context.getAttacker(), target.position());
-            }
-        }
-
-        @Override
-        public void onLauncherHitEntity(
-                ConsequenceState state, ModifierEntry modifier, Projectile projectile,
-                LivingEntity attacker, Entity target, @Nullable LivingEntity livingTarget,
-                float damageDealt) {
-            manifest(state, attacker, target.position());
-        }
-
-        @Override
-        public void onArmorAttacked(
-                ConsequenceState state, ModifierEntry modifier, EquipmentContext context,
-                EquipmentSlot slot, DamageSource source, float amount, boolean isDirectDamage) {
-            manifest(state, context.getEntity(), context.getEntity().position());
-        }
-
-        @Override
-        public void onInventoryTick(
-                ConsequenceState state, ModifierEntry modifier, Level world, LivingEntity holder,
-                int itemSlot, boolean isSelected, boolean isCorrectSlot, ItemStack stack) {
-            if (3 <= state.stage() && world instanceof ServerLevel
-                && periodic(state, holder, Math.max(80, 150 - 5 * power(state)))){
-                manifest(state, holder, holder.position());
-            }
-        }
+    @SubscribeEvent
+    public static void onSummonDrops(LivingDropsEvent event) {
+        if (event.getEntity().getPersistentData().hasUUID(SUMMON_KEY)
+            || event.getEntity().getPersistentData().getBoolean(TEST_DUMMY)) event.getDrops().clear();
     }
 
-    private static final class JudgementHandler implements Handler {
-        private static void manifest(
-                ConsequenceState state, LivingEntity owner, Vec3 position) {
-            if (owner.level() instanceof ServerLevel level
-                && chance(level, Math.max(2, 7 - state.stage() - power(state) / 3))){
-                Vec3 center = position;
-                if (2 == state.stage() && level.random.nextBoolean()){
-                    center = owner.position();
-                }else if (3 <= state.stage()){
-                    center = owner.position();
-                }
-                warningLightning(level, center, 1 == state.stage() ? owner : null, state);
-            }
-        }
-
-        @Override
-        public void afterMeleeHit(
-                ConsequenceState state, ModifierEntry modifier, ToolAttackContext context,
-                float damageDealt) {
-            LivingEntity target = context.getLivingTarget();
-            if (null != target){
-                manifest(state, context.getAttacker(), target.position());
-            }
-        }
-
-        @Override
-        public void onLauncherHitEntity(
-                ConsequenceState state, ModifierEntry modifier, Projectile projectile,
-                LivingEntity attacker, Entity target, @Nullable LivingEntity livingTarget,
-                float damageDealt) {
-            manifest(state, attacker, target.position());
-        }
-
-        @Override
-        public void onLauncherHitBlock(
-                ConsequenceState state, ModifierEntry modifier, Projectile projectile,
-                LivingEntity owner, BlockPos target) {
-            manifest(state, owner, Vec3.atBottomCenterOf(target));
-        }
-
-        @Override
-        public void onArmorAttacked(
-                ConsequenceState state, ModifierEntry modifier, EquipmentContext context,
-                EquipmentSlot slot, DamageSource source, float amount, boolean isDirectDamage) {
-            manifest(state, context.getEntity(), context.getEntity().position());
-        }
-
-        @Override
-        public void onInventoryTick(
-                ConsequenceState state, ModifierEntry modifier, Level world, LivingEntity holder,
-                int itemSlot, boolean isSelected, boolean isCorrectSlot, ItemStack stack) {
-            if (3 <= state.stage() && world instanceof ServerLevel level
-                && periodic(state, holder, Math.max(100, 190 - 5 * power(state)))){
-                warningLightning(level, holder.position(), null, state);
-            }
-        }
+    @SubscribeEvent
+    public static void onSummonExperience(LivingExperienceDropEvent event) {
+        if (event.getEntity().getPersistentData().hasUUID(SUMMON_KEY)
+            || event.getEntity().getPersistentData().getBoolean(TEST_DUMMY)) event.setDroppedExperience(0);
     }
 
-    private static final class ObsessionHandler implements Handler {
-        private static void manifest(
-                ConsequenceState state, LivingEntity owner, @Nullable LivingEntity target) {
-            if (owner.level() instanceof ServerLevel level
-                && chance(level, Math.max(3, 10 - power(state) / 2))){
-                summonVex(level, owner, target, state);
-            }
-        }
-
-        @Override
-        public void afterMeleeHit(
-                ConsequenceState state, ModifierEntry modifier, ToolAttackContext context,
-                float damageDealt) {
-            manifest(state, context.getAttacker(), context.getLivingTarget());
-        }
-
-        @Override
-        public void onLauncherHitEntity(
-                ConsequenceState state, ModifierEntry modifier, Projectile projectile,
-                LivingEntity attacker, Entity target, @Nullable LivingEntity livingTarget,
-                float damageDealt) {
-            manifest(state, attacker, livingTarget);
-        }
-
-        @Override
-        public void onArmorAttacked(
-                ConsequenceState state, ModifierEntry modifier, EquipmentContext context,
-                EquipmentSlot slot, DamageSource source, float amount, boolean isDirectDamage) {
-            manifest(state, context.getEntity(), attacker(source));
-        }
-
-        @Override
-        public void onInventoryTick(
-                ConsequenceState state, ModifierEntry modifier, Level world, LivingEntity holder,
-                int itemSlot, boolean isSelected, boolean isCorrectSlot, ItemStack stack) {
-            if (3 <= state.stage() && world instanceof ServerLevel level
-                && periodic(state, holder, Math.max(120, 220 - 5 * power(state)))){
-                summonVex(level, holder, holder, state);
-            }
-        }
+    @SubscribeEvent
+    public static void onExperiencePickup(PlayerXpEvent.PickupXp event) {
+        Player player = event.getEntity();
+        int pressure = pressure(player, StigmataConsequence.SACRAMENT);
+        if (pressure > 0) setPressure(player, StigmataConsequence.SACRAMENT,
+                pressure - event.getOrb().getValue() * 4);
     }
 
-    private static final class IncubationHandler implements Handler {
-        private static void manifest(
-                ConsequenceState state, LivingEntity owner, LivingEntity near,
-                @Nullable LivingEntity target) {
-            if (owner.level() instanceof ServerLevel level
-                && chance(level, Math.max(8, 24 - power(state)))){
-                summonSilverfish(level, owner, near, target, state);
-            }
+    public static int clear(LivingEntity holder) {
+        holder.getPersistentData().remove(RUNTIME_KEY);
+        if (!(holder.level() instanceof ServerLevel level)) return 0;
+        int removed = 0;
+        for (Entity entity : level.getEntities(holder, holder.getBoundingBox().inflate(64),
+                entity -> entity.getPersistentData().hasUUID(SUMMON_KEY)
+                          && holder.getUUID().equals(entity.getPersistentData().getUUID(SUMMON_KEY))
+                          || entity.getPersistentData().hasUUID(ZONE_KEY)
+                             && holder.getUUID().equals(entity.getPersistentData().getUUID(ZONE_KEY)))) {
+            entity.discard();
+            removed++;
         }
-
-        @Override
-        public void afterMeleeHit(
-                ConsequenceState state, ModifierEntry modifier, ToolAttackContext context,
-                float damageDealt) {
-            LivingEntity owner = context.getAttacker();
-            LivingEntity target = context.getLivingTarget();
-            LivingEntity near = 2 <= state.stage() || null == target ? owner : target;
-            manifest(state, owner, near, target);
-        }
-
-        @Override
-        public void onLauncherHitEntity(
-                ConsequenceState state, ModifierEntry modifier, Projectile projectile,
-                LivingEntity attacker, Entity target, @Nullable LivingEntity livingTarget,
-                float damageDealt) {
-            LivingEntity near = 2 <= state.stage() || null == livingTarget ? attacker : livingTarget;
-            manifest(state, attacker, near, livingTarget);
-        }
-
-        @Override
-        public void onArmorAttacked(
-                ConsequenceState state, ModifierEntry modifier, EquipmentContext context,
-                EquipmentSlot slot, DamageSource source, float amount, boolean isDirectDamage) {
-            LivingEntity wearer = context.getEntity();
-            manifest(state, wearer, wearer, attacker(source));
-        }
-
-        @Override
-        public void onInventoryTick(
-                ConsequenceState state, ModifierEntry modifier, Level world, LivingEntity holder,
-                int itemSlot, boolean isSelected, boolean isCorrectSlot, ItemStack stack) {
-            if (3 <= state.stage() && world instanceof ServerLevel level
-                && periodic(state, holder, Math.max(120, 210 - 5 * power(state)))){
-                summonSilverfish(level, holder, holder, holder, state);
-            }
-        }
+        return removed;
     }
 
-    private static final class DefilementHandler implements Handler {
-        private static void manifest(ConsequenceState state, LivingEntity owner, BlockPos origin) {
-            if (owner.level() instanceof ServerLevel level){
-                spreadSculk(level, origin, state);
+    private static final class ReworkedHandler implements Handler {
+        @Override
+        public void addTooltip(ConsequenceState state, boolean armor, List<Component> tooltip) {
+            Handler.super.addTooltip(state, armor, tooltip);
+            tooltip.add(Component.translatable("stigmata_instability.esotericism_tinker." + key(state.consequence()))
+                    .withStyle(ChatFormatting.GRAY));
+            tooltip.add(Component.translatable("stigmata_instability.esotericism_tinker.rules",
+                    state.actionGain(), String.format(Locale.ROOT, "%.1f", state.warningTicks() / 20.0D))
+                    .withStyle(ChatFormatting.DARK_GRAY));
+        }
+
+        @Override
+        public void onInventoryTick(ConsequenceState state, ModifierEntry modifier, Level world,
+                                    LivingEntity holder, int itemSlot, boolean selected, boolean correct, ItemStack stack) {
+            if (correct && !world.isClientSide) touch(state, holder);
+        }
+
+        @Override
+        public void afterMeleeHit(ConsequenceState state, ModifierEntry modifier, ToolAttackContext context, float dealt) {
+            if (dealt > 0) action(state, context.getAttacker(), context.getLivingTarget(),
+                    context.getTarget().position());
+        }
+
+        @Override
+        public void afterBlockBreak(ConsequenceState state, ModifierEntry modifier, ToolHarvestContext context) {
+            action(state, context.getLiving(), null, Vec3.atCenterOf(context.getPos()));
+        }
+
+        @Override
+        public void onLauncherHitEntity(ConsequenceState state, ModifierEntry modifier, Projectile projectile,
+                                         LivingEntity attacker, Entity target, @Nullable LivingEntity livingTarget, float dealt) {
+            action(state, attacker, livingTarget, target.position());
+        }
+
+        @Override
+        public void onLauncherHitBlock(ConsequenceState state, ModifierEntry modifier, Projectile projectile,
+                                        LivingEntity owner, BlockPos target) {
+            if (state.consequence() == StigmataConsequence.JUDGEMENT
+                || state.consequence() == StigmataConsequence.DEFILEMENT
+                || state.consequence() == StigmataConsequence.IMMOLATION) {
+                action(state, owner, null, Vec3.atCenterOf(target));
             }
         }
 
         @Override
-        public void afterMeleeHit(
-                ConsequenceState state, ModifierEntry modifier, ToolAttackContext context,
-                float damageDealt) {
-            LivingEntity target = context.getLivingTarget();
-            if (null != target){
-                manifest(state, context.getAttacker(), target.blockPosition());
-            }
+        public void onArmorAttacked(ConsequenceState state, ModifierEntry modifier, EquipmentContext context,
+                                     EquipmentSlot slot, DamageSource source, float amount, boolean direct) {
+            if (amount > 0) action(state, context.getEntity(),
+                    source.getEntity() instanceof LivingEntity attacker ? attacker : null,
+                    context.getEntity().position());
         }
 
         @Override
-        public void afterBlockBreak(
-                ConsequenceState state, ModifierEntry modifier, ToolHarvestContext context) {
-            manifest(state, context.getLiving(), context.getPos());
+        public float getMeleeDamage(ConsequenceState state, ModifierEntry modifier, ToolAttackContext context,
+                                     float base, float damage) {
+            if (state.consequence() == StigmataConsequence.PENANCE && context.isFullyCharged()
+                && !context.getAttacker().isSprinting()) return damage * (1.04F + state.strength() * 0.02F);
+            return damage * outputMultiplier(state, context.getAttacker());
         }
 
         @Override
-        public void onLauncherHitEntity(
-                ConsequenceState state, ModifierEntry modifier, Projectile projectile,
-                LivingEntity attacker, Entity target, @Nullable LivingEntity livingTarget,
-                float damageDealt) {
-            manifest(state, attacker, target.blockPosition());
+        public float modifyProjectileHurt(ConsequenceState state, ModifierEntry modifier, Projectile projectile,
+                                           DamageSource source, @Nullable LivingEntity attacker,
+                                           LivingEntity target, float amount) {
+            return attacker == null ? amount : amount * outputMultiplier(state, attacker);
         }
 
         @Override
-        public void onLauncherHitBlock(
-                ConsequenceState state, ModifierEntry modifier, Projectile projectile,
-                LivingEntity owner, BlockPos target) {
-            manifest(state, owner, target);
+        public float modifyBreakSpeed(ConsequenceState state, ModifierEntry modifier,
+                                       slimeknights.tconstruct.library.modifiers.hook.mining.BreakSpeedContext context, float speed) {
+            return speed * outputMultiplier(state, context.player());
         }
 
         @Override
-        public void onArmorAttacked(
-                ConsequenceState state, ModifierEntry modifier, EquipmentContext context,
-                EquipmentSlot slot, DamageSource source, float amount, boolean isDirectDamage) {
-            manifest(state, context.getEntity(), context.getEntity().blockPosition());
+        public float getProtectionModifier(ConsequenceState state, ModifierEntry modifier, EquipmentContext context,
+                                             EquipmentSlot slot, DamageSource source, float value) {
+            if (!isImprint(state.consequence())) return value;
+            if (satisfied(state.consequence(), context.getEntity())) return value + 0.25F * state.strength();
+            return pressure(context.getEntity(), state.consequence()) < CANCEL_THRESHOLD
+                   ? value : value - 0.25F * state.strength();
         }
 
         @Override
-        public void onInventoryTick(
-                ConsequenceState state, ModifierEntry modifier, Level world, LivingEntity holder,
-                int itemSlot, boolean isSelected, boolean isCorrectSlot, ItemStack stack) {
-            if (3 <= state.stage() && world instanceof ServerLevel level
-                && periodic(state, holder, Math.max(140, 240 - 5 * power(state)))){
-                spreadSculk(level, holder.blockPosition(), state);
-            }
-        }
-    }
-
-    private static final class DevouringHandler implements Handler {
-        private static void consume(ConsequenceState state, LivingEntity entity, float base) {
-            if (entity instanceof Player player){
-                float exhaustion =
-                        base * (1.0F + 0.25F * power(state) + 0.35F * state.stage());
-                player.causeFoodExhaustion(exhaustion);
-                if (2 <= state.stage()){
-                    player.addEffect(new MobEffectInstance(
-                            MobEffects.HUNGER, 40 + 5 * power(state),
-                            Math.min(2, state.stage() - 1)));
-                }
-                if (3 <= state.stage() && player.getFoodData().getFoodLevel() <= 6){
-                    dealConsequenceDamage(player, 0.5F + 0.15F * power(state));
-                }
-            }
+        public float modifyHurt(ConsequenceState state, ModifierEntry modifier, EquipmentContext context,
+                                 EquipmentSlot slot, DamageSource source, float amount, boolean direct) {
+            return state.consequence() == StigmataConsequence.ANATHEMA
+                   && pressure(context.getEntity(), state.consequence()) >= WARNING_THRESHOLD
+                   && !satisfied(state.consequence(), context.getEntity())
+                   ? amount * (1 + 0.03F * state.strength()) : amount;
         }
 
         @Override
-        public void afterMeleeHit(
-                ConsequenceState state, ModifierEntry modifier, ToolAttackContext context,
-                float damageDealt) {
-            consume(state, context.getAttacker(), 1.2F);
-        }
-
-        @Override
-        public void onLauncherHitEntity(
-                ConsequenceState state, ModifierEntry modifier, Projectile projectile,
-                LivingEntity attacker, Entity target, @Nullable LivingEntity livingTarget,
-                float damageDealt) {
-            consume(state, attacker, 1.2F);
-        }
-
-        @Override
-        public void afterBlockBreak(
-                ConsequenceState state, ModifierEntry modifier, ToolHarvestContext context) {
-            consume(state, context.getLiving(), 0.65F);
-        }
-
-        @Override
-        public void onArmorAttacked(
-                ConsequenceState state, ModifierEntry modifier, EquipmentContext context,
-                EquipmentSlot slot, DamageSource source, float amount, boolean isDirectDamage) {
-            consume(state, context.getEntity(), 1.5F);
-        }
-
-        @Override
-        public void onInventoryTick(
-                ConsequenceState state, ModifierEntry modifier, Level world, LivingEntity holder,
-                int itemSlot, boolean isSelected, boolean isCorrectSlot, ItemStack stack) {
-            if (3 <= state.stage() && world instanceof ServerLevel
-                && periodic(state, holder, Math.max(60, 110 - 4 * power(state)))){
-                consume(state, holder, 1.0F);
-            }
-        }
-    }
-
-    private static final class SacramentHandler implements Handler {
-        private static void consumeExperience(ConsequenceState state, LivingEntity entity) {
-            if (!(entity instanceof Player player) || 0 >= player.totalExperience){
-                return;
-            }
-            int demanded = state.stage() + Math.max(0, power(state) - 1) / 4;
-            int cost = Math.min(player.totalExperience, demanded);
-            player.giveExperiencePoints(-cost);
-        }
-
-        @Override
-        public void afterMeleeHit(
-                ConsequenceState state, ModifierEntry modifier, ToolAttackContext context,
-                float damageDealt) {
-            consumeExperience(state, context.getAttacker());
-        }
-
-        @Override
-        public void onLauncherHitEntity(
-                ConsequenceState state, ModifierEntry modifier, Projectile projectile,
-                LivingEntity attacker, Entity target, @Nullable LivingEntity livingTarget,
-                float damageDealt) {
-            consumeExperience(state, attacker);
-        }
-
-        @Override
-        public void afterBlockBreak(
-                ConsequenceState state, ModifierEntry modifier, ToolHarvestContext context) {
-            consumeExperience(state, context.getLiving());
-        }
-
-        @Override
-        public void onInventoryTick(
-                ConsequenceState state, ModifierEntry modifier, Level world, LivingEntity holder,
-                int itemSlot, boolean isSelected, boolean isCorrectSlot, ItemStack stack) {
-            if (3 <= state.stage() && world instanceof ServerLevel
-                && periodic(state, holder, Math.max(60, 120 - 5 * power(state)))){
-                consumeExperience(state, holder);
-            }
-        }
-
-        @Override
-        public void onArmorAttacked(
-                ConsequenceState state, ModifierEntry modifier, EquipmentContext context,
-                EquipmentSlot slot, DamageSource source, float amount, boolean isDirectDamage) {
-            consumeExperience(state, context.getEntity());
-        }
-    }
-
-    private static final class OfferingHandler implements Handler {
-        @Override
-        public int onToolDamage(
-                ConsequenceState state, ModifierEntry modifier, int amount,
-                @Nullable LivingEntity holder) {
-            if (null == holder || 0 >= amount){
-                return amount;
-            }
-            float healthCost = Math.max(
-                    0.5F,
-                    amount * (0.35F + 0.2F * state.stage() + 0.04F * power(state)));
-            boolean paid = dealConsequenceDamage(holder, healthCost);
-            if (holder.level() instanceof ServerLevel level){
-                level.sendParticles(
-                        ParticleTypes.DAMAGE_INDICATOR,
-                        holder.getX(), holder.getEyeY(), holder.getZ(),
-                        4 + amount, 0.25D, 0.35D, 0.25D, 0.02D);
-            }
-            return paid ? 0 : amount;
-        }
-    }
-
-    private static final class ImmolationHandler implements Handler {
-        private static void manifest(
-                ConsequenceState state, LivingEntity owner, BlockPos center) {
-            if (owner.level() instanceof ServerLevel level
-                && chance(level, Math.max(12, 34 - power(state)))){
-                BlockPos origin = center;
-                if (2 == state.stage() && level.random.nextBoolean()){
-                    origin = owner.blockPosition();
-                }else if (3 <= state.stage()){
-                    origin = owner.blockPosition();
-                    owner.setSecondsOnFire(2 + power(state) / 3);
-                }
-                igniteNearby(level, origin, state);
-            }
-        }
-
-        @Override
-        public void afterMeleeHit(
-                ConsequenceState state, ModifierEntry modifier, ToolAttackContext context,
-                float damageDealt) {
-            LivingEntity target = context.getLivingTarget();
-            manifest(state, context.getAttacker(),
-                     null == target ? context.getAttacker().blockPosition() : target.blockPosition());
-        }
-
-        @Override
-        public void afterBlockBreak(
-                ConsequenceState state, ModifierEntry modifier, ToolHarvestContext context) {
-            manifest(state, context.getLiving(), context.getPos());
-        }
-
-        @Override
-        public void onLauncherHitEntity(
-                ConsequenceState state, ModifierEntry modifier, Projectile projectile,
-                LivingEntity attacker, Entity target, @Nullable LivingEntity livingTarget,
-                float damageDealt) {
-            manifest(state, attacker, target.blockPosition());
-        }
-
-        @Override
-        public void onLauncherHitBlock(
-                ConsequenceState state, ModifierEntry modifier, Projectile projectile,
-                LivingEntity owner, BlockPos target) {
-            manifest(state, owner, target);
-        }
-
-        @Override
-        public void onArmorAttacked(
-                ConsequenceState state, ModifierEntry modifier, EquipmentContext context,
-                EquipmentSlot slot, DamageSource source, float amount, boolean isDirectDamage) {
-            manifest(state, context.getEntity(), context.getEntity().blockPosition());
-        }
-
-        @Override
-        public void onInventoryTick(
-                ConsequenceState state, ModifierEntry modifier, Level world, LivingEntity holder,
-                int itemSlot, boolean isSelected, boolean isCorrectSlot, ItemStack stack) {
-            if (3 <= state.stage() && world instanceof ServerLevel level
-                && periodic(state, holder, Math.max(100, 190 - 5 * power(state)))){
-                igniteNearby(level, holder.blockPosition(), state);
-                holder.setSecondsOnFire(2 + power(state) / 3);
-            }
-        }
-    }
-
-    private static final class PenanceHandler implements Handler {
-        private static UUID attributeUuid(String attribute, EquipmentSlot slot) {
-            String key = EsotericismTinker.MODID + ":stigmata_penance/"
-                         + attribute + "/" + slot.getName();
-            return UUID.nameUUIDFromBytes(key.getBytes(StandardCharsets.UTF_8));
-        }
-
-        @Override
-        public void addAttributes(
-                ConsequenceState state, ModifierEntry modifier, EquipmentSlot slot,
-                BiConsumer<Attribute, AttributeModifier> consumer) {
-            int power = power(state);
-            double attackSpeedReduction =
-                    -Math.min(0.75D, 0.28D + 0.035D * power);
-            int slownessAmplifier =
-                    Math.min(3, state.stage() - 1 + power / 5);
-            double movementSpeedReduction =
-                    -0.15D * (slownessAmplifier + 1);
-
-            consumer.accept(
-                    Attributes.ATTACK_SPEED,
-                    new AttributeModifier(
-                            attributeUuid("attack_speed", slot),
-                            "Stigmata penance attack speed",
-                            attackSpeedReduction,
-                            AttributeModifier.Operation.MULTIPLY_TOTAL));
-            consumer.accept(
-                    Attributes.MOVEMENT_SPEED,
-                    new AttributeModifier(
-                            attributeUuid("movement_speed", slot),
-                            "Stigmata penance movement speed",
-                            movementSpeedReduction,
-                            AttributeModifier.Operation.MULTIPLY_TOTAL));
-        }
-
-        @Override
-        public float getMeleeDamage(
-                ConsequenceState state, ModifierEntry modifier, ToolAttackContext context,
-                float baseDamage, float damage) {
-            return damage * (1.0F + 0.02F * power(state));
-        }
-
-        @Override
-        public float modifyBreakSpeed(
-                ConsequenceState state, ModifierEntry modifier,
-                slimeknights.tconstruct.library.modifiers.hook.mining.BreakSpeedContext context,
-                float speed) {
-            float burden =
-                    Math.max(0.4F, 0.92F - 0.07F * state.stage() - 0.025F * power(state));
-            return speed * burden;
-        }
-
-        @Override
-        public float getProtectionModifier(
-                ConsequenceState state, ModifierEntry modifier, EquipmentContext context,
-                EquipmentSlot slot, DamageSource source, float modifierValue) {
-            return modifierValue - 0.25F * state.stage() - 0.05F * power(state);
-        }
-
-        @Override
-        public void onArmorAttacked(
-                ConsequenceState state, ModifierEntry modifier, EquipmentContext context,
-                EquipmentSlot slot, DamageSource source, float amount, boolean isDirectDamage) {
-            context.getEntity().addEffect(new MobEffectInstance(
-                    MobEffects.MOVEMENT_SLOWDOWN, 30 + 10 * power(state),
-                    Math.min(2, state.stage() - 1)));
-        }
-    }
-
-    private enum Imprint {
-        DOMINION {
-            @Override
-            boolean active(LivingEntity entity) {
-                return entity.isPassenger();
-            }
-        },
-        NOCTURNE {
-            @Override
-            boolean active(LivingEntity entity) {
-                Level level = entity.level();
-                return level.isNight() && 0 == level.getMoonPhase();
-            }
-        },
-        ZENITH {
-            @Override
-            boolean active(LivingEntity entity) {
-                return 128.0D < entity.getY();
-            }
-        },
-        ABYSS {
-            @Override
-            boolean active(LivingEntity entity) {
-                return entity.getY() <= 0.0D;
-            }
-        },
-        BEATITUDE {
-            @Override
-            boolean active(LivingEntity entity) {
-                return entity.hasEffect(MobEffects.HERO_OF_THE_VILLAGE);
-            }
-        },
-        ANATHEMA {
-            @Override
-            boolean active(LivingEntity entity) {
-                return entity.hasEffect(MobEffects.BAD_OMEN);
-            }
-        };
-
-        abstract boolean active(LivingEntity entity);
-    }
-
-    private record ImprintHandler(Imprint imprint) implements Handler {
-
-        private float multiplier(ConsequenceState state, LivingEntity entity) {
-            return imprint.active(entity) ? grace(state) : penalty(state);
-        }
-
-        @Override
-        public float getMeleeDamage(
-                ConsequenceState state, ModifierEntry modifier, ToolAttackContext context,
-                float baseDamage, float damage) {
-            return damage * multiplier(state, context.getAttacker());
-        }
-
-        @Override
-        public float modifyProjectileHurt(
-                ConsequenceState state, ModifierEntry modifier, Projectile projectile,
-                DamageSource source, @Nullable LivingEntity attacker,
-                LivingEntity target, float amount) {
-            return null == attacker ? amount : amount * multiplier(state, attacker);
-        }
-
-        @Override
-        public float modifyBreakSpeed(
-                ConsequenceState state, ModifierEntry modifier,
-                BreakSpeedContext context,
-                float speed) {
-            return speed * multiplier(state, context.player());
-        }
-
-        @Override
-        public float getProtectionModifier(
-                ConsequenceState state, ModifierEntry modifier, EquipmentContext context,
-                EquipmentSlot slot, DamageSource source, float modifierValue) {
-            LivingEntity wearer = context.getEntity();
-            float grace = 0.25F + 0.08F * power(state);
-            float rejection = 0.5F + 0.2F * power(state) + 0.35F * state.stage();
-            return modifierValue + (imprint.active(wearer) ? grace : -rejection);
-        }
-
-        @Override
-        public void onInventoryTick(
-                ConsequenceState state, ModifierEntry modifier, Level world, LivingEntity holder,
-                int itemSlot, boolean isSelected, boolean isCorrectSlot, ItemStack stack) {
-            if (!activeSlot(isSelected, isCorrectSlot) || !(world instanceof ServerLevel level)
-                || 0 != Math.floorMod(holder.tickCount + state.consequenceSeed(), 20)){
-                return;
-            }
-            boolean active = imprint.active(holder);
-            level.sendParticles(
-                    active ? ParticleTypes.ENCHANT : ParticleTypes.SMOKE,
-                    holder.getX(), holder.getEyeY() - 0.25D, holder.getZ(),
-                    3 + state.stage(), 0.25D, 0.3D, 0.25D, 0.01D);
-            if (!active && 2 <= state.stage()){
-                holder.addEffect(new MobEffectInstance(
-                        MobEffects.WEAKNESS, 30,
-                        Math.min(2, state.stage() - 2 + power(state) / 5),
-                        false, false, true));
-            }
+        public int onToolDamage(ConsequenceState state, ModifierEntry modifier, int amount,
+                                 @Nullable LivingEntity holder) {
+            if (state.consequence() != StigmataConsequence.OFFERING || holder == null || amount <= 0
+                || holder.level().isClientSide || isApplyingConsequenceDamage()) return amount;
+            action(state, holder, null, holder.position());
+            CompoundTag frame = frame(holder, state.consequence());
+            double credit = frame.getDouble("durability_credit") + amount * (0.2D + 0.1D * state.stage());
+            int requested = (int) Math.floor(credit + 0.000001D);
+            frame.putDouble("durability_credit", credit - requested);
+            if (requested <= 0) return amount;
+            float unit = 0.5F + 0.1F * state.strength();
+            float before = holder.getHealth();
+            hurt(holder, requested * unit);
+            double paidCredit = frame.getDouble("blood_credit") + Math.max(0, before - holder.getHealth()) / unit;
+            int paid = Math.min(amount, (int) Math.floor(paidCredit + 0.0001D));
+            frame.putDouble("blood_credit", paidCredit - paid);
+            return Math.max(0, amount - paid);
         }
     }
 }

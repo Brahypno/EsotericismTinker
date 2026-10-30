@@ -19,6 +19,7 @@ import net.minecraft.world.phys.EntityHitResult;
 import net.minecraftforge.gametest.GameTestHolder;
 import net.minecraftforge.gametest.PrefixGameTestTemplate;
 import org.brahypno.esotericismtinker.library.modifiers.EsotericismTinkerHook;
+import org.brahypno.esotericismtinker.library.modifiers.modules.transcendence.StigmataConsequenceEffects;
 import org.brahypno.esotericismtinker.tools.EsotericismTinkerModifiers;
 import org.brahypno.esotericismtinker.transcendence.appearance.StigmataConsequence;
 import org.brahypno.esotericismtinker.transcendence.appearance.StigmataData;
@@ -140,13 +141,12 @@ public final class TranscendenceRegressionGameTests {
         var hit = new EntityHitResult(target);
         modifier.getHook(ModifierHooks.PROJECTILE_HIT).onProjectileHitEntity(
                 bow.getModifiers(), snapshot, modifier, arrow, hit, shooter, target, false);
-        helper.assertTrue(helper.getLevel().getEntitiesOfClass(AreaEffectCloud.class,
-                target.getBoundingBox().inflate(3)).isEmpty(), "Shield-blocked arrows must not trigger consequences");
+        helper.assertTrue(StigmataConsequenceEffects.pressure(shooter, StigmataConsequence.EXALTATION) == 0,
+                "Shield-blocked arrows must not build instability");
         modifier.getHook(ModifierHooks.PROJECTILE_HIT).onProjectileHitEntity(
                 bow.getModifiers(), snapshot, modifier, arrow, hit, shooter, target, true);
-        helper.assertTrue(helper.getLevel().getEntitiesOfClass(AreaEffectCloud.class,
-                target.getBoundingBox().inflate(3)).size() == 1,
-                "An unblocked arrow must trigger its captured consequence without the original tool state");
+        helper.assertTrue(StigmataConsequenceEffects.pressure(shooter, StigmataConsequence.EXALTATION) > 0,
+                "An unblocked arrow must build its captured instability without the original tool state");
         helper.succeed();
     }
 
@@ -161,6 +161,7 @@ public final class TranscendenceRegressionGameTests {
                 .onProjectileLaunch(bow, modifier, shooter, arrow, arrow, snapshot, true);
         var hook = modifier.getHook(EsotericismTinkerHook.PROJECTILE_HURT);
         var source = shooter.damageSources().arrow(arrow, shooter);
+        StigmataConsequenceEffects.setPressure(shooter, StigmataConsequence.DOMINION, 50);
         float unmounted = hook.modifyProjectileHurt(bow.getModifiers(), snapshot, modifier, arrow,
                 source, shooter, shooter, 10);
         helper.assertTrue(unmounted < 10, "An unmounted Dominion shot must suffer its damage penalty");
@@ -180,7 +181,8 @@ public final class TranscendenceRegressionGameTests {
         wearer.setPos(helper.absoluteVec(new net.minecraft.world.phys.Vec3(8, 2, 8)));
         ToolStack armor = markedTool("travelers_helmet", StigmataConsequence.EXALTATION);
         wearer.setItemSlot(EquipmentSlot.HEAD, armor.createStack());
-        wearer.setItemSlot(EquipmentSlot.OFFHAND, armor.createStack());
+        wearer.setItemSlot(EquipmentSlot.OFFHAND,
+                markedTool("travelers_helmet", StigmataConsequence.MALEDICTION).createStack());
         ModifierEntry modifier = armor.getModifier(EsotericismTinkerModifiers.STIGMATA);
         modifier.getHook(ModifierHooks.EQUIPMENT_CHANGE).onEquip(armor, modifier,
                 new EquipmentChangeContext(wearer, EquipmentSlot.HEAD, ItemStack.EMPTY,
@@ -189,10 +191,10 @@ public final class TranscendenceRegressionGameTests {
                 "The worn helmet must be intact and overloaded for this regression");
         modifier.getHook(ModifierHooks.ON_ATTACKED).onAttacked(armor, modifier,
                 new EquipmentContext(wearer), EquipmentSlot.HEAD, wearer.damageSources().magic(), 1, false);
-        int clouds = helper.getLevel().getEntitiesOfClass(AreaEffectCloud.class,
-                wearer.getBoundingBox().inflate(3)).size();
-        helper.assertTrue(clouds == 1,
-                "Only the worn helmet may trigger; expected 1 cloud, got " + clouds);
+        helper.assertTrue(StigmataConsequenceEffects.pressure(wearer, StigmataConsequence.EXALTATION) > 0,
+                "The worn helmet must build its family's instability");
+        helper.assertTrue(StigmataConsequenceEffects.pressure(wearer, StigmataConsequence.MALEDICTION) == 0,
+                "The helmet held in the offhand must not build a different family's instability");
         helper.succeed();
     }
 
