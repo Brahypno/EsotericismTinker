@@ -2,23 +2,31 @@ package org.brahypno.esotericismtinker.smeltery;
 
 import io.netty.buffer.Unpooled;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.Direction;
 import net.minecraft.gametest.framework.GameTest;
 import net.minecraft.gametest.framework.GameTestHelper;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.world.InteractionHand;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.item.crafting.Ingredient;
 import net.minecraft.world.item.crafting.Recipe;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.level.block.HorizontalDirectionalBlock;
 import net.minecraft.world.level.material.Fluid;
 import net.minecraft.world.level.material.Fluids;
+import net.minecraft.world.phys.BlockHitResult;
+import net.minecraft.world.phys.Vec3;
+import net.minecraftforge.common.util.FakePlayerFactory;
 import net.minecraftforge.fluids.FluidStack;
 import net.minecraftforge.fluids.capability.IFluidHandler;
 import net.minecraftforge.gametest.GameTestHolder;
 import net.minecraftforge.gametest.PrefixGameTestTemplate;
 import org.brahypno.esotericismtinker.library.recipe.EsotericismTinkerRecipeTypes;
+import org.brahypno.esotericismtinker.smeltery.block.component.AshenButtonBlock;
+import org.brahypno.esotericismtinker.smeltery.block.entity.component.TransmuteComponentBlockEntity;
 import org.brahypno.esotericismtinker.smeltery.block.entity.controller.TransmuteBlockEntity;
 import org.brahypno.esotericismtinker.smeltery.block.entity.module.SuperByproductMeltingModuleInventory;
 import org.brahypno.esotericismtinker.smeltery.block.entity.module.SuperByproductMeltingModuleInventory.MeltType;
@@ -31,6 +39,8 @@ import slimeknights.tconstruct.library.recipe.melting.MeltingRecipeLookup;
 import slimeknights.tconstruct.smeltery.TinkerSmeltery;
 import slimeknights.tconstruct.smeltery.block.entity.controller.SmelteryBlockEntity;
 import slimeknights.tconstruct.smeltery.block.entity.module.MeltingModuleInventory;
+import slimeknights.tconstruct.smeltery.block.component.SearedBlock;
+import slimeknights.tconstruct.smeltery.block.component.SearedTankBlock;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -38,6 +48,56 @@ import java.util.List;
 @GameTestHolder("esotericism_tinker")
 @PrefixGameTestTemplate(false)
 public final class TransmuteV2GameTests {
+    @GameTest(template = "selenic_empty", timeoutTicks = 160)
+    public static void formedFurnaceUsesAllFourSwitchModes(GameTestHelper helper) {
+        helper.assertTrue(AshenButtonBlock.Function_Set.getPossibleValues().size() == 4,
+                "The switch must expose exactly four states");
+        for (BlockPos pos : BlockPos.betweenClosed(new BlockPos(1, 1, 1), new BlockPos(3, 3, 3))) {
+            if (!pos.equals(new BlockPos(2, 2, 2))) {
+                helper.setBlock(pos, EsotericismTinkerSmeltery.ashenBricks.get());
+            }
+        }
+        BlockPos controllerPos = new BlockPos(2, 2, 1);
+        BlockPos switchPos = new BlockPos(3, 2, 2);
+        helper.setBlock(controllerPos, EsotericismTinkerSmeltery.transmuteController.get().defaultBlockState()
+                .setValue(HorizontalDirectionalBlock.FACING, Direction.NORTH));
+        helper.setBlock(switchPos, EsotericismTinkerSmeltery.ashenMeltSwitch.get().defaultBlockState()
+                .setValue(HorizontalDirectionalBlock.FACING, Direction.EAST));
+        helper.setBlock(new BlockPos(2, 2, 3), EsotericismTinkerSmeltery.ashenTank.get(SearedTankBlock.TankType.FUEL_TANK));
+
+        var sequence = helper.startSequence().thenWaitUntil(() -> {
+            helper.assertTrue(helper.getBlockState(controllerPos).getValue(SearedBlock.IN_STRUCTURE),
+                    "The furnace must form with a melt switch in its wall");
+            helper.assertTrue(helper.getBlockEntity(switchPos) instanceof TransmuteComponentBlockEntity,
+                    "The switch must use a valid Transmute component entity");
+        });
+        for (int step = 1; step <= 4; step++) {
+            final int expectedMode = step % 4;
+            sequence.thenExecute(() -> {
+                BlockPos absolutePos = helper.absolutePos(switchPos);
+                var state = helper.getBlockState(switchPos);
+                state.use(helper.getLevel(), FakePlayerFactory.getMinecraft(helper.getLevel()), InteractionHand.MAIN_HAND,
+                        new BlockHitResult(Vec3.atCenterOf(absolutePos), Direction.EAST, absolutePos, false));
+                helper.assertTrue(helper.getBlockState(switchPos).getValue(AshenButtonBlock.Function_Set) == expectedMode,
+                        "Right click must select mode " + expectedMode);
+            }).thenExecuteAfter(5, () -> {
+                var furnace = (TransmuteBlockEntity) helper.getBlockEntity(controllerPos);
+                var inventory = inventory(furnace);
+                helper.assertTrue(inventory.writeToTag().getInt("melt_type") == expectedMode,
+                        "The formed furnace must receive mode " + expectedMode + " from the switch");
+                if (expectedMode == 3) {
+                    inventory.setStackInSlot(0, new ItemStack(Items.GOLD_INGOT));
+                    melt(inventory);
+                    helper.assertTrue(amount(furnace.getTank(), Fluids.WATER) == 90,
+                            "The fourth switch mode must actually process the special v2 recipe");
+                    helper.assertTrue(amount(furnace.getTank(), TinkerFluids.moltenGold.get()) == 0,
+                            "The fourth switch mode must not finish the ordinary gold recipe");
+                }
+            });
+        }
+        sequence.thenSucceed();
+    }
+
     @GameTest(template = "selenic_empty")
     public static void specialRecipeWinsAndKeepsAllOutputAmounts(GameTestHelper helper) {
         TransmuteBlockEntity furnace = furnace(helper);

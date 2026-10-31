@@ -93,7 +93,7 @@ public class EsotericismTinkerBlockStateProvider extends BlockStateProvider {
                        models().getExistingFile(modLoc("block/transmute/ashen/ashen_accelerator_active")));
 
         frontTextureIntStructureStates(EsotericismTinkerSmeltery.ashenMeltSwitch.get(), "transmute/ashen_melt_switch",
-                                       AshenButtonBlock.Function_Set, 2, modLoc("block/transmute/ashen/ashen_bricks"));
+                                       AshenButtonBlock.Function_Set, 3, modLoc("block/transmute/ashen/ashen_bricks"));
     }
 
     protected void slabWithItem(SlabBlock slab, ResourceLocation doubleSlabModel, ResourceLocation texture) {

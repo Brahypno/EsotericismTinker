@@ -3,7 +3,7 @@
   "item": "esotericism_tinker:ashen_melt_switch",
   "text": [
     {
-      "text": "Adding Ashen Melt Switch to Transmute will change the melting method of the Transmute. Each Transmute Furnace can only have one switch."
+      "text": "Add an Ashen Melt Switch to the Transmute, then right click once formed to cycle through Transmute, Smeltery, Foundry, and Transmute v2. The lit mark at the bottom shows the current mode. Each Transmute can only have one switch."
     },
     {
       "text": "Additionally, Foundry mode doubles its byproduct output by default, while Smeltery mode doubles its primary output by default.",

@@ -3,6 +3,7 @@ package org.brahypno.esotericismtinker.plugin.JEI;
 import mezz.jei.api.forge.ForgeTypes;
 import mezz.jei.api.gui.builder.IRecipeLayoutBuilder;
 import mezz.jei.api.gui.builder.IRecipeSlotBuilder;
+import mezz.jei.api.gui.drawable.IDrawable;
 import mezz.jei.api.helpers.IGuiHelper;
 import mezz.jei.api.recipe.IFocusGroup;
 import mezz.jei.api.recipe.RecipeIngredientRole;
@@ -39,11 +40,11 @@ public class TransmuteCategory extends AbstractMeltingCategory {
     private static final Component TITLE = Component.translatable("jei.esotericism_tinker.transmute.title");
 
     public TransmuteCategory(IGuiHelper helper) {
-        this(helper, TYPE, TITLE);
+        this(helper, TYPE, TITLE, helper.createDrawableItemLike(EsotericismTinkerSmeltery.transmuteController));
     }
 
-    protected TransmuteCategory(IGuiHelper helper, RecipeType<IDisplayableMeltingRecipe> type, Component title) {
-        super(helper, type, title, helper.createDrawableItemLike(EsotericismTinkerSmeltery.transmuteController));
+    protected TransmuteCategory(IGuiHelper helper, RecipeType<IDisplayableMeltingRecipe> type, Component title, IDrawable icon) {
+        super(helper, type, title, icon);
     }
 
     /** Wraps every melting recipe into a display recipe whose totals are exchanged. */

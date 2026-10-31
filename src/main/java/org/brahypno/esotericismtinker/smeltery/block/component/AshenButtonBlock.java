@@ -14,16 +14,17 @@ import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.HorizontalDirectionalBlock;
 import net.minecraft.world.level.block.Mirror;
 import net.minecraft.world.level.block.Rotation;
+import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.StateDefinition;
 import net.minecraft.world.level.block.state.properties.IntegerProperty;
 import net.minecraft.world.phys.BlockHitResult;
-import org.brahypno.esotericismtinker.utils.MessagesUtil;
+import org.brahypno.esotericismtinker.smeltery.block.entity.component.TransmuteComponentBlockEntity;
 import slimeknights.tconstruct.smeltery.block.component.SearedBlock;
 import slimeknights.tconstruct.smeltery.block.entity.component.SmelteryComponentBlockEntity;
 
 public class AshenButtonBlock extends SearedBlock {
-    public static final IntegerProperty Function_Set = IntegerProperty.create("function_set", 0, 4);
+    public static final IntegerProperty Function_Set = IntegerProperty.create("function_set", 0, 3);
     private final int local_max_property;
 
     public AshenButtonBlock(Properties properties, boolean requiredBlockEntity, int local_max) {
@@ -38,6 +39,11 @@ public class AshenButtonBlock extends SearedBlock {
     protected void createBlockStateDefinition(StateDefinition.Builder<Block, BlockState> builder) {
         super.createBlockStateDefinition(builder);
         builder.add(Function_Set, HorizontalDirectionalBlock.FACING);
+    }
+
+    @Override
+    public BlockEntity newBlockEntity(BlockPos pos, BlockState state) {
+        return requiredBlockEntity || state.getValue(IN_STRUCTURE) ? new TransmuteComponentBlockEntity(pos, state) : null;
     }
 
     @Override
@@ -76,8 +82,12 @@ public class AshenButtonBlock extends SearedBlock {
                 ResourceLocation id = BuiltInRegistries.BLOCK.getKey(state.getBlock());
                 String path = id.getPath().replace('/', '.');
                 String key = "message." + id.getNamespace() + "." + path + ".mode_";
-                MessagesUtil.clientChat(Component.translatable(key + next), false);
-                SmelteryComponentBlockEntity.updateNeighbors(level, pos, newState);
+                player.displayClientMessage(Component.translatable(key + next), false);
+                if (level.getBlockEntity(pos) instanceof SmelteryComponentBlockEntity component && component.hasMaster()) {
+                    component.notifyMasterOfChange(pos, newState);
+                } else {
+                    SmelteryComponentBlockEntity.updateNeighbors(level, pos, newState);
+                }
             }
 
             return InteractionResult.sidedSuccess(level.isClientSide);
