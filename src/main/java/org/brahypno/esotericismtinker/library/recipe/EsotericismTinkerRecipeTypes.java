@@ -16,8 +16,10 @@ import org.brahypno.esotericismtinker.transcendence.intrinsic.recipe.NoumenonLev
 import org.brahypno.esotericismtinker.library.recipe.selenic.SelenicAstrolabeRecipe;
 import org.brahypno.esotericismtinker.library.recipe.selenic.SelenicTinkerPartRecipe;
 import org.brahypno.esotericismtinker.smeltery.recipe.casting.RecursiveRetexturedCastingRecipe;
+import org.brahypno.esotericismtinker.smeltery.recipe.melting.TransmuteMeltingRecipe;
 import slimeknights.mantle.recipe.helper.TypeAwareRecipeSerializer;
 import slimeknights.tconstruct.library.recipe.TinkerRecipeTypes;
+import slimeknights.tconstruct.library.recipe.melting.IMeltingRecipe;
 
 import java.util.ArrayList;
 import java.util.Comparator;
@@ -30,6 +32,17 @@ public class EsotericismTinkerRecipeTypes {
 
     public static final DeferredRegister<RecipeType<?>> TYPES =
             DeferredRegister.create(ForgeRegistries.RECIPE_TYPES, EsotericismTinker.MODID);
+
+    public static final RegistryObject<RecipeType<IMeltingRecipe>> TRANSMUTE_V2_TYPE =
+            TYPES.register("transmute_v2", () -> new RecipeType<>() {
+                @Override
+                public String toString() {
+                    return EsotericismTinker.MODID + ":transmute_v2";
+                }
+            });
+
+    public static final RegistryObject<RecipeSerializer<TransmuteMeltingRecipe>> TRANSMUTE_V2_SERIALIZER =
+            SERIALIZERS.register("transmute_v2", () -> LoadableRecipeSerializer.of(TransmuteMeltingRecipe.LOADER));
 
     public static final RegistryObject<RecipeType<SelenicAstrolabeRecipe>> SELENIC_ASTROLABE_TYPE =
             TYPES.register("selenic_astrolabe", () -> new RecipeType<>() {

@@ -95,7 +95,7 @@ public class EsotericismTinkerSmeltery extends EsotericismTinkerModule {
 
 
         ashenAlloySwitch = BLOCKS.register("ashen_alloy_switch", () -> new AshenAlloySwitchBlock(properties), TOOLTIP_BLOCK_ITEM);
-        ashenMeltSwitch = BLOCKS.register("ashen_melt_switch", () -> new AshenButtonBlock(properties, false, 2), TOOLTIP_BLOCK_ITEM);
+        ashenMeltSwitch = BLOCKS.register("ashen_melt_switch", () -> new AshenButtonBlock(properties, false, 3), TOOLTIP_BLOCK_ITEM);
     }
 
     // glass

@@ -36,6 +36,7 @@ import slimeknights.mantle.recipe.helper.RecipeHelper;
 import slimeknights.mantle.util.RetexturedHelper;
 import slimeknights.tconstruct.library.modifiers.ModifierEntry;
 import slimeknights.tconstruct.library.recipe.TinkerRecipeTypes;
+import slimeknights.tconstruct.library.recipe.melting.IDisplayableMeltingRecipe;
 import slimeknights.tconstruct.library.recipe.melting.MeltingRecipe;
 import slimeknights.tconstruct.library.tools.part.IMaterialItem;
 import slimeknights.tconstruct.plugin.jei.TConstructJEIConstants;
@@ -62,6 +63,7 @@ public class ETJeiPlugin implements IModPlugin {
         IGuiHelper guiHelper = registration.getJeiHelpers().getGuiHelper();
         registration.addRecipeCategories(new ByproductEntityMeltingCategory(guiHelper));
         registration.addRecipeCategories(new TransmuteCategory(guiHelper));
+        registration.addRecipeCategories(new TransmuteV2Category(guiHelper));
         registration.addRecipeCategories(new SelenicAstrolabeRecipeCategory<>());
 
         registration.addRecipeCategories(new SelenicTinkerPartRecipeCategory());
@@ -88,6 +90,9 @@ public class ETJeiPlugin implements IModPlugin {
                 registryAccess, recipeManager,
                 TinkerRecipeTypes.MELTING.get(), MeltingRecipe.class);
         registration.addRecipes(TransmuteCategory.TYPE, TransmuteCategory.createDisplays(meltingRecipes));
+        registration.addRecipes(TransmuteV2Category.TYPE, RecipeHelper.getJEIRecipes(
+                registryAccess, recipeManager,
+                EsotericismTinkerRecipeTypes.TRANSMUTE_V2_TYPE.get(), IDisplayableMeltingRecipe.class));
 
         List<SelenicAstrolabeRecipe> astrolabe_recipes = recipeManager
                 .getAllRecipesFor(EsotericismTinkerRecipeTypes.SELENIC_ASTROLABE_TYPE.get());
@@ -135,7 +140,8 @@ public class ETJeiPlugin implements IModPlugin {
                 EsotericismTinkerSmeltery.transmuteController,
                 EsotericismTinkerTagKeys.Items.ASHEN_BLOCKS,
                 true,
-                TransmuteCategory.TYPE
+                TransmuteCategory.TYPE,
+                TransmuteV2Category.TYPE
         );
 
         // the anvil is a material item, so every material variant acts as a catalyst

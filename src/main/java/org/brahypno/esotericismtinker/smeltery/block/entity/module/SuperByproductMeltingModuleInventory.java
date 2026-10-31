@@ -1,25 +1,48 @@
 package org.brahypno.esotericismtinker.smeltery.block.entity.module;
 
+import net.minecraft.nbt.CompoundTag;
 import net.minecraft.util.Mth;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.crafting.RecipeManager;
+import net.minecraft.world.level.Level;
 import net.minecraftforge.fluids.FluidStack;
 import net.minecraftforge.fluids.capability.IFluidHandler;
 import net.minecraftforge.items.ItemHandlerHelper;
 import org.brahypno.esotericismtinker.Config;
+import org.brahypno.esotericismtinker.library.recipe.EsotericismTinkerRecipeTypes;
 import org.brahypno.esotericismtinker.smeltery.block.entity.controller.TransmuteBlockEntity;
 import slimeknights.tconstruct.library.recipe.melting.IMeltingContainer;
 import slimeknights.tconstruct.library.recipe.melting.IMeltingRecipe;
+import slimeknights.tconstruct.library.recipe.TinkerRecipeTypes;
+import slimeknights.tconstruct.common.recipe.RecipeCacheInvalidator;
 import slimeknights.tconstruct.smeltery.block.entity.module.MeltingModule;
 import slimeknights.tconstruct.smeltery.block.entity.module.MeltingModuleInventory;
 
 import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.IdentityHashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Consumer;
 
 public class SuperByproductMeltingModuleInventory extends MeltingModuleInventory {
+    // MeltingModule exposes its progress and recipe requirements through ContainerData.
+    private static final int CURRENT_TIME = 0;
+    private static final int REQUIRED_TIME = 1;
+    private static final int REQUIRED_TEMP = 2;
+    private static final AtomicInteger RECIPE_CACHE_VERSION = new AtomicInteger();
+
+    static {
+        RecipeCacheInvalidator.addReloadListener(client -> clearTransmuteV2RecipeCaches());
+    }
+
     private final TransmuteBlockEntity parent;
+    private final Map<IMeltingContainer, CachedTransmuteV2Recipe> transmuteV2Recipes = new IdentityHashMap<>();
+    @Nullable private RecipeManager cachedRecipeManager;
+    private int cachedRecipeVersion = -1;
     private MeltingModule[] smeltery_modules;//Just using oreRate for smeltery one
     private MeltType meltType = MeltType.Transmute;
 
@@ -34,12 +57,58 @@ public class SuperByproductMeltingModuleInventory extends MeltingModuleInventory
     }
 
     public void updateMeltType(MeltType meltType) {
+        if (this.meltType == meltType) {
+            return;
+        }
+        boolean recipeTypeChanged = isTransmuteV2() || meltType == MeltType.Transmute_v2;
         this.meltType = meltType;
+        if (recipeTypeChanged) {
+            transmuteV2Recipes.clear();
+            for (int slot = 0; slot < getSlots(); slot++) {
+                if (!getStackInSlot(slot).isEmpty()) {
+                    MeltingModule module = getModule(slot);
+                    // Reset progress (including NO_SPACE) and recompute time and temperature for the new type.
+                    module.set(CURRENT_TIME, 0);
+                    module.setStack(module.getStack());
+                    updateTransmuteV2Requirements(module);
+                }
+            }
+        }
+        parent.setChangedFast();
+    }
+
+    public boolean isTransmuteV2() {
+        return meltType == MeltType.Transmute_v2;
+    }
+
+    /** Invalidates furnace-local lookups when server recipes reload or client recipes sync. */
+    public static void clearTransmuteV2RecipeCaches() {
+        RECIPE_CACHE_VERSION.incrementAndGet();
+    }
+
+    @Override
+    public CompoundTag writeToTag() {
+        CompoundTag tag = super.writeToTag();
+        tag.putInt("melt_type", meltType.ordinal());
+        return tag;
+    }
+
+    @Override
+    public void readFromTag(CompoundTag tag) {
+        // Restore the type before loading slots so saved v2 progress cannot finish a vanilla recipe.
+        meltType = MeltType.toMeltType(tag.getInt("melt_type"));
+        transmuteV2Recipes.clear();
+        super.readFromTag(tag);
+        smeltery_modules = Arrays.copyOf(smeltery_modules, getSlots());
     }
 
     public void resize(int newSize, Consumer<ItemStack> stackConsumer) {
+        int oldSize = getSlots();
         super.resize(newSize, stackConsumer);
         smeltery_modules = Arrays.copyOf(smeltery_modules, getSlots());
+        if (oldSize != getSlots()) {
+            transmuteV2Recipes.clear();
+        }
     }
 
     @Nonnull
@@ -79,6 +148,7 @@ public class SuperByproductMeltingModuleInventory extends MeltingModuleInventory
                     stack.setCount(getSlotLimit(slot));
                 }
                 getModule(slot).setStack(stack);
+                updateTransmuteV2Requirements(getModule(slot));
             }
         }
     }
@@ -115,13 +185,123 @@ public class SuperByproductMeltingModuleInventory extends MeltingModuleInventory
         return insertSize > 0 ? ItemHandlerHelper.copyStackWithSize(stack, stack.getCount() - insertSize) : stack;
     }
 
+    @Nullable
+    private IMeltingRecipe findTransmuteV2Recipe(IMeltingContainer container) {
+        Level level = parent.getLevel();
+        if (level == null) {
+            return null;
+        }
+        RecipeManager manager = level.getRecipeManager();
+        int version = RECIPE_CACHE_VERSION.get();
+        if (cachedRecipeManager != manager || cachedRecipeVersion != version) {
+            transmuteV2Recipes.clear();
+            cachedRecipeManager = manager;
+            cachedRecipeVersion = version;
+        }
+        CachedTransmuteV2Recipe cached = transmuteV2Recipes.get(container);
+        if (cached != null && ItemStack.matches(cached.input(), container.getStack()) && cached.recipe().matches(container, level)) {
+            return cached.recipe();
+        }
+        IMeltingRecipe recipe = manager.getRecipeFor(
+                EsotericismTinkerRecipeTypes.TRANSMUTE_V2_TYPE.get(), container, level)
+                .orElseGet(() -> manager.getRecipeFor(
+                        TinkerRecipeTypes.MELTING.get(), container, level).orElse(null));
+        if (recipe == null) {
+            transmuteV2Recipes.remove(container);
+        } else {
+            // Keep the recipe, not its fluid output: amounts and byproducts still use the live container.
+            transmuteV2Recipes.put(container, new CachedTransmuteV2Recipe(container.getStack().copy(), recipe));
+        }
+        return recipe;
+    }
+
+    private record CachedTransmuteV2Recipe(ItemStack input, IMeltingRecipe recipe) {}
+
+    private void updateTransmuteV2Requirements(MeltingModule module) {
+        if (isTransmuteV2()) {
+            IMeltingRecipe recipe = findTransmuteV2Recipe(module);
+            module.set(REQUIRED_TIME, recipe == null ? 0 : recipe.getTime(module) * 10);
+            module.set(REQUIRED_TEMP, recipe == null ? 0 : recipe.getTemperature(module));
+        }
+    }
+
+    @Override
+    public void heatItems(int temperature, int rate) {
+        if (!isTransmuteV2()) {
+            super.heatItems(temperature, rate);
+            return;
+        }
+        for (int slot = 0; slot < getSlots(); slot++) {
+            if (!getStackInSlot(slot).isEmpty()) {
+                MeltingModule module = getModule(slot);
+                if (module.getCurrentTime() == MeltingModule.NO_SPACE || module.canHeatItem(temperature)) {
+                    if (module.getCurrentTime() == MeltingModule.NO_SPACE || module.getCurrentTime() >= module.getRequiredTime()) {
+                        finishTransmuteV2(slot, module);
+                    } else {
+                        module.set(CURRENT_TIME, module.getCurrentTime() + rate);
+                    }
+                }
+            }
+        }
+    }
+
+    @Override
+    public void coolItems() {
+        if (!isTransmuteV2()) {
+            super.coolItems();
+            return;
+        }
+        for (int slot = 0; slot < getSlots(); slot++) {
+            if (!getStackInSlot(slot).isEmpty()) {
+                MeltingModule module = getModule(slot);
+                if (module.getCurrentTime() == MeltingModule.NO_SPACE) {
+                    finishTransmuteV2(slot, module);
+                } else if (module.getCurrentTime() > 0 && module.getRequiredTime() > 0) {
+                    module.set(CURRENT_TIME, module.getCurrentTime() - 5);
+                }
+            }
+        }
+    }
+
+    private void finishTransmuteV2(int slot, MeltingModule module) {
+        IMeltingRecipe recipe = findTransmuteV2Recipe(module);
+        if (recipe == null) {
+            module.set(CURRENT_TIME, 0);
+            module.set(REQUIRED_TIME, 0);
+            module.set(REQUIRED_TEMP, 0);
+        } else if (tryFillTank(slot, recipe)) {
+            setStackInSlot(slot, ItemStack.EMPTY);
+        } else {
+            module.set(CURRENT_TIME, MeltingModule.NO_SPACE);
+        }
+    }
+
     @Override
     protected boolean tryFillTank(int index, IMeltingRecipe recipe) {
         return switch (meltType) {
             case SMELTERY -> tryFillTankSmeltery(index, recipe);
             case Foundry -> tryFillTankFoundry(index, recipe);
+            case Transmute_v2 -> tryFillTankTransmuteV2(index, recipe);
             default -> tryFillFluidTransmute(index, recipe);
         };
+    }
+
+    private boolean tryFillTankTransmuteV2(int index, IMeltingRecipe recipe) {
+        IMeltingContainer inv = getModule(index);
+        FluidStack main = recipe.getOutput(inv);
+        if (main.isEmpty() || main.getAmount() <= 0) {
+            return false;
+        }
+        int count = inv.getStack().getCount();
+        main.setAmount(main.getAmount() * count);
+        if (fluidHandler.fill(main.copy(), IFluidHandler.FluidAction.SIMULATE) != main.getAmount()) {
+            return false;
+        }
+        fluidHandler.fill(main, IFluidHandler.FluidAction.EXECUTE);
+        for (int item = 0; item < count; item++) {
+            recipe.handleByproducts(inv, fluidHandler);
+        }
+        return true;
     }
 
     private boolean tryFillTankFoundry(int index, IMeltingRecipe recipe) {

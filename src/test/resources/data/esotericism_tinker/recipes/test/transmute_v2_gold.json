@@ -1,0 +1,11 @@
+{
+  "type": "esotericism_tinker:transmute_v2",
+  "ingredient": { "item": "minecraft:gold_ingot" },
+  "result": { "fluid": "minecraft:water", "amount": 90 },
+  "temperature": 800,
+  "time": 60,
+  "byproducts": [
+    { "fluid": "minecraft:lava", "amount": 10 },
+    { "fluid": "tconstruct:molten_copper", "amount": 20 }
+  ]
+}

@@ -39,7 +39,11 @@ public class TransmuteCategory extends AbstractMeltingCategory {
     private static final Component TITLE = Component.translatable("jei.esotericism_tinker.transmute.title");
 
     public TransmuteCategory(IGuiHelper helper) {
-        super(helper, TYPE, TITLE, helper.createDrawableItemLike(EsotericismTinkerSmeltery.transmuteController));
+        this(helper, TYPE, TITLE);
+    }
+
+    protected TransmuteCategory(IGuiHelper helper, RecipeType<IDisplayableMeltingRecipe> type, Component title) {
+        super(helper, type, title, helper.createDrawableItemLike(EsotericismTinkerSmeltery.transmuteController));
     }
 
     /** Wraps every melting recipe into a display recipe whose totals are exchanged. */

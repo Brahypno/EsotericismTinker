@@ -80,6 +80,8 @@ public class TransmuteBlockEntity extends HeatingStructureBlockEntity {
 
     @Override
     protected void heat() {
+        // Structure updates can change the recipe type. Refresh it before heating or finishing any item.
+        refreshHeatBuff();
         if (structure == null || level == null){
             return;
         }
@@ -207,10 +209,14 @@ public class TransmuteBlockEntity extends HeatingStructureBlockEntity {
     @Override
     protected void serverTick(Level level, BlockPos pos, BlockState state) {
         super.serverTick(level, pos, state);
+        refreshHeatBuff();
+    }
+
+    private void refreshHeatBuff() {
         if (heaterUpdateQueue){
             checkHeatBuff();
             heaterUpdateQueue = false;
-            if ((level.getGameTime() & 31) == 0){
+            if (level != null && !level.isClientSide && (level.getGameTime() & 31) == 0){
                 validateExternalAlloySwitchCache();
             }
         }
@@ -228,6 +234,7 @@ public class TransmuteBlockEntity extends HeatingStructureBlockEntity {
     protected void checkHeatBuff() {
         accelerator = 0;
         heater = 0;
+        SuperByproductMeltingModuleInventory.MeltType meltType = SuperByproductMeltingModuleInventory.MeltType.Transmute;
 
         if (structure != null && level != null){
             BlockPos min = structure.getMinPos();
@@ -251,15 +258,17 @@ public class TransmuteBlockEntity extends HeatingStructureBlockEntity {
                             accelerator++;
                         }
 
-                        if (isMeltSwitchBlock(state.getBlock()) && state.hasProperty(AshenButtonBlock.Function_Set) &&
-                            meltingInventory instanceof SuperByproductMeltingModuleInventory inv){
-                            inv.updateMeltType(SuperByproductMeltingModuleInventory.MeltType.toMeltType(state.getValue(AshenButtonBlock.Function_Set)));
+                        if (isMeltSwitchBlock(state.getBlock()) && state.hasProperty(AshenButtonBlock.Function_Set)){
+                            meltType = SuperByproductMeltingModuleInventory.MeltType.toMeltType(state.getValue(AshenButtonBlock.Function_Set));
                         }
                     }
                 }
             }
         }
 
+        if (meltingInventory instanceof SuperByproductMeltingModuleInventory inv) {
+            inv.updateMeltType(meltType);
+        }
         rebuildExternalAlloySwitchCache();
         updateAllowAlloyingFromCache();
     }
