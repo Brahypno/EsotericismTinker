@@ -3,6 +3,7 @@ package org.brahypno.esotericismtinker.smeltery;
 import io.netty.buffer.Unpooled;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
+import net.minecraft.data.recipes.FinishedRecipe;
 import net.minecraft.gametest.framework.GameTest;
 import net.minecraft.gametest.framework.GameTestHelper;
 import net.minecraft.nbt.CompoundTag;
@@ -30,6 +31,7 @@ import org.brahypno.esotericismtinker.smeltery.block.entity.component.TransmuteC
 import org.brahypno.esotericismtinker.smeltery.block.entity.controller.TransmuteBlockEntity;
 import org.brahypno.esotericismtinker.smeltery.block.entity.module.SuperByproductMeltingModuleInventory;
 import org.brahypno.esotericismtinker.smeltery.block.entity.module.SuperByproductMeltingModuleInventory.MeltType;
+import org.brahypno.esotericismtinker.smeltery.data.TransmuteMeltingRecipeBuilder;
 import org.brahypno.esotericismtinker.smeltery.recipe.melting.TransmuteMeltingRecipe;
 import slimeknights.mantle.recipe.helper.FluidOutput;
 import slimeknights.tconstruct.fluids.TinkerFluids;
@@ -296,6 +298,48 @@ public final class TransmuteV2GameTests {
             return enabled && (!requiresMarker || container.getStack().hasTag()
                     && container.getStack().getTag().getBoolean("v2_test")) && super.matches(container, level);
         }
+    }
+
+    @GameTest(template = "selenic_empty")
+    public static void datagenRecipesRoundTripThroughV2Serializer(GameTestHelper helper) {
+        List<FinishedRecipe> generated = new ArrayList<>();
+        ResourceLocation id = new ResourceLocation("example", "transmute_v2/gold_to_water");
+        FluidStack output = new FluidStack(Fluids.WATER, 90);
+        output.getOrCreateTag().putString("source", "datagen");
+        TransmuteMeltingRecipeBuilder.melting(Ingredient.of(Items.GOLD_INGOT), output, 800, 60)
+                .addByproduct(new FluidStack(Fluids.LAVA, 10))
+                .addByproduct(FluidOutput.fromStack(new FluidStack(TinkerFluids.moltenCopper.get(), 20)))
+                .group("example:transmute_v2")
+                .save(generated::add, id);
+        ResourceLocation simpleId = new ResourceLocation("example", "transmute_v2/iron_to_water");
+        TransmuteMeltingRecipeBuilder.melting(Ingredient.of(Items.IRON_INGOT),
+                FluidOutput.fromStack(new FluidStack(Fluids.WATER, 30)), 0, 1)
+                .save(generated::add, simpleId);
+
+        var serializer = EsotericismTinkerRecipeTypes.TRANSMUTE_V2_SERIALIZER.get();
+        FinishedRecipe finished = generated.get(0);
+        var json = finished.serializeRecipe();
+        helper.assertTrue(finished.getId().equals(id)
+                          && json.get("type").getAsString().equals("esotericism_tinker:transmute_v2"),
+                "Datagen must preserve the caller's recipe ID and emit the v2 serializer");
+        TransmuteMeltingRecipe decoded = serializer.fromJson(id, json);
+        helper.assertTrue(decoded.getInput().test(new ItemStack(Items.GOLD_INGOT))
+                          && decoded.getGroup().equals("example:transmute_v2")
+                          && decoded.getTemperature() == 800 && decoded.getTime() == 60,
+                "Generated JSON must retain the ingredient, group and heating requirements");
+        var outputs = decoded.getOutputWithByproducts();
+        helper.assertTrue(outputs.size() == 3 && outputs.get(0).get(0).isFluidStackIdentical(output)
+                          && outputs.get(1).get(0).isFluidStackIdentical(new FluidStack(Fluids.LAVA, 10))
+                          && outputs.get(2).get(0).isFluidStackIdentical(new FluidStack(TinkerFluids.moltenCopper.get(), 20)),
+                "Generated JSON must retain the main output NBT and every byproduct amount");
+        helper.assertTrue(finished.serializeAdvancement() == null,
+                "Datagen must support recipes without unlock criteria");
+        TransmuteMeltingRecipe simple = serializer.fromJson(simpleId, generated.get(1).serializeRecipe());
+        helper.assertTrue(simple.getType() == EsotericismTinkerRecipeTypes.TRANSMUTE_V2_TYPE.get()
+                          && simple.getOutputWithByproducts().size() == 1
+                          && simple.getTemperature() == 0 && simple.getTime() == 1,
+                "A recipe without byproducts must load with the minimum valid heating requirements");
+        helper.succeed();
     }
 
     @GameTest(template = "selenic_empty")
