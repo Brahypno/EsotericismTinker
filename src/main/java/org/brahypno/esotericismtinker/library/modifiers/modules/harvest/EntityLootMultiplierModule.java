@@ -56,7 +56,7 @@ public record EntityLootMultiplierModule(IJsonPredicate<LivingEntity> target, IJ
     public void processLoot(IToolStackView tool, ModifierEntry modifier, List<ItemStack> generatedLoot, LootContext context) {
 
         // 1) 只处理 ENTITY loot，且防递归
-        if (!context.hasParam(LootContextParams.THIS_ENTITY))
+        if (!context.hasParam(LootContextParams.DAMAGE_SOURCE) || !context.hasParam(LootContextParams.THIS_ENTITY))
             return;
         if (Boolean.TRUE.equals(IN_PROGRESS.get()))
             return;
@@ -96,6 +96,9 @@ public record EntityLootMultiplierModule(IJsonPredicate<LivingEntity> target, IJ
                         .withParameter(LootContextParams.DAMAGE_SOURCE, context.getParam(LootContextParams.DAMAGE_SOURCE));
 
                 // 尽量携带原 context 的参数（有就带）
+                if (context.hasParam(LootContextParams.DAMAGE_SOURCE)){
+                    builder.withParameter(LootContextParams.DAMAGE_SOURCE, context.getParam(LootContextParams.DAMAGE_SOURCE));
+                }
                 if (context.hasParam(LootContextParams.KILLER_ENTITY)){
                     builder.withParameter(LootContextParams.KILLER_ENTITY, context.getParam(LootContextParams.KILLER_ENTITY));
                 }
