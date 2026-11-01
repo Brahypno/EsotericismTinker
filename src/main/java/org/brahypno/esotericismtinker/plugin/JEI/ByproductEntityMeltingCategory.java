@@ -18,6 +18,7 @@ import net.minecraft.ChatFormatting;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.world.item.ItemStack;
 import net.minecraftforge.fluids.FluidStack;
 import org.brahypno.esotericismtinker.EsotericismTinker;
 import org.brahypno.esotericismtinker.smeltery.recipe.entitymelting.ByproductEntityMeltingRecipe;
@@ -78,7 +79,10 @@ public class ByproductEntityMeltingCategory extends AbstractRecipeCategory<Bypro
                                                  .setCustomRenderer(MantleJEIConstants.ENTITY_TYPE, entityRenderer)
                                                  .addIngredients(MantleJEIConstants.ENTITY_TYPE, input.getDisplay());
         IIngredientAcceptor<?> eggs = builder.addInvisibleIngredients(RecipeIngredientRole.INPUT).addItemStacks(input.getEggs());
-        builder.createFocusLink(entities, eggs);
+        // JEI removes empty spawn eggs, so only link when every entity has an egg.
+        if (input.getEggs().stream().noneMatch(ItemStack::isEmpty)){
+            builder.createFocusLink(entities, eggs);
+        }
 
         CategoryUtil.drawMultipleFluids(
                 builder, ignored -> RecipeIngredientRole.OUTPUT, 115, 11, 16, 32,
