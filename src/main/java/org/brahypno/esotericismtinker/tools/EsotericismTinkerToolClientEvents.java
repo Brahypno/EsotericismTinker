@@ -2,11 +2,13 @@ package org.brahypno.esotericismtinker.tools;
 
 import net.minecraft.client.color.item.ItemColors;
 import net.minecraftforge.api.distmarker.Dist;
+import net.minecraftforge.client.event.ModelEvent;
 import net.minecraftforge.client.event.RegisterColorHandlersEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.event.lifecycle.FMLClientSetupEvent;
 import org.brahypno.esotericismtinker.EsotericismTinker;
+import org.brahypno.esotericismtinker.tools.client.RitualBladeModel;
 import slimeknights.tconstruct.common.ClientEventBase;
 import slimeknights.tconstruct.library.client.model.TinkerItemProperties;
 
@@ -14,6 +16,11 @@ import static slimeknights.tconstruct.library.client.model.tools.ToolModel.regis
 
 @Mod.EventBusSubscriber(modid = EsotericismTinker.MODID, value = Dist.CLIENT, bus = Mod.EventBusSubscriber.Bus.MOD)
 public class EsotericismTinkerToolClientEvents extends ClientEventBase {
+    @SubscribeEvent
+    static void registerGeometryLoaders(ModelEvent.RegisterGeometryLoaders event) {
+        event.register("ritual_blade", RitualBladeModel.LOADER);
+    }
+
     @SubscribeEvent
     static void clientSetupEvent(FMLClientSetupEvent event) {
         event.enqueueWork(() -> {

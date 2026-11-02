@@ -22,11 +22,9 @@ public class EsotericismTinkerToolItemModelProvider extends AbstractToolItemMode
     @Override
     protected void addModels() throws IOException {
         JsonObject toolBlocking = readJson(TConstruct.getResource("base/tool_blocking"));
-        //JsonObject shieldBlocking = readJson(EsotericismTinker.getLocation("base/shield_blocking"));
-
-        // blocking //
-        // pickaxe
-        tool(EsotericismTinkerTools.ritual_blade, toolBlocking, "blade");
+        withDisplay("tool/ritual_blade/blocking", EsotericismTinkerTools.ritual_blade.getId(), toolBlocking);
+        // The broken blade has its own shorter geometry; changing only the texture leaves hollow cubes.
+        models.put("tool/ritual_blade/broken", readJson(EsotericismTinker.getLocation("tool/ritual_blade/broken_3d")));
     }
 
     @Override
