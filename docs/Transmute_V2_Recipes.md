@@ -58,6 +58,78 @@ TransmuteMeltingRecipeBuilder.melting(
 - 建议始终使用 `save(consumer, id)` 明确自己的命名空间和路径。
   无 ID 的 `save(consumer)` 沿用匠魂约定，使用主产物流体的注册 ID，可能与其他配方重名。
 
+## 整组材料形态的辅助方法
+
+`smeltery/data/TransmuteMeltingRecipeHelper` 是匠魂 `SmelteryRecipeBuilder` 专供 v2 的版本：
+同样按「流体 + 通用物品标签」批量生成整组材料形态（`metal()`、`ore()`、`gear()` 等），
+区别是它只生成 `transmute_v2` 熔炼配方、不做铸造，并多了一个整体缩放产出量的比例。
+
+```java
+import org.brahypno.esotericismtinker.smeltery.data.TransmuteMeltingRecipeHelper;
+
+// 放在 buildRecipes 方法内；iron 是材料名，同时用于物品标签与配方路径。
+TransmuteMeltingRecipeHelper.fluid(consumer, "iron", EsotericismTinkerFluids.molten_ender_ash)
+    .divideBy(9)   // 等价于 ratio(1, 9)：所有产出量乘以 1/9
+    .metal()       // storage_blocks/iron、ingots/iron、nuggets/iron
+    .gear()        // gears/iron
+    .plate();      // plates/iron
+```
+
+上例中 `storage_blocks/iron` 只产出 `810 / 9 = 90 mB`，正好是一锭的量；
+`ingots/iron` 产出 `90 / 9 = 10 mB`，`nuggets/iron` 产出 `10 / 9 → 1 mB`（向下取整）。
+缩放后为 0 的形态直接跳过，不会生成空配方。
+
+### 调用顺序
+
+1. 用 `fluid(consumer, name, fluid)` 创建，`name` 可用 `String`（本模组命名空间）或 `ResourceLocation`（自定义命名空间）。
+   `name` 的路径同时决定 `forge:<前缀>/<name>` 标签和配方文件路径。
+2. 按需配置，配置对之后调用的形态生效：
+   - `ratio(分子, 分母)`、`divideBy(n)`、`multiplyBy(n)`：产出量比例，向下取整。
+   - `baseUnit(mB)`：一个「单位」的流体量，默认 `FluidValues.INGOT`（90 mB）。
+   - `temperature(int)`：温度，默认取流体自身温度。
+   - `time(int)`：固定熔炼步数；不设置时按匠魂公式由产出量与温度推算。
+   - `optional()`：给标签配方加上「标签非空」条件，用于兼容模组。
+   - `byproduct(...)`：给之后所有配方追加副产物，可多次调用。
+   - `meltingFolder("path/")`：输出目录，默认 `smeltery/melting/transmute/`。
+3. 调用形态方法，每个方法立刻写出配方并返回自身，可以连续链式调用。
+
+### 各形态的默认单位数
+
+| 方法 | 标签 | 单位数 |
+| --- | --- | --- |
+| `block()` | `storage_blocks/<name>` | 9 |
+| `ingot()` | `ingots/<name>` | 1 |
+| `nugget()` | `nuggets/<name>` | 1/9 |
+| `gear()` | `gears/<name>` | 4 |
+| `plate()` | `plates/<name>` | 1 |
+| `rod()` | `rods/<name>` | 0.5 |
+| `coin()` | `coins/<name>` | 1/3 |
+| `dust()` | `dusts/<name>` | 1 |
+| `sheetmetal()` | `sheetmetals/<name>` | 1 |
+| `wire()` | `wires/<name>` | 0.5 |
+| `ore()` / `ore(n)` | `ores/<name>` | 2（可指定） |
+| `rawOre()` | `raw_materials/<name>`、`storage_blocks/raw_<name>` | 1、9 |
+| `gem(n)` / `smallGem()` / `largeGem()` | `storage_blocks/<name>`、`gems/<name>` | n（4、9）、1 |
+
+`metal()` 等于 `block()` + `ingot()` + `nugget()`，并会把单位重置为锭；`gem(n)` 会把单位设为宝石。
+`gear()`、`plate()` 等非基础形态默认是 optional 的，标签为空时不会加载。
+
+### 自定形态
+
+```java
+TransmuteMeltingRecipeHelper.fluid(consumer, "example", myFluid)
+    .ratio(1, 9)
+    .melting("ore_rich", 3, EsotericismTinker.forgeItemTag("ores/example"), false) // 3 单位 × 比例
+    .melting("nugget", 1 / 9f, Items.GOLD_NUGGET, false);                          // 单个物品
+```
+
+- `melting(变体名, 单位数, TagKey<Item>, forceOptional)`：按标签生成。
+- `melting(变体名, 单位数, Ingredient, forceOptional)`：按自定义 Ingredient 生成，无法附加标签条件。
+- `melting(变体名, 单位数, ItemLike, forceOptional)`：单个物品。
+
+配方 ID 为 `<name 的命名空间>:<meltingFolder><name 的路径>/<变体名>`，
+默认即 `esotericism_tinker:smeltery/melting/transmute/iron/block` 这样的形式。
+
 ## 字段与行为
 
 `TransmuteMeltingRecipe` 继承匠魂 `MeltingRecipe`，复用其字段校验、JSON/网络序列化与配方匹配。
