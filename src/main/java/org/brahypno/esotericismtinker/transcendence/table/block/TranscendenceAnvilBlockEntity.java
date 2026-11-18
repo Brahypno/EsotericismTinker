@@ -21,6 +21,7 @@ import org.brahypno.esotericismtinker.library.recipe.EsotericismTinkerRecipeType
 import org.brahypno.esotericismtinker.network.EsotericismTinkerNetwork;
 import org.brahypno.esotericismtinker.network.UpdateTranscendenceAnvilRecipePacket;
 import org.brahypno.esotericismtinker.transcendence.appearance.StigmataData;
+import org.brahypno.esotericismtinker.transcendence.appearance.recipe.StigmataIngredientLayout;
 import org.brahypno.esotericismtinker.transcendence.appearance.recipe.StigmataRecipeAdapter;
 import org.brahypno.esotericismtinker.transcendence.intrinsic.NoumenonAllocationLogic;
 import org.brahypno.esotericismtinker.transcendence.intrinsic.NoumenonData;
@@ -41,11 +42,14 @@ import slimeknights.tconstruct.library.recipe.tinkerstation.ITinkerStationRecipe
 import slimeknights.tconstruct.library.recipe.tinkerstation.building.ToolBuildingRecipe;
 import slimeknights.tconstruct.library.tools.nbt.LazyToolStack;
 import slimeknights.tconstruct.library.tools.nbt.ToolStack;
+import slimeknights.tconstruct.library.tools.part.ToolPartItem;
 import slimeknights.tconstruct.tables.block.entity.inventory.LazyResultContainer;
 import slimeknights.tconstruct.tables.block.entity.table.RetexturedTableBlockEntity;
 
 import javax.annotation.Nonnull;
+import java.util.ArrayList;
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 
@@ -77,6 +81,8 @@ public final class TranscendenceAnvilBlockEntity extends RetexturedTableBlockEnt
     private ItemStack synchronizedPreview = ItemStack.EMPTY;
     private ItemStack pendingBaseTool = ItemStack.EMPTY;
     private MaterialVariantId material = MaterialId.UNKNOWN;
+    @Nullable
+    private Component recipeLookupError;
 
     public TranscendenceAnvilBlockEntity(BlockPos pos, BlockState state) {
         super(EsotericismTinkerTranscendenceTable.transcendenceAnvilBE.get(), pos, state, NAME, INPUT_COUNT + 1);
@@ -403,28 +409,68 @@ public final class TranscendenceAnvilBlockEntity extends RetexturedTableBlockEnt
 
     @Nullable
     private ITinkerStationRecipe findRecipe(RecipeManager manager) {
-        ItemStack selectorStack = wrapper.getInput(0);
+        List<ItemStack> inputs = inputs();
 
-        if (!selectorStack.isEmpty()){
-            ITinkerStationRecipe stigmataRecipe =
-                    manager.getAllRecipesFor(EsotericismTinkerRecipeTypes.STIGMATA_TYPE.get())
-                           .stream()
-                           .filter(Objects::nonNull)
-                           .filter(candidate -> candidate.data().selector().test(selectorStack))
-                           .findFirst()
-                           .orElse(null);
+        List<StigmataRecipeAdapter> stigmataRecipes =
+                manager.getAllRecipesFor(EsotericismTinkerRecipeTypes.STIGMATA_TYPE.get())
+                       .stream()
+                       .filter(Objects::nonNull)
+                       .toList();
 
-            if (stigmataRecipe != null){
-                return stigmataRecipe;
-            }
+        /*
+         * 圣痕优先级最高：只要五个输入格里出现了本阶段的献祭物，并且场上确实有一个工具部件，
+         * 就认为玩家在布置圣痕仪式，与它们各自被放在哪个格子无关。
+         *
+         * 只放献祭物而没有工具部件时不抢占普通匠魂配方，避免挡住需要同名物品的普通配方。
+         * 同一时刻出现两个阶段的献祭物则直接报错，不去猜玩家的意图。
+         */
+        boolean hasPart = inputs.stream().anyMatch(stack -> stack.getItem() instanceof ToolPartItem);
+
+        List<StigmataRecipeAdapter> offeredStages = !hasPart
+                                                    ? List.of()
+                                                    : stigmataRecipes.stream()
+                                                                     .filter(recipe -> StigmataIngredientLayout.offersSelector(recipe.data(), inputs))
+                                                                     .toList();
+
+        if (offeredStages.size() > 1){
+            recipeLookupError = Component.translatable(
+                    "message.esotericism_tinker.stigmata.ambiguous_stage",
+                    offeredStages.stream()
+                                 .map(recipe -> Component.translatable("stigmata.esotericism_tinker."
+                                                                       + recipe.data().targetStage().getSerializedName()))
+                                 .map(Component::getString)
+                                 .sorted()
+                                 .reduce((left, right) -> left + ", " + right)
+                                 .orElse("")
+            );
+            return null;
         }
 
-        return manager.getAllRecipesFor(TinkerRecipeTypes.TINKER_STATION.get())
-                      .stream()
-                      .filter(candidate -> !(candidate instanceof ToolBuildingRecipe))
-                      .filter(candidate -> candidate.matches(wrapper, level))
-                      .findFirst()
-                      .orElse(null);
+        if (offeredStages.size() == 1){
+            return offeredStages.get(0);
+        }
+
+        /*
+         * 没有任何阶段献祭物时才退回普通匠魂工作站配方。
+         */
+        List<ITinkerStationRecipe> stationRecipes =
+                manager.getAllRecipesFor(TinkerRecipeTypes.TINKER_STATION.get())
+                       .stream()
+                       .filter(Objects::nonNull)
+                       .toList();
+        return stationRecipes.stream()
+                             .filter(candidate -> !(candidate instanceof ToolBuildingRecipe))
+                             .filter(candidate -> candidate.matches(wrapper, level))
+                             .findFirst()
+                             .orElse(null);
+    }
+
+    private List<ItemStack> inputs() {
+        List<ItemStack> inputs = new ArrayList<>(INPUT_COUNT);
+        for (int index = 0; index < INPUT_COUNT; index++) {
+            inputs.add(wrapper.getInput(index));
+        }
+        return inputs;
     }
 
     @Override
@@ -474,14 +520,15 @@ public final class TranscendenceAnvilBlockEntity extends RetexturedTableBlockEnt
          * 没有左侧 pending 修改时，恢复正常配方匹配。
          *
          * findRecipe() 保留当前规则：
-         * 1. 圣痕配方优先；
+         * 1. 圣痕配方优先（按内容识别，与槽位顺序无关）；
          * 2. 普通匠魂工作站配方其次；
          * 3. 排除 ToolBuildingRecipe。
          */
+        recipeLookupError = null;
         ITinkerStationRecipe recipe = findRecipe(level.getRecipeManager());
 
         if (recipe == null){
-            return commitCalculatedState(null, null, null, ItemStack.EMPTY);
+            return commitCalculatedState(null, null, recipeLookupError, ItemStack.EMPTY);
         }
 
         RecipeResult<LazyToolStack> validated =

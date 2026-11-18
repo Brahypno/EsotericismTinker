@@ -18,19 +18,18 @@ import slimeknights.tconstruct.library.recipe.tinkerstation.ITinkerStationRecipe
 import slimeknights.tconstruct.library.tools.nbt.LazyToolStack;
 import slimeknights.tconstruct.library.tools.nbt.ToolStack;
 
+import java.util.ArrayList;
 import java.util.List;
 
 /**
  * Minimal vanilla Recipe adapter for registration/sync.
- * The custom anvil performs actual slot matching and calls StigmataLogic.
+ * <p>
+ * The custom anvil performs the actual matching. Inputs are classified by content
+ * through {@link StigmataIngredientLayout}, so the five input slots may be filled in
+ * any order: the recipe itself decides which stack is the part, which is the stage
+ * offering, and which three are materials.
  */
 public record StigmataRecipeAdapter(StigmataRecipe data) implements ITinkerStationRecipe {
-    private static final int SELECTOR_INPUT = 0;
-    private static final int PART_INPUT = 1;
-    private static final int FIRST_MATERIAL_INPUT = 2;
-    private static final int SECOND_MATERIAL_INPUT = 3;
-    private static final int THIRD_MATERIAL_INPUT = 4;
-
     @Override
     public boolean matches(ITinkerStationContainer container, Level level) {
         return null == getMatchError(container);
@@ -38,13 +37,20 @@ public record StigmataRecipeAdapter(StigmataRecipe data) implements ITinkerStati
 
     @Override
     public RecipeResult<LazyToolStack> getValidatedResult(ITinkerStationContainer container, RegistryAccess access) {
-        Component error = getMatchError(container);
-        if (null != error){
+        StigmataIngredientLayout.Result layout = classify(container);
+        if (!layout.success()) {
+            return RecipeResult.failure(layout.error());
+        }
+
+        StigmataIngredientLayout.Slots slots = layout.slots();
+        Component error = StigmataRecipeMatcher.getError(partStack(container, slots), materials(container, slots));
+        if (null != error) {
             return RecipeResult.failure(error);
         }
 
         ToolStack tool = ToolStack.from(container.getTinkerableStack().copy());
-        StigmataMutationResult mutation = StigmataLogic.applyTarget(tool, container.getInput(PART_INPUT), data.targetStage(), RandomSource.create(), false);
+        StigmataMutationResult mutation = StigmataLogic.applyTarget(
+                tool, partStack(container, slots), data.targetStage(), RandomSource.create(), false);
         return mutation.success() ? ITinkerStationRecipe.success(tool, container) : RecipeResult.failure(mutation.error());
     }
 
@@ -53,26 +59,25 @@ public record StigmataRecipeAdapter(StigmataRecipe data) implements ITinkerStati
 
     @Override
     public void updateInputs(LazyToolStack result, IMutableTinkerStationContainer container, boolean isServer) {
-        List<ItemStack> materialSlots = materialSlots(container);
-        Component error = StigmataRecipeMatcher.getError(container.getInput(PART_INPUT), materialSlots);
-        if (null != error)
+        StigmataIngredientLayout.Result layout = classify(container);
+        if (!layout.success()) {
             return;
-
-        StigmataRecipeMatch match = StigmataRecipeMatcher.createValidatedMatch(data, container.getInput(PART_INPUT), materialSlots);
-        container.shrinkInput(PART_INPUT, 1);
-        for (StigmataRecipeMatch.SlotConsumption entry : match.materialConsumption()) {
-            container.shrinkInput(materialContainerIndex(entry.slot()), entry.count());
         }
-        container.shrinkInput(SELECTOR_INPUT, 1);
-    }
 
-    private static int materialContainerIndex(int materialIndex) {
-        return switch (materialIndex) {
-            case 0 -> FIRST_MATERIAL_INPUT;
-            case 1 -> SECOND_MATERIAL_INPUT;
-            case 2 -> THIRD_MATERIAL_INPUT;
-            default -> throw new IllegalArgumentException();
-        };
+        StigmataIngredientLayout.Slots slots = layout.slots();
+        List<ItemStack> materials = materials(container, slots);
+        if (null != StigmataRecipeMatcher.getError(partStack(container, slots), materials)) {
+            return;
+        }
+
+        StigmataRecipeMatch match = StigmataRecipeMatcher.createValidatedMatch(
+                data, partStack(container, slots), materials, slots.materialSlots());
+
+        container.shrinkInput(slots.partSlot(), 1);
+        for (StigmataRecipeMatch.SlotConsumption entry : match.materialConsumption()) {
+            container.shrinkInput(entry.slot(), entry.count());
+        }
+        container.shrinkInput(slots.selectorSlot(), 1);
     }
 
     @Override
@@ -96,14 +101,34 @@ public record StigmataRecipeAdapter(StigmataRecipe data) implements ITinkerStati
     }
 
     private Component getMatchError(ITinkerStationContainer container) {
-        if (5 != container.getInputCount()){
-            return Component.translatable("message.esotericism_tinker.stigmata.invalid_input_count", container.getInputCount());
+        StigmataIngredientLayout.Result layout = classify(container);
+        if (!layout.success()) {
+            return layout.error();
         }
-
-        return StigmataRecipeMatcher.getError(container.getInput(PART_INPUT), materialSlots(container));
+        return StigmataRecipeMatcher.getError(
+                partStack(container, layout.slots()), materials(container, layout.slots()));
     }
 
-    private static List<ItemStack> materialSlots(ITinkerStationContainer container) {
-        return List.of(container.getInput(FIRST_MATERIAL_INPUT), container.getInput(SECOND_MATERIAL_INPUT), container.getInput(THIRD_MATERIAL_INPUT));
+    private StigmataIngredientLayout.Result classify(ITinkerStationContainer container) {
+        if (container.getInputCount() != StigmataIngredientLayout.INPUT_COUNT) {
+            return new StigmataIngredientLayout.Result(
+                    null,
+                    Component.translatable("message.esotericism_tinker.stigmata.invalid_input_count",
+                                           container.getInputCount())
+            );
+        }
+        return StigmataIngredientLayout.classify(data, StigmataIngredientLayout.inputs(container));
+    }
+
+    private static ItemStack partStack(ITinkerStationContainer container, StigmataIngredientLayout.Slots slots) {
+        return container.getInput(slots.partSlot());
+    }
+
+    private static List<ItemStack> materials(ITinkerStationContainer container, StigmataIngredientLayout.Slots slots) {
+        List<ItemStack> materials = new ArrayList<>(StigmataIngredientLayout.MATERIAL_COUNT);
+        for (int slot : slots.materialSlots()) {
+            materials.add(container.getInput(slot));
+        }
+        return materials;
     }
 }

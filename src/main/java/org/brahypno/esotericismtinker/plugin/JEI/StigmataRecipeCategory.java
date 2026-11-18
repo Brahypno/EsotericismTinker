@@ -67,6 +67,12 @@ public final class StigmataRecipeCategory extends AbstractRecipeCategory<Stigmat
                .setPosition(46, 16)
                .setColor(Color.GRAY.getRGB())
                .setTextAlignment(HorizontalAlignment.CENTER);
+
+        // The rite matches by content, so every input below may be placed in any of the five slots.
+        builder.addText(Component.translatable("jei.esotericism_tinker.stigmata.any_slot"), 120, 9)
+               .setPosition(4, 67)
+               .setColor(Color.GRAY.getRGB())
+               .setTextAlignment(HorizontalAlignment.CENTER);
     }
 
     @Override

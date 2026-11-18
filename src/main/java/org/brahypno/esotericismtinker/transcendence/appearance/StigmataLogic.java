@@ -76,9 +76,6 @@ public final class StigmataLogic {
                         incoming.partId(),
                         partStack.getHoverName()
                 );
-        if (!validation.success()){
-            return validation;
-        }
 
         changed.set(targetStage, incoming);
 
